@@ -1,0 +1,23 @@
+import Foundation
+
+struct WidgetInstance: Identifiable, Codable {
+    let id: UUID
+    var type: WidgetType
+    var x: CGFloat
+    var y: CGFloat
+    var width: CGFloat
+    var height: CGFloat
+    var isPinned: Bool
+
+    init(type: WidgetType,
+         origin: CGPoint = CGPoint(x: 100, y: 100)) {
+        self.id = UUID()
+        self.type = type
+        self.x = origin.x
+        self.y = origin.y
+        let size = type.defaultSize
+        self.width = size.width
+        self.height = size.height
+        self.isPinned = false
+    }
+}

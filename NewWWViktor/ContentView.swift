@@ -1,9 +1,3 @@
-//
-//  ContentView.swift
-//  NewWWViktor
-//
-//  Created by Виктор Корольков on 10.11.2025.
-//
 
 import SwiftUI
 
@@ -17,8 +11,4 @@ struct ContentView: View {
         }
         .padding()
     }
-}
-
-#Preview {
-    ContentView()
 }

@@ -4,6 +4,7 @@ import AppKit
 struct SidePanelView: View {
     @EnvironmentObject var manager: WidgetManager
     private let cardMaxWidth: CGFloat = 320
+    @State private var showSettingsPopover = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -28,6 +29,17 @@ struct SidePanelView: View {
                 }
                 .buttonStyle(.plain)
                 .help(manager.isPanelFullscreen ? "Shrink side panel" : "Expand to full screen")
+
+                Button {
+                    showSettingsPopover.toggle()
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+                .buttonStyle(.plain)
+                .help("Open settings")
+                .popover(isPresented: $showSettingsPopover, arrowEdge: .top) {
+                    SettingsPopoverView()
+                }
 
                 Button {
                     NSApplication.shared.terminate(nil)

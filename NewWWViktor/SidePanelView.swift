@@ -19,6 +19,16 @@ struct SidePanelView: View {
                 Spacer()
 
                 Button {
+                    manager.togglePanelFullscreen()
+                } label: {
+                    Image(systemName: manager.isPanelFullscreen
+                          ? "arrow.down.right.and.arrow.up.left"
+                          : "arrow.up.left.and.arrow.down.right")
+                }
+                .buttonStyle(.plain)
+                .help(manager.isPanelFullscreen ? "Shrink side panel" : "Expand to full screen")
+
+                Button {
                     NSApplication.shared.terminate(nil)
                 } label: {
                     Image(systemName: "power")
@@ -58,6 +68,7 @@ struct SidePanelView: View {
                maxHeight: .infinity,
                alignment: .topLeading)
         .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .ignoresSafeArea()
     }
 }

@@ -1,13 +1,16 @@
 import AppKit
 import SwiftUI
 import QuartzCore
+import Combine
 
 final class SidePanelWindowController {
     private var window: NSPanel?
     private let manager: WidgetManager
+    private var cancellables = Set<AnyCancellable>()
 
     // Ширина, близкая к системной панели (можешь подправить под вкус)
     private let panelWidth: CGFloat = 360
+    private let edgeInset: CGFloat = 16
 
     private var screenChangeObserver: Any?
 
@@ -22,6 +25,13 @@ final class SidePanelWindowController {
             guard let self, let window = self.window else { return }
             self.positionWindow(window)
         }
+
+        manager.$isPanelFullscreen
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.updatePanelFrame(animated: true)
+            }
+            .store(in: &cancellables)
     }
 
     deinit {
@@ -61,6 +71,7 @@ final class SidePanelWindowController {
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             window.animator().setFrame(targetFrame, display: true)
         }
+        updateHostingFrame(for: targetFrame)
     }
 
     func hidePanel() {
@@ -131,23 +142,47 @@ final class SidePanelWindowController {
         guard let screen = NSScreen.main else { return }
         let frame = frame(for: screen, showing: window.isVisible)
         window.setFrame(frame, display: true, animate: false)
-        if let hosting = window.contentView as? NSHostingView<SidePanelView> {
-            hosting.frame = NSRect(origin: .zero, size: frame.size)
-        }
+        updateHostingFrame(for: frame)
     }
 
     private func frame(for screen: NSScreen, showing: Bool) -> NSRect {
-        let frame = screen.visibleFrame        // используем видимую область, чтобы не перекрывать меню
-        let width = panelWidth
-        let height = frame.height              // на всю высоту экрана
-        let y = frame.minY
+        let visibleFrame = screen.visibleFrame
+        let insetFrame = visibleFrame.insetBy(dx: edgeInset, dy: edgeInset)
+        let isFullScreen = manager.isPanelFullscreen
+        let availableWidth = max(insetFrame.width, 0)
+        let width = isFullScreen ? availableWidth : min(panelWidth, availableWidth)
+        let height = max(insetFrame.height, 0)
+        let y = insetFrame.minY
 
-        let shownX = frame.maxX - width
-        let hiddenX = frame.maxX + 20
+        let shownX = isFullScreen ? insetFrame.minX : visibleFrame.maxX - width - edgeInset
+        let hiddenX = visibleFrame.maxX + 20
 
         let x = showing ? shownX : hiddenX
 
         return NSRect(x: x, y: y, width: width, height: height)
+    }
+
+    private func updatePanelFrame(animated: Bool) {
+        guard let window = window, let screen = NSScreen.main else { return }
+        let targetFrame = frame(for: screen, showing: window.isVisible)
+
+        if animated {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.25
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                window.animator().setFrame(targetFrame, display: true)
+            }
+        } else {
+            window.setFrame(targetFrame, display: true, animate: false)
+        }
+
+        updateHostingFrame(for: targetFrame)
+    }
+
+    private func updateHostingFrame(for frame: NSRect) {
+        if let hosting = window?.contentView as? NSHostingView<SidePanelView> {
+            hosting.frame = NSRect(origin: .zero, size: frame.size)
+        }
     }
 
 }

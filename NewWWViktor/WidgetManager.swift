@@ -6,6 +6,7 @@ final class WidgetManager: ObservableObject {
     @Published var widgets: [WidgetInstance] = [] {
         didSet { persist() }
     }
+    @Published var isPanelFullscreen: Bool = false
 
     private var windows: [UUID: NSWindow] = [:]
 
@@ -101,5 +102,11 @@ final class WidgetManager: ObservableObject {
             let saved = try? JSONDecoder().decode([WidgetInstance].self, from: data)
         else { return }
         self.widgets = saved
+    }
+
+    // MARK: - Side panel helpers
+
+    func togglePanelFullscreen() {
+        isPanelFullscreen.toggle()
     }
 }

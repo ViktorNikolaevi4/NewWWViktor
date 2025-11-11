@@ -137,7 +137,7 @@ final class SidePanelWindowController {
     }
 
     private func frame(for screen: NSScreen, showing: Bool) -> NSRect {
-        let frame = screen.frame               // вместо visibleFrame
+        let frame = screen.visibleFrame        // используем видимую область, чтобы не перекрывать меню
         let width = panelWidth
         let height = frame.height              // на всю высоту экрана
         let y = frame.minY

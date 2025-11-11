@@ -7,8 +7,8 @@ struct WidgetHostView: View {
 
     var body: some View {
         if let instance = manager.widgets.first(where: { $0.id == instanceID }) {
-            VStack(spacing: -12) {
-                HStack {
+            VStack(spacing: 0) {
+                HStack(alignment: .bottom) {
                     Spacer()
                     Menu {
                         Button(instance.isPinned ? "Unpin from Top" : "Pin on Top") {
@@ -22,18 +22,19 @@ struct WidgetHostView: View {
                             Text("Remove")
                         }
                     } label: {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 13, weight: .semibold))
-                            .padding(6)
-                            .background(.regularMaterial)
-                            .clipShape(Circle())
-                            .shadow(radius: 4)
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 24, weight: .bold))
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
                             .opacity(isMenuVisible ? 1 : 0)
+                            .scaleEffect(isMenuVisible ? 1 : 0.6)
                     }
                     .buttonStyle(.plain)
                     .opacity(isMenuVisible ? 1 : 0)
+                    .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isMenuVisible)
                 }
                 .padding(.trailing, 4)
+                .padding(.bottom, 1)
 
                 widgetView(for: instance)
                     .padding(.horizontal, 16)
@@ -57,7 +58,7 @@ struct WidgetHostView: View {
             .padding(EdgeInsets(top: 2, leading: 2, bottom: 2, trailing: 2))
             .contentShape(Rectangle())
             .onHover { hovering in
-                withAnimation(.easeInOut(duration: 0.15)) {
+                withAnimation(.snappy(duration: 0.16, extraBounce: 0.0)) {
                     isMenuVisible = hovering
                 }
             }
@@ -74,3 +75,4 @@ struct WidgetHostView: View {
         }
     }
 }
+

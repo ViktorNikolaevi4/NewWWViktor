@@ -144,6 +144,7 @@ final class SidePanelWindowController {
         window.setFrame(frame, display: true, animate: false)
         updateHostingFrame(for: frame)
     }
+    
 
     private func frame(for screen: NSScreen, showing: Bool) -> NSRect {
         let visibleFrame = screen.visibleFrame

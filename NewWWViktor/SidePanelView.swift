@@ -2,20 +2,22 @@ import SwiftUI
 import AppKit
 
 struct SidePanelView: View {
-    @EnvironmentObject var manager: WidgetManager
+    @EnvironmentObject var manager: WidgetManager // Менеджер виджетов, общается с AppKit-частью
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 16) { // Основной вертикальный стек панели
+            HStack { // Шапка с названием и кнопкой выключения
+                VStack(alignment: .leading, spacing: 2) { // Текстовый блок “miniWW / Add widget”
                     Text("miniWW")
                         .font(.headline)
                     Text("Add widget")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                Spacer()
-                Button {
+
+                Spacer() // Отталкиваем кнопку выключения вправо
+
+                Button { // Кнопка выхода из приложения
                     NSApplication.shared.terminate(nil)
                 } label: {
                     Image(systemName: "power")
@@ -24,10 +26,10 @@ struct SidePanelView: View {
                 .help("Quit miniWW")
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(WidgetType.allCases) { type in
+            VStack(alignment: .leading, spacing: 8) { // Список доступных виджетов
+                ForEach(WidgetType.allCases) { type in // Для каждого типа рисуем кнопку
                     Button {
-                        manager.addWidget(type: type)
+                        manager.addWidget(type: type) // Добавляем выбранный виджет
                     } label: {
                         HStack {
                             Text(type.title)
@@ -36,15 +38,15 @@ struct SidePanelView: View {
                                 .foregroundStyle(.tint)
                         }
                         .padding(.vertical, 6)
-                        .contentShape(Rectangle())
+                        .contentShape(Rectangle()) // Расширяем зону нажатия до всей строки
                     }
                     .buttonStyle(.plain)
                 }
             }
 
-            Divider()
+            Divider() // Разделяем список и блок действий
 
-            Button {
+            Button { // Кнопка для массового удаления
                 manager.removeAllWidgets()
             } label: {
                 Label("Clear all widgets", systemImage: "trash")
@@ -53,15 +55,15 @@ struct SidePanelView: View {
             .buttonStyle(.borderless)
             .foregroundStyle(.secondary)
         }
-        .padding(20)
-        .frame(width: 280)
+        .padding(20) // Внутренние отступы панели
+        .frame(width: 280) // Фиксируем ширину, чтобы NSPanel совпадал
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(.ultraThinMaterial) // Полупрозрачный фон, похожий на виджеты macOS
         )
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(.white.opacity(0.1))
+                .stroke(.white.opacity(0.1)) // Тонкий обвод для отделения от фона
         )
     }
 }

@@ -3,27 +3,24 @@ import Foundation
 
 struct ClockWidgetView: View {
     @State private var date = Date()
+
     var body: some View {
-        VStack {
+        VStack(spacing: 8) {
             Text(date, style: .time)
-                .font(.system(size: 40, weight: .semibold, design: .rounded))
+                .font(.system(size: 42, weight: .semibold, design: .rounded))
+                .monospacedDigit()
             Text(date, style: .date)
                 .font(.footnote)
-                .opacity(0.7)
-        }
-        .onAppear {
-            Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-                date = Date()
-            }
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+        .onAppear(perform: startTimer)
     }
-}
 
-struct NotesWidgetView: View {
-    @State private var text: String = ""
-    var body: some View {
-        TextEditor(text: $text)
-            .padding(8)
+    private func startTimer() {
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            date = Date()
+        }
     }
 }

@@ -29,6 +29,16 @@ final class WidgetManager: ObservableObject {
         }
     }
 
+    func removeAllWidgets() {
+        widgets.forEach { instance in
+            if let window = windows[instance.id] {
+                window.close()
+            }
+        }
+        windows.removeAll()
+        widgets.removeAll()
+    }
+
     func update(_ instance: WidgetInstance) {
         if let idx = widgets.firstIndex(where: { $0.id == instance.id }) {
             widgets[idx] = instance

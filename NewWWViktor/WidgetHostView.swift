@@ -39,8 +39,6 @@ struct WidgetHostView: View {
         switch instance.type {
         case .clock:
             ClockWidgetView()
-        case .notes:
-            NotesWidgetView()
         }
     }
 }

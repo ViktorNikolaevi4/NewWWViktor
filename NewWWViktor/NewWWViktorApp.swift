@@ -1,28 +1,53 @@
 
 import SwiftUI
+import AppKit
 
 @main
 struct MiniWWApp: App {
-    @StateObject private var manager = WidgetManager()
+    private let manager: WidgetManager
+    private let panelController: SidePanelWindowController
+    @NSApplicationDelegateAdaptor(MiniWWAppDelegate.self) private var appDelegate
+
+    init() {
+        let manager = WidgetManager()
+        self.manager = manager
+        let controller = SidePanelWindowController(manager: manager)
+        self.panelController = controller
+        appDelegate.configure(manager: manager, panelController: controller)
+    }
 
     var body: some Scene {
         MenuBarExtra("miniWW", systemImage: "square.grid.3x3") {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Add widget:")
-                    .font(.headline)
-                ForEach(WidgetType.allCases) { type in
-                    Button(type.title) {
-                        manager.addWidget(type: type)
-                    }
-                }
-                Divider()
-                Button("Quit miniWW") {
-                    NSApplication.shared.terminate(nil)
-                }
+            PanelMenuTriggerView {
+                panelController.togglePanel()
             }
-            .padding(8)
         }
         .menuBarExtraStyle(.window)
-        .environmentObject(manager)
+
+        Settings {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("miniWW is controlled from the floating side panel.")
+                Text("Use the menu bar icon to toggle it.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .padding()
+            .frame(width: 300)
+        }
+    }
+}
+
+private struct PanelMenuTriggerView: View {
+    let toggle: () -> Void
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .onAppear {
+                DispatchQueue.main.async {
+                    toggle()
+                    NSApplication.shared.sendAction(#selector(NSMenu.cancelTracking), to: nil, from: nil)
+                }
+            }
     }
 }

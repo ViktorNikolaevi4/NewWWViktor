@@ -3,6 +3,7 @@ import AppKit
 
 struct SidePanelView: View {
     @EnvironmentObject var manager: WidgetManager
+    private let cardMaxWidth: CGFloat = 320
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -44,9 +45,11 @@ struct SidePanelView: View {
                         WidgetPreviewCard(type: type) {
                             manager.addWidget(type: type)
                         }
+                        .frame(maxWidth: cardMaxWidth, alignment: .leading)
                     }
                 }
                 .padding(.top, 4)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             Divider()

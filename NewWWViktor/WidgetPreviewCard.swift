@@ -10,7 +10,7 @@ struct WidgetPreviewCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            header
+            titleLabel
 
             previewContainer
                 .frame(height: 110)
@@ -21,6 +21,8 @@ struct WidgetPreviewCard: View {
                     }
                 }
                 #endif
+
+            subtitleLabel
         }
         .padding(10)
         .background(cardBackground)
@@ -28,14 +30,15 @@ struct WidgetPreviewCard: View {
 
     // MARK: - Subviews
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(type.title)
-                .font(.subheadline.weight(.semibold))
-            Text(type.subtitle)
-                .font(.caption2)
-                .foregroundColor(.secondary)
-        }
+    private var titleLabel: some View {
+        Text(type.title)
+            .font(.subheadline.weight(.semibold))
+    }
+
+    private var subtitleLabel: some View {
+        Text(type.subtitle)
+            .font(.caption2)
+            .foregroundColor(.secondary)
     }
 
     private var previewContainer: some View {

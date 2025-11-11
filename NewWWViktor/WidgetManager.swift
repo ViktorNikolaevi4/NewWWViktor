@@ -76,7 +76,7 @@ final class WidgetManager: ObservableObject {
         window.backgroundColor = .clear
         // Use .normal when not pinned. If you want behind-all-windows, consider .desktopIcon.
         window.level = instance.isPinned ? .floating : .normal
-        window.hasShadow = true
+        window.hasShadow = false
         window.ignoresMouseEvents = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         window.isMovableByWindowBackground = true

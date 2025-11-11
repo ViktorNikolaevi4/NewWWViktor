@@ -64,10 +64,10 @@ struct WidgetPreviewCard: View {
 
 
     private var roundedPreviewBackground: some View {
-        RoundedRectangle(cornerRadius: 24, style: .continuous)
+        RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
             .fill(.ultraThinMaterial)
             .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
                     .stroke(Color.white.opacity(0.18))
             )
     }
@@ -88,10 +88,10 @@ struct WidgetPreviewCard: View {
     }
 
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 26, style: .continuous)
+        RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius + 2, style: .continuous)
             .fill(Color.white.opacity(0.02))
             .overlay(
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius + 2, style: .continuous)
                     .stroke(Color.white.opacity(0.04))
             )
     }

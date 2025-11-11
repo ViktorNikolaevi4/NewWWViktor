@@ -2,7 +2,6 @@ import SwiftUI
 
 enum WidgetType: String, Codable, CaseIterable, Identifiable {
     case clock
-    // TODO: weather, systemStats, photo, music...
 
     var id: String { rawValue }
 
@@ -21,7 +20,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
     var defaultSize: CGSize {
         switch self {
         case .clock:
-            return CGSize(width: 160, height: 160)
+            // Близко к medium-виджету: 2:1, ощущается как системный
+            return CGSize(width: 320, height: 160)
         }
     }
 }

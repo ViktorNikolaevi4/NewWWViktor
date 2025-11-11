@@ -137,18 +137,17 @@ final class SidePanelWindowController {
     }
 
     private func frame(for screen: NSScreen, showing: Bool) -> NSRect {
-        let visible = screen.visibleFrame
-
+        let frame = screen.frame               // вместо visibleFrame
         let width = panelWidth
-        let height = visible.height
-        let y = visible.minY
+        let height = frame.height              // на всю высоту экрана
+        let y = frame.minY
 
-        // Позиция у правого края (как Notification Center)
-        let shownX = visible.maxX - width
-        let hiddenX = visible.maxX + 20
+        let shownX = frame.maxX - width
+        let hiddenX = frame.maxX + 20
 
         let x = showing ? shownX : hiddenX
 
         return NSRect(x: x, y: y, width: width, height: height)
     }
+
 }

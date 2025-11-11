@@ -6,14 +6,14 @@ struct SidePanelView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Header
+            // Шапка
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("miniWW")
-                        .font(.headline)
-                    Text("Add widget")
+                        .font(.system(size: 20, weight: .semibold))
+                    Text("Choose a widget to add")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundColor(.secondary)
                 }
 
                 Spacer()
@@ -27,26 +27,20 @@ struct SidePanelView: View {
                 .help("Quit miniWW")
             }
 
-            // Widgets list
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(WidgetType.allCases) { type in
-                    Button {
-                        manager.addWidget(type: type)
-                    } label: {
-                        HStack {
-                            Text(type.title)
-                            Spacer()
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundStyle(.tint)
+            // Список превью (как WidgetWall)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(WidgetType.allCases) { type in
+                        WidgetPreviewCard(type: type) {
+                            manager.addWidget(type: type)
                         }
-                        .padding(.vertical, 6)
-                        .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
                 }
+                .padding(.top, 4)
             }
 
             Divider()
+                .padding(.top, 4)
 
             Button {
                 manager.removeAllWidgets()
@@ -55,15 +49,15 @@ struct SidePanelView: View {
                     .labelStyle(.titleAndIcon)
             }
             .buttonStyle(.borderless)
-            .foregroundStyle(.secondary)
-
-            Spacer()
+            .foregroundColor(.secondary)
         }
-        .padding(.top, 24)
-        .padding(.horizontal, 20)
-        .padding(.bottom, 24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(.ultraThinMaterial)   // как системная панель
+        .padding(.top, 20)
+        .padding(.horizontal, 14)
+        .padding(.bottom, 16)
+        .frame(maxWidth: .infinity,
+               maxHeight: .infinity,
+               alignment: .topLeading)
+        .background(.ultraThinMaterial)
         .ignoresSafeArea()
     }
 }

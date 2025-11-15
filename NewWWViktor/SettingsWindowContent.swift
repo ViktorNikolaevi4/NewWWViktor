@@ -117,6 +117,7 @@ private struct GeneralSettingsDetailView: View {
     @State private var snapToGrid = true
     @State private var focusOnHover = true
     @State private var scrollBarsAutomatic = true
+    @State private var appIconMode: AppIconMode = .menuAndDock
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -127,13 +128,19 @@ private struct GeneralSettingsDetailView: View {
                     toggleSection(title: "Открывать при входе в систему (рекомендуется)",
                                   isOn: $openAtLogin)
 
-                    section(title: "Иконка приложения") {
-                        Picker("", selection: $showMenuIcon) {
-                            Text("Показывать в строке меню").tag(true)
-                            Text("Скрыть").tag(false)
+                    section(title: "Иконка приложения", inline: true) {
+                        Picker("", selection: $appIconMode) {
+                            Text("Показывать в строке меню")
+                                .tag(AppIconMode.menuOnly)
+
+                            Text("Показывать в Dock")
+                                .tag(AppIconMode.dockOnly)
+
+                            Text("Показывать в строке и в Dock")
+                                .tag(AppIconMode.menuAndDock)
                         }
                         .pickerStyle(.menu)
-                        .frame(width: 220)
+                        .frame(width: 260)
                     }
 
                     section(title: "Язык") {
@@ -250,4 +257,37 @@ private struct GeneralSettingsDetailView: View {
                 )
         )
     }
+    private func section<Content: View>(
+        title: String,
+        inline: Bool = false,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if inline {
+                HStack {
+                    Text(title)
+                        .font(.headline.weight(.semibold))
+                    Spacer()
+                    content()
+                }
+            } else {
+                Text(title)
+                    .font(.headline.weight(.semibold))
+                HStack {
+                    content()
+                    Spacer()
+                }
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.04))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(Color.white.opacity(0.05))
+                )
+        )
+    }
+
 }

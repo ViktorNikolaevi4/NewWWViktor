@@ -11,7 +11,6 @@ struct SettingsPopoverView: View {
     private let primaryItems: [SettingsMenuItem] = [
         SettingsMenuItem(id: "general", title: "Основные", systemImage: "slider.horizontal.3"),
         SettingsMenuItem(id: "appearance", title: "Оформление", systemImage: "paintbrush"),
-        SettingsMenuItem(id: "shortcuts", title: "Быстрые команды", systemImage: "bolt"),
         SettingsMenuItem(id: "plan", title: "План", systemImage: "calendar"),
         SettingsMenuItem(id: "screens", title: "Экраны", systemImage: "macwindow"),
         SettingsMenuItem(id: "backups", title: "Резервные копии", systemImage: "externaldrive"),

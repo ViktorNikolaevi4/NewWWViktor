@@ -104,7 +104,6 @@ private extension SidePanelView {
 private enum SettingsCategoryID: String {
     case general
     case appearance
-    case shortcuts
     case plan
     case screens
     case backups
@@ -115,7 +114,6 @@ private enum SettingsCategoryID: String {
         switch self {
         case .general: return .general
         case .appearance: return .appearance
-        case .shortcuts: return .shortcuts
         case .plan: return .plan
         case .screens: return .screens
         case .backups: return .backups

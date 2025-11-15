@@ -5,7 +5,6 @@ import Combine
 enum SettingsCategory: String, CaseIterable, Identifiable {
     case general = "Основные"
     case appearance = "Оформление"
-    case shortcuts = "Быстрые команды"
     case plan = "План"
     case backups = "Резервные копии"
     case screens = "Экраны"
@@ -18,7 +17,6 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         switch self {
         case .general: return "gearshape"
         case .appearance: return "paintbrush"
-        case .shortcuts: return "bolt"
         case .plan: return "calendar"
         case .backups: return "externaldrive"
         case .screens: return "macwindow"

@@ -90,6 +90,10 @@ struct SettingsWindowContent: View {
             GeneralSettingsDetailView()
         case .appearance:
             AppearanceSettingsDetailView()
+        case .backups:
+            BackupsSettingsDetailView()
+        case .support:
+            SupportSettingsDetailView()
         default:
             placeholderDetail(title: settings.selectedCategory.rawValue)
         }

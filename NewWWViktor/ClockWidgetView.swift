@@ -26,7 +26,7 @@ struct ClockWidgetView: View {
             Text(formattedTime(date, in: effectiveTimeZone))
                 .font(.system(size: 40, weight: .semibold, design: .rounded))
                 .monospacedDigit()
-                .foregroundStyle(.primary)
+                .foregroundStyle(timeColor)
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
 
@@ -119,6 +119,12 @@ struct ClockWidgetView: View {
         if let raw = tz.split(separator: "/").last {
             return String(raw).replacingOccurrences(of: "_", with: " ")
         }
-        return "Local time"
+            return "Local time"
+    }
+
+    private var timeColor: Color {
+        WidgetPaletteColor.color(named: widget.mainColorName,
+                                 intensity: widget.mainColorIntensity,
+                                 fallback: .primary)
     }
 }

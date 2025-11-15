@@ -54,7 +54,7 @@ struct WidgetHostView: View {
                     .clipShape(
                         RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
                     )
-                    .shadow(color: .black.opacity(0.10), radius: 18, x: 0, y: 10)
+                    .shadow(color: .clear, radius: 0)
             }
             .padding(EdgeInsets(top: 2, leading: 2, bottom: 2, trailing: 2))
             .contentShape(Rectangle())

@@ -6,6 +6,7 @@ struct WidgetSettingsMenuView: View {
 
     @State private var workingWidget: WidgetInstance
     @State private var showLocationPicker = false
+    @State private var showColorPicker = false
     @State private var showWeather = false
     @State private var isPinnedTop = false
     @State private var lockPosition = false
@@ -18,11 +19,13 @@ struct WidgetSettingsMenuView: View {
     }
 
     var body: some View {
-        ZStack {
+        let isOverlayPresented = showLocationPicker || showColorPicker
+
+        return ZStack {
             panelContent
-                .disabled(showLocationPicker)
-                .blur(radius: showLocationPicker ? 3 : 0)
-                .opacity(showLocationPicker ? 0.4 : 1)
+                .disabled(isOverlayPresented)
+                .blur(radius: isOverlayPresented ? 3 : 0)
+                .opacity(isOverlayPresented ? 0.4 : 1)
 
             if showLocationPicker {
                 WidgetLocationPickerView(isPresented: $showLocationPicker,
@@ -31,8 +34,18 @@ struct WidgetSettingsMenuView: View {
                 }
                 .transition(.move(edge: .trailing).combined(with: .opacity))
             }
+
+            if showColorPicker {
+                WidgetColorPickerView(isPresented: $showColorPicker,
+                                      selection: $workingWidget.mainColorName,
+                                      intensity: $workingWidget.mainColorIntensity) {
+                    onUpdate(workingWidget)
+                }
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showLocationPicker)
+        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showColorPicker)
         .frame(width: 360, height: 520)
         .onChange(of: widget) { newValue in
             workingWidget = newValue
@@ -116,8 +129,11 @@ struct WidgetSettingsMenuView: View {
 
     private var appearanceSection: some View {
         WidgetSettingsGroup(title: "Цвета") {
-            WidgetSettingsRow(title: "Основной цвет") {
-                ValuePill(text: "Глобальный", icon: "paintbrush")
+            WidgetSettingsRowButton(title: "Основной цвет") {
+                showColorPicker = true
+            } content: {
+                ColorChip(colorName: workingWidget.mainColorName,
+                          intensity: workingWidget.mainColorIntensity)
             }
             WidgetSettingsRow(title: "Вторичный цвет") {
                 ValuePill(text: "Глобальный", icon: "eyedropper")
@@ -494,4 +510,224 @@ private struct LocationOptionRow: View {
         }
         .buttonStyle(.plain)
     }
+}
+
+// MARK: - Color Picker
+
+private struct ColorChip: View {
+    let colorName: String?
+    var intensity: Double = 1.0
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Circle()
+                .fill(displayColor)
+                .frame(width: 24, height: 24)
+                .overlay(
+                    Circle()
+                        .stroke(Color.white.opacity(0.4), lineWidth: 1)
+                )
+            Text(colorTitle)
+                .font(.system(size: 13, weight: .medium))
+        }
+        .padding(.vertical, 4)
+        .padding(.horizontal, 10)
+        .background(Color.white.opacity(0.14))
+        .clipShape(Capsule())
+    }
+
+    private var displayColor: Color {
+        WidgetPaletteColor.color(named: colorName, intensity: intensity, fallback: .primary)
+    }
+
+    private var colorTitle: String {
+        colorName.map { $0 } ?? "Глобальный"
+    }
+}
+
+private struct WidgetColorPickerView: View {
+    enum Tab: String, CaseIterable {
+        case palette = "Палитра"
+        case selected = "Выбранный"
+    }
+
+    @Binding var isPresented: Bool
+    @Binding var selection: String?
+    @Binding var intensity: Double
+    let onChange: () -> Void
+
+    @State private var tab: Tab = .palette
+
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 5)
+    private let palette = PaletteColorOption.defaultPalette
+
+    var body: some View {
+        VStack(spacing: 16) {
+            header
+
+            Picker("", selection: $tab) {
+                ForEach(Tab.allCases, id: \.self) { tab in
+                    Text(tab.rawValue)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            if tab == .palette {
+                paletteGrid
+            } else {
+                selectedSection
+            }
+
+            intensitySection
+
+            Button {
+                select(nil)
+            } label: {
+                HStack {
+                    Image(systemName: selection == nil ? "checkmark.circle.fill" : "circle")
+                    Text("Глобальный")
+                        .font(.system(size: 13, weight: .semibold))
+                    Spacer()
+                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 10)
+                .background(Color.white.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(18)
+        .frame(width: 340, height: 460)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .stroke(Color.white.opacity(0.12))
+                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
+    }
+
+    private var header: some View {
+        HStack {
+            Button {
+                isPresented = false
+            } label: {
+                Label("Назад", systemImage: "chevron.left")
+                    .labelStyle(.titleAndIcon)
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.white.opacity(0.9))
+
+            Spacer()
+
+            Text("Основной цвет")
+                .font(.headline.weight(.semibold))
+                .foregroundColor(.white)
+
+            Spacer()
+
+            Spacer()
+                .frame(width: 60)
+        }
+    }
+
+    private var paletteGrid: some View {
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(palette) { option in
+                    Button {
+                        select(option.assetName)
+                    } label: {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color(option.assetName))
+                            .frame(height: 32)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .stroke(Color.white.opacity(selection == option.assetName ? 1 : 0.2),
+                                            lineWidth: selection == option.assetName ? 3 : 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
+    private var selectedSection: some View {
+        VStack(spacing: 10) {
+            if let selection {
+                ColorChip(colorName: selection, intensity: intensity)
+                Button("Очистить") {
+                    select(nil)
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(.white.opacity(0.8))
+            } else {
+                Text("Цвет не выбран.\nВыберите его во вкладке «Палитра».")
+                    .font(.system(size: 13))
+                    .foregroundColor(.white.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .padding(.vertical, 12)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 10)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var intensitySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Яркость")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.white.opacity(0.7))
+
+            Slider(value: $intensity, in: 0.4...1.0) {
+                Text("Яркость")
+            }
+            .accentColor(.white)
+            .onChange(of: intensity) { _ in
+                onChange()
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(
+                        LinearGradient(colors: [
+                            WidgetPaletteColor.color(named: selection, intensity: 0.4, fallback: .white),
+                            WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .primary)
+                        ], startPoint: .leading, endPoint: .trailing)
+                    )
+                    .opacity(0.35)
+            )
+        }
+    }
+
+    private func select(_ colorName: String?) {
+        selection = colorName
+        onChange()
+        if colorName == nil {
+            isPresented = false
+        }
+    }
+}
+
+private struct PaletteColorOption: Identifiable {
+    let id = UUID()
+    let assetName: String
+
+    static let defaultPalette: [PaletteColorOption] = [
+        "PaletteYellow", "PaletteYellow2", "PaletteYellow3", "PaletteYellow4",
+        "PaletteGreen", "PaletteGreen2", "PaletteGreen3", "PaletteGreen4",
+        "PaletteCyan", "PaletteCyan2", "PaletteCyan3", "PaletteCyan4",
+        "PaletteTeal", "PaletteTeal2", "PaletteTeal3", "PaletteTeal4",
+        "PalettePink", "PalettePink2", "PalettePink3", "PalettePink4",
+        "PaletteRed", "PaletteRed2", "PaletteRed3", "PaletteRed4",
+        "PaletteGrey", "PaletteGrey2", "PaletteGrey3", "PaletteGrey4",
+        "PaletteBlack", "PaletteWhite", "AppYellow"
+    ].map { PaletteColorOption(assetName: $0) }
 }

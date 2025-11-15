@@ -6,8 +6,6 @@ struct WidgetSettingsMenuView: View {
 
     @State private var workingWidget: WidgetInstance
     @State private var showLocationPicker = false
-    @State private var showDate = true
-    @State private var showLocation = true
     @State private var showWeather = false
     @State private var isTwelveHour = true
     @State private var isPinnedTop = false
@@ -39,6 +37,12 @@ struct WidgetSettingsMenuView: View {
         .frame(width: 360, height: 520)
         .onChange(of: widget) { newValue in
             workingWidget = newValue
+        }
+        .onChange(of: workingWidget.showsDate) { _ in
+            onUpdate(workingWidget)
+        }
+        .onChange(of: workingWidget.showsLocation) { _ in
+            onUpdate(workingWidget)
         }
     }
 
@@ -98,8 +102,8 @@ struct WidgetSettingsMenuView: View {
                 ValuePill(text: workingWidget.location.city ?? "—")
             }
 
-            ToggleRow(title: "Показывать дату", isOn: $showDate)
-            ToggleRow(title: "Показывать местоположение", isOn: $showLocation)
+            ToggleRow(title: "Показывать дату", isOn: $workingWidget.showsDate)
+            ToggleRow(title: "Показывать местоположение", isOn: $workingWidget.showsLocation)
             ToggleRow(title: "Показывать погоду", isOn: $showWeather)
 
             WidgetSettingsRow(title: "Время") {

@@ -30,22 +30,25 @@ struct ClockWidgetView: View {
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
 
-            // Дата
-            Text(formattedDate(date, in: effectiveTimeZone))
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+            if widget.showsDate {
+                Text(formattedDate(date, in: effectiveTimeZone))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
 
             // Город / зона (без реального Location, по таймзоне — как «Local»)
-            HStack(spacing: 4) {
-                Image(systemName: "location.fill")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+            if widget.showsLocation {
+                HStack(spacing: 4) {
+                    Image(systemName: "location.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
 
-                Text(locationLabel)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                    Text(locationLabel)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
             }
 
             Spacer(minLength: 0)

@@ -8,6 +8,8 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var width: CGFloat
     var height: CGFloat
     var isPinned: Bool
+    var showsDate: Bool
+    var showsLocation: Bool
     var location: WidgetLocation
 
     init(type: WidgetType,
@@ -20,6 +22,8 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.width = size.width
         self.height = size.height
         self.isPinned = false
+        self.showsDate = true
+        self.showsLocation = true
         self.location = .current
     }
 }

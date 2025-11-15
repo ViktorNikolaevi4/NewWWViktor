@@ -88,6 +88,8 @@ struct SettingsWindowContent: View {
         switch settings.selectedCategory {
         case .general:
             GeneralSettingsDetailView()
+        case .appearance:
+            AppearanceSettingsDetailView()
         default:
             placeholderDetail(title: settings.selectedCategory.rawValue)
         }
@@ -257,6 +259,7 @@ private struct GeneralSettingsDetailView: View {
                 )
         )
     }
+
     private func section<Content: View>(
         title: String,
         inline: Bool = false,

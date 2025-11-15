@@ -72,8 +72,12 @@ struct ClockWidgetView: View {
     private func formattedTime(_ date: Date, in timeZone: TimeZone) -> String {
         let f = DateFormatter()
         f.locale = .current
-        f.timeStyle = .short
-        f.dateStyle = .none
+        f.timeZone = timeZone
+        if widget.prefersTwelveHour {
+            f.setLocalizedDateFormatFromTemplate("h:mm a")
+        } else {
+            f.setLocalizedDateFormatFromTemplate("HH:mm")
+        }
         f.timeZone = timeZone
         return f.string(from: date)
     }

@@ -7,7 +7,6 @@ struct WidgetSettingsMenuView: View {
     @State private var workingWidget: WidgetInstance
     @State private var showLocationPicker = false
     @State private var showWeather = false
-    @State private var isTwelveHour = true
     @State private var isPinnedTop = false
     @State private var lockPosition = false
     @State private var snapToGrid = true
@@ -42,6 +41,9 @@ struct WidgetSettingsMenuView: View {
             onUpdate(workingWidget)
         }
         .onChange(of: workingWidget.showsLocation) { _ in
+            onUpdate(workingWidget)
+        }
+        .onChange(of: workingWidget.prefersTwelveHour) { _ in
             onUpdate(workingWidget)
         }
     }
@@ -107,7 +109,7 @@ struct WidgetSettingsMenuView: View {
             ToggleRow(title: "Показывать погоду", isOn: $showWeather)
 
             WidgetSettingsRow(title: "Время") {
-                SegmentedPill(options: ["12ч", "24ч"], selected: $isTwelveHour)
+                SegmentedPill(options: ["12ч", "24ч"], selected: $workingWidget.prefersTwelveHour)
             }
         }
     }

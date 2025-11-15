@@ -10,6 +10,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var isPinned: Bool
     var showsDate: Bool
     var showsLocation: Bool
+    var prefersTwelveHour: Bool
     var location: WidgetLocation
 
     init(type: WidgetType,
@@ -25,5 +26,6 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.showsDate = true
         self.showsLocation = true
         self.location = .current
+        self.prefersTwelveHour = true
     }
 }

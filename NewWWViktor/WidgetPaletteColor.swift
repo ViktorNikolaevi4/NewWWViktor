@@ -14,10 +14,14 @@ enum WidgetPaletteColor {
         #if os(macOS)
         if let nsColor = NSColor(named: NSColor.Name(name)) {
             return Color(nsColor: adjust(nsColor, intensity: intensity))
+        } else if let hexColor = HexColor.platformColor(fromHex: name) {
+            return Color(nsColor: adjust(hexColor, intensity: intensity))
         }
         #else
         if let uiColor = UIColor(named: name) {
             return Color(uiColor: adjust(uiColor, intensity: intensity))
+        } else if let hexColor = HexColor.platformColor(fromHex: name) {
+            return Color(uiColor: adjust(hexColor, intensity: intensity))
         }
         #endif
         return fallback

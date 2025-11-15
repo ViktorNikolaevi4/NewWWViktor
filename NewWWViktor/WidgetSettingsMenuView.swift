@@ -1,4 +1,9 @@
 import SwiftUI
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 struct WidgetSettingsMenuView: View {
     let widget: WidgetInstance
@@ -557,6 +562,7 @@ private struct WidgetColorPickerView: View {
     let onChange: () -> Void
 
     @State private var tab: Tab = .palette
+    @State private var customColorHex: String = "#FFFFFFFF"
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 5)
     private let palette = PaletteColorOption.defaultPalette
@@ -575,7 +581,11 @@ private struct WidgetColorPickerView: View {
             if tab == .palette {
                 paletteGrid
             } else {
-                selectedSection
+                ScrollView {
+                    selectedSection
+                        .padding(.bottom, 8)
+                }
+                .frame(maxHeight: .infinity)
             }
 
             intensitySection
@@ -608,6 +618,12 @@ private struct WidgetColorPickerView: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
+        .onAppear {
+            syncCustomColorHex(with: selection)
+        }
+        .onChange(of: selection) { newValue in
+            syncCustomColorHex(with: newValue)
+        }
     }
 
     private var header: some View {
@@ -658,21 +674,25 @@ private struct WidgetColorPickerView: View {
     }
 
     private var selectedSection: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 14) {
             if let selection {
                 ColorChip(colorName: selection, intensity: intensity)
-                Button("Очистить") {
-                    select(nil)
-                }
-                .buttonStyle(.plain)
-                .foregroundColor(.white.opacity(0.8))
             } else {
-                Text("Цвет не выбран.\nВыберите его во вкладке «Палитра».")
+                Text("Цвет не выбран.\nИспользуйте палитру ниже, чтобы выбрать цвет.")
                     .font(.system(size: 13))
                     .foregroundColor(.white.opacity(0.7))
                     .multilineTextAlignment(.center)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 4)
             }
+
+            colorWheel
+
+            Button("Очистить") {
+                select(nil)
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.white.opacity(selection == nil ? 0.4 : 0.9))
+            .disabled(selection == nil)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
@@ -687,7 +707,7 @@ private struct WidgetColorPickerView: View {
                 .font(.caption.weight(.semibold))
                 .foregroundColor(.white.opacity(0.7))
 
-            Slider(value: $intensity, in: 0.4...1.0) {
+            Slider(value: $intensity, in: 0...1.0) {
                 Text("Яркость")
             }
             .accentColor(.white)
@@ -698,7 +718,7 @@ private struct WidgetColorPickerView: View {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(
                         LinearGradient(colors: [
-                            WidgetPaletteColor.color(named: selection, intensity: 0.4, fallback: .white),
+                            WidgetPaletteColor.color(named: selection, intensity: 0.0, fallback: .black),
                             WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .primary)
                         ], startPoint: .leading, endPoint: .trailing)
                     )
@@ -707,11 +727,49 @@ private struct WidgetColorPickerView: View {
         }
     }
 
+    private var colorWheel: some View {
+        ColorWheelControl(color: customColorBinding)
+            .frame(height: 180)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 8)
+            .background(Color.white.opacity(0.06))
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private var customColorBinding: Binding<Color> {
+        Binding(
+            get: {
+                HexColor.color(from: customColorHex)
+                ?? WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .white)
+            },
+            set: { newColor in
+                guard let hex = HexColor.hexString(from: newColor) else { return }
+                customColorHex = hex
+                selection = hex
+                onChange()
+            }
+        )
+    }
+
     private func select(_ colorName: String?) {
         selection = colorName
         onChange()
         if colorName == nil {
             isPresented = false
+        }
+    }
+
+    private func syncCustomColorHex(with newValue: String?) {
+        guard let newValue else {
+            customColorHex = "#FFFFFFFF"
+            return
+        }
+
+        if let normalized = HexColor.normalizedHex(from: newValue) {
+            customColorHex = normalized
+        } else if let resolved = HexColor.hexStringForNamedColor(newValue) {
+            customColorHex = resolved
         }
     }
 }
@@ -730,4 +788,125 @@ private struct PaletteColorOption: Identifiable {
         "PaletteGrey", "PaletteGrey2", "PaletteGrey3", "PaletteGrey4",
         "PaletteBlack", "PaletteWhite", "AppYellow"
     ].map { PaletteColorOption(assetName: $0) }
+}
+
+// MARK: - Color Wheel
+
+private struct ColorWheelControl: View {
+    @Binding var color: Color
+    @State private var hsb = HSBColor(hue: 0, saturation: 0, brightness: 1, alpha: 1)
+
+    private static let hueGradient: [Color] = [
+        .red, .yellow, .green, .cyan, .blue, .purple, .red
+    ]
+
+    var body: some View {
+        GeometryReader { proxy in
+            let diameter = min(proxy.size.width, proxy.size.height)
+            let radius = diameter / 2
+            let center = CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2)
+            let indicator = indicatorPosition(center: center, radius: radius)
+
+            ZStack {
+                Circle()
+                    .fill(
+                        AngularGradient(gradient: Gradient(colors: Self.hueGradient),
+                                        center: .center)
+                    )
+                    .overlay(
+                        Circle()
+                            .fill(
+                                RadialGradient(gradient: Gradient(colors: [.white, .clear]),
+                                               center: .center,
+                                               startRadius: 0,
+                                               endRadius: radius)
+                            )
+                    )
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                updateColor(at: value.location, center: center, radius: radius)
+                            }
+                            .onEnded { value in
+                                updateColor(at: value.location, center: center, radius: radius)
+                            }
+                    )
+
+                Circle()
+                    .strokeBorder(Color.white, lineWidth: 2)
+                    .background(Circle().fill(color))
+                    .shadow(color: .black.opacity(0.4), radius: 2)
+                    .frame(width: 18, height: 18)
+                    .position(indicator)
+            }
+            .onAppear {
+                hsb = HSBColor(color: color)
+            }
+            .onChange(of: color) { newValue in
+                hsb = HSBColor(color: newValue)
+            }
+        }
+        .aspectRatio(1, contentMode: .fit)
+    }
+
+    private func indicatorPosition(center: CGPoint, radius: CGFloat) -> CGPoint {
+        let angle = 2 * .pi * CGFloat(hsb.hue)
+        let distance = CGFloat(hsb.saturation) * radius
+        return CGPoint(
+            x: center.x + distance * cos(angle),
+            y: center.y + distance * sin(angle)
+        )
+    }
+
+    private func updateColor(at point: CGPoint, center: CGPoint, radius: CGFloat) {
+        let dx = Double(point.x - center.x)
+        let dy = Double(point.y - center.y)
+        var hue = atan2(dy, dx) / (2 * .pi)
+        if hue < 0 { hue += 1 }
+        let distance = min(max(Double(hypot(dx, dy)), 0), Double(radius))
+        let saturation = distance / Double(radius)
+
+        hsb = HSBColor(hue: hue, saturation: saturation, brightness: hsb.brightness, alpha: 1)
+        color = hsb.color
+    }
+}
+
+private struct HSBColor {
+    var hue: Double
+    var saturation: Double
+    var brightness: Double
+    var alpha: Double
+
+    var color: Color {
+        Color(hue: hue, saturation: saturation, brightness: brightness, opacity: alpha)
+    }
+
+    init(hue: Double, saturation: Double, brightness: Double, alpha: Double) {
+        self.hue = hue
+        self.saturation = saturation
+        self.brightness = brightness
+        self.alpha = alpha
+    }
+
+    init(color: Color) {
+#if os(macOS)
+        let native = NSColor(color).usingColorSpace(.sRGB)
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha: CGFloat = 0
+        native?.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+#else
+        let native = UIColor(color)
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha: CGFloat = 0
+        native.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+#endif
+        self.hue = Double(hue)
+        self.saturation = Double(saturation)
+        self.brightness = Double(brightness)
+        self.alpha = Double(alpha)
+    }
 }

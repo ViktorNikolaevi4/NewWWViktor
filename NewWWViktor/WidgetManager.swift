@@ -41,20 +41,29 @@ final class WidgetManager: ObservableObject {
     }
 
     func update(_ instance: WidgetInstance) {
-        if let idx = widgets.firstIndex(where: { $0.id == instance.id }) {
-            widgets[idx] = instance
-            // можно обновить frame окна
-            if let window = windows[instance.id] {
-                window.setFrame(
-                    NSRect(x: instance.x,
-                           y: instance.y,
-                           width: instance.width,
-                           height: instance.height),
-                    display: true
-                )
-                // Use .normal when not pinned. If you want behind-all-windows, consider .desktopIcon.
-                window.level = instance.isPinned ? .floating : .normal
-            }
+        guard let idx = widgets.firstIndex(where: { $0.id == instance.id }) else { return }
+
+        var updatedInstance = instance
+        if let window = windows[instance.id] {
+            let frame = window.frame
+            updatedInstance.x = frame.origin.x
+            updatedInstance.y = frame.origin.y
+            updatedInstance.width = frame.width
+            updatedInstance.height = frame.height
+        }
+
+        widgets[idx] = updatedInstance
+
+        if let window = windows[instance.id] {
+            window.setFrame(
+                NSRect(x: updatedInstance.x,
+                       y: updatedInstance.y,
+                       width: updatedInstance.width,
+                       height: updatedInstance.height),
+                display: true
+            )
+            // Use .normal when not pinned. If you want behind-all-windows, consider .desktopIcon.
+            window.level = updatedInstance.isPinned ? .floating : .normal
         }
     }
 

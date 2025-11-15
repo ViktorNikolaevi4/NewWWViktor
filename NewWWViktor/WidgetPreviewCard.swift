@@ -9,11 +9,11 @@ struct WidgetPreviewCard: View {
     @State private var isPressed = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            titleLabel
+        VStack(alignment: .leading, spacing: 16) {
+            headerSection
 
             previewContainer
-                .frame(height: 110)
+                .frame(height: 140)
                 #if os(macOS)
                 .onHover { hover in
                     withAnimation(.spring(response: 0.22, dampingFraction: 0.9)) {
@@ -22,56 +22,68 @@ struct WidgetPreviewCard: View {
                 }
                 #endif
 
-            subtitleLabel
+            infoSection
+
+            Divider()
+                .background(Color.white.opacity(0.08))
         }
-        .padding(10)
+        .padding(18)
         .background(cardBackground)
+        .overlay(
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
+                .stroke(Color.white.opacity(0.08))
+        )
     }
 
     // MARK: - Subviews
 
-    private var titleLabel: some View {
-        Text(type.title)
-            .font(.subheadline.weight(.semibold))
-    }
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Text(type.categoryLabel.uppercased())
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondary)
+                Spacer()
+                layoutControls
+            }
 
-    private var subtitleLabel: some View {
-        Text(type.subtitle)
-            .font(.caption2)
-            .foregroundColor(.secondary)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(type.heroTitle)
+                        .font(.title3.weight(.semibold))
+                    Text(type.heroSubtitle)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                addButton
+            }
+        }
     }
 
     private var previewContainer: some View {
-        ZStack(alignment: .topLeading) {
+        ZStack(alignment: .bottomLeading) {
             roundedPreviewBackground
                 .scaleEffect(scale)
                 .animation(.spring(response: 0.22, dampingFraction: 0.9), value: isHovered)
                 .animation(.spring(response: 0.16, dampingFraction: 0.8), value: isPressed)
 
             preview
-                .padding(.top, 10)
-                .padding(.horizontal, 10)
-                .frame(maxWidth: .infinity,
-                       maxHeight: 72,          // было 80 — чуть меньше, фон снизу больше
-                       alignment: .top)
-
-            if isHovered {
-                addButton
-                    .padding(8)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-            }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 18)
         }
-        .frame(height: 110)                      // можно 130–140, подбирай по вкусу
     }
-
-
 
     private var roundedPreviewBackground: some View {
         RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-            .fill(.ultraThinMaterial)
+            .fill(LinearGradient(colors: [Color(hex: 0x1f1f23), Color(hex: 0x111111)],
+                                 startPoint: .topLeading,
+                                 endPoint: .bottomTrailing))
             .overlay(
                 RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.18))
+                    .stroke(Color.white.opacity(0.15))
             )
     }
 
@@ -90,12 +102,36 @@ struct WidgetPreviewCard: View {
         .buttonStyle(.plain)
     }
 
+    private var layoutControls: some View {
+        HStack(spacing: 6) {
+            ForEach(WidgetLayoutControl.allCases) { control in
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(control == .active ? Color.white.opacity(0.25) : Color.white.opacity(0.08))
+                    .frame(width: control.size.width, height: control.size.height)
+            }
+        }
+    }
+
+    private var infoSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(type.detailTitle)
+                .font(.headline.weight(.semibold))
+            Text(type.detailDescription)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            Text(type.detailLinkTitle)
+                .font(.footnote.weight(.semibold))
+                .foregroundColor(.primary)
+        }
+    }
+
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius + 2, style: .continuous)
-            .fill(Color.white.opacity(0.02))
+        RoundedRectangle(cornerRadius: 30, style: .continuous)
+            .fill(Color.black.opacity(0.35))
             .overlay(
-                RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius + 2, style: .continuous)
-                    .stroke(Color.white.opacity(0.04))
+                RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    .stroke(Color.white.opacity(0.02))
             )
     }
 
@@ -111,5 +147,29 @@ struct WidgetPreviewCard: View {
         case .clock:
             ClockWidgetView()
         }
+    }
+}
+
+private enum WidgetLayoutControl: CaseIterable, Identifiable {
+    case active, medium, large
+
+    var id: Self { self }
+
+    var size: CGSize {
+        switch self {
+        case .active: return CGSize(width: 22, height: 14)
+        case .medium: return CGSize(width: 28, height: 14)
+        case .large: return CGSize(width: 34, height: 14)
+        }
+    }
+}
+
+private extension Color {
+    init(hex: UInt, alpha: Double = 1.0) {
+        self.init(.sRGB,
+                  red: Double((hex >> 16) & 0xff) / 255,
+                  green: Double((hex >> 8) & 0xff) / 255,
+                  blue: Double(hex & 0xff) / 255,
+                  opacity: alpha)
     }
 }

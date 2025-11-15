@@ -88,6 +88,7 @@ struct SidePanelView: View {
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .ignoresSafeArea()
+        .environment(\.colorScheme, .dark) // keep panel visuals consistent regardless of system theme
     }
 }
 

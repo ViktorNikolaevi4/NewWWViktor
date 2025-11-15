@@ -4,23 +4,15 @@ struct WidgetHostView: View {
     @EnvironmentObject var manager: WidgetManager
     let instanceID: UUID
     @State private var isMenuVisible = false
+    @State private var showSettingsPanel = false
 
     var body: some View {
         if let instance = manager.widgets.first(where: { $0.id == instanceID }) {
             VStack(spacing: 0) {
                 HStack(alignment: .bottom) {
                     Spacer()
-                    Menu {
-                        Button(instance.isPinned ? "Unpin from Top" : "Pin on Top") {
-                            var updated = instance
-                            updated.isPinned.toggle()
-                            manager.update(updated)
-                        }
-                        Button(role: .destructive) {
-                            manager.removeWidget(id: instance.id)
-                        } label: {
-                            Text("Remove")
-                        }
+                    Button {
+                        showSettingsPanel.toggle()
                     } label: {
                         Image(systemName: "ellipsis")
                             .font(.system(size: 24, weight: .bold))
@@ -32,6 +24,13 @@ struct WidgetHostView: View {
                     .buttonStyle(.plain)
                     .opacity(isMenuVisible ? 1 : 0)
                     .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isMenuVisible)
+                    .popover(isPresented: $showSettingsPanel, arrowEdge: .top) {
+                        WidgetSettingsMenuView()
+                            .frame(width: 360)
+                            .onDisappear {
+                                showSettingsPanel = false
+                            }
+                    }
                 }
                 .padding(.trailing, 4)
                 .padding(.bottom, 1)
@@ -75,4 +74,3 @@ struct WidgetHostView: View {
         }
     }
 }
-

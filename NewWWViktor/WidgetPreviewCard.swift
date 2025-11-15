@@ -55,10 +55,6 @@ struct WidgetPreviewCard: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-
-                Spacer()
-
-                addButton
             }
         }
     }
@@ -74,16 +70,24 @@ struct WidgetPreviewCard: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 18)
         }
+        .overlay(alignment: .topTrailing) {
+            addButton
+                .opacity(showAddButton ? 1 : 0)
+                .scaleEffect(showAddButton ? 1 : 0.8)
+                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showAddButton)
+                .padding(12)
+                .allowsHitTesting(showAddButton)
+        }
     }
 
     private var roundedPreviewBackground: some View {
         RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-            .fill(LinearGradient(colors: [Color(hex: 0x1f1f23), Color(hex: 0x111111)],
+            .fill(LinearGradient(colors: [Color(hex: 0x3b3f4b), Color(hex: 0x2a2d36)],
                                  startPoint: .topLeading,
                                  endPoint: .bottomTrailing))
             .overlay(
                 RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.15))
+                    .stroke(Color.white.opacity(0.25))
             )
     }
 
@@ -95,9 +99,17 @@ struct WidgetPreviewCard: View {
                 isPressed = false
             }
         } label: {
-            Label("Add", systemImage: "plus.circle.fill")
-                .labelStyle(.iconOnly)
-                .font(.system(size: 20, weight: .semibold))
+            Image(systemName: "plus")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(.black)
+                .padding(8)
+                .background(
+                    Circle()
+                        .fill(LinearGradient(colors: [Color(hex: 0x81fbb8), Color(hex: 0x28c76f)],
+                                             startPoint: .topLeading,
+                                             endPoint: .bottomTrailing))
+                )
+                .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -128,10 +140,10 @@ struct WidgetPreviewCard: View {
 
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 30, style: .continuous)
-            .fill(Color.black.opacity(0.35))
+            .fill(Color.black.opacity(0.7))
             .overlay(
                 RoundedRectangle(cornerRadius: 30, style: .continuous)
-                    .stroke(Color.white.opacity(0.02))
+                    .stroke(Color.white.opacity(0.05))
             )
     }
 
@@ -139,6 +151,14 @@ struct WidgetPreviewCard: View {
 
     private var scale: CGFloat {
         (isHovered || isPressed) ? 1.04 : 1.0
+    }
+
+    private var showAddButton: Bool {
+        #if os(macOS)
+        return isHovered || isPressed
+        #else
+        return true
+        #endif
     }
 
     @ViewBuilder

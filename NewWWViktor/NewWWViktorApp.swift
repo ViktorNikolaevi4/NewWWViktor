@@ -5,13 +5,17 @@ import AppKit
 @main
 struct MiniWWApp: App {
     private let manager: WidgetManager
+    private let settingsCoordinator: SettingsCoordinator
     private let panelController: SidePanelWindowController
     @NSApplicationDelegateAdaptor(MiniWWAppDelegate.self) private var appDelegate
 
     init() {
         let manager = WidgetManager()
         self.manager = manager
-        let controller = SidePanelWindowController(manager: manager)
+        let settingsCoordinator = SettingsCoordinator()
+        self.settingsCoordinator = settingsCoordinator
+        let controller = SidePanelWindowController(manager: manager,
+                                                   settingsCoordinator: settingsCoordinator)
         self.panelController = controller
         appDelegate.configure(manager: manager, panelController: controller)
     }

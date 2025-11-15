@@ -4,33 +4,33 @@ struct SettingsMenuItem: Identifiable {
     let id: String
     let title: String
     let systemImage: String
-    let action: () -> Void
 }
 
 struct SettingsPopoverView: View {
+    let onSelect: (String) -> Void
     private let primaryItems: [SettingsMenuItem] = [
-        SettingsMenuItem(id: "general", title: "Основные", systemImage: "slider.horizontal.3", action: {}),
-        SettingsMenuItem(id: "appearance", title: "Оформление", systemImage: "paintbrush", action: {}),
-        SettingsMenuItem(id: "shortcuts", title: "Быстрые команды", systemImage: "bolt", action: {}),
-        SettingsMenuItem(id: "plan", title: "План", systemImage: "calendar", action: {}),
-        SettingsMenuItem(id: "screens", title: "Экраны", systemImage: "macwindow", action: {}),
-        SettingsMenuItem(id: "backups", title: "Резервные копии", systemImage: "externaldrive", action: {}),
-        SettingsMenuItem(id: "support", title: "Поддержка", systemImage: "lifepreserver", action: {}),
-        SettingsMenuItem(id: "about", title: "О нас", systemImage: "info.circle", action: {})
+        SettingsMenuItem(id: "general", title: "Основные", systemImage: "slider.horizontal.3"),
+        SettingsMenuItem(id: "appearance", title: "Оформление", systemImage: "paintbrush"),
+        SettingsMenuItem(id: "shortcuts", title: "Быстрые команды", systemImage: "bolt"),
+        SettingsMenuItem(id: "plan", title: "План", systemImage: "calendar"),
+        SettingsMenuItem(id: "screens", title: "Экраны", systemImage: "macwindow"),
+        SettingsMenuItem(id: "backups", title: "Резервные копии", systemImage: "externaldrive"),
+        SettingsMenuItem(id: "support", title: "Поддержка", systemImage: "lifepreserver"),
+        SettingsMenuItem(id: "about", title: "О нас", systemImage: "info.circle")
     ]
 
     var body: some View {
         VStack(spacing: 12) {
             ForEach(primaryItems) { item in
-                SettingsMenuRow(item: item)
+                SettingsMenuRow(item: item, onSelect: onSelect)
             }
 
             Divider()
 
             SettingsMenuRow(item: SettingsMenuItem(id: "logout",
                                                    title: "Выйти",
-                                                   systemImage: "power",
-                                                   action: {}))
+                                                   systemImage: "power"),
+                            onSelect: onSelect)
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
@@ -45,10 +45,11 @@ struct SettingsPopoverView: View {
 
 private struct SettingsMenuRow: View {
     let item: SettingsMenuItem
+    let onSelect: (String) -> Void
 
     var body: some View {
         Button {
-            item.action()
+            onSelect(item.id)
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: item.systemImage)

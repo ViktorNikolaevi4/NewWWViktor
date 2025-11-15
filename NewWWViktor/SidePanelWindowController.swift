@@ -6,6 +6,7 @@ import Combine
 final class SidePanelWindowController {
     private var window: NSPanel?
     private let manager: WidgetManager
+    private let settingsCoordinator: SettingsCoordinator
     private var cancellables = Set<AnyCancellable>()
 
     // Ширина, близкая к системной панели (можешь подправить под вкус)
@@ -14,8 +15,9 @@ final class SidePanelWindowController {
 
     private var screenChangeObserver: Any?
 
-    init(manager: WidgetManager) {
+    init(manager: WidgetManager, settingsCoordinator: SettingsCoordinator) {
         self.manager = manager
+        self.settingsCoordinator = settingsCoordinator
 
         screenChangeObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
@@ -131,6 +133,7 @@ final class SidePanelWindowController {
         let hostingView = NSHostingView(
             rootView: SidePanelView()
                 .environmentObject(manager)
+                .environmentObject(settingsCoordinator)
         )
         hostingView.frame = NSRect(origin: .zero, size: initialFrame.size)
         panel.contentView = hostingView

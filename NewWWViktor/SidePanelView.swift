@@ -3,6 +3,7 @@ import AppKit
 
 struct SidePanelView: View {
     @EnvironmentObject var manager: WidgetManager
+    @EnvironmentObject var settingsCoordinator: SettingsCoordinator
     private let cardMaxWidth: CGFloat = 320
     @State private var showSettingsPopover = false
 
@@ -38,7 +39,9 @@ struct SidePanelView: View {
                 .buttonStyle(.plain)
                 .help("Open settings")
                 .popover(isPresented: $showSettingsPopover, arrowEdge: .top) {
-                    SettingsPopoverView()
+                    SettingsPopoverView { selection in
+                        handleSettingsSelection(selection)
+                    }
                 }
 
                 Button {
@@ -85,5 +88,39 @@ struct SidePanelView: View {
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .ignoresSafeArea()
+    }
+}
+
+private extension SidePanelView {
+    func handleSettingsSelection(_ selection: String) {
+        showSettingsPopover = false
+        let category = SettingsCategoryID(rawValue: selection)?.category
+        if let category {
+            settingsCoordinator.show(category)
+        }
+    }
+}
+
+private enum SettingsCategoryID: String {
+    case general
+    case appearance
+    case shortcuts
+    case plan
+    case screens
+    case backups
+    case support
+    case about
+
+    var category: SettingsCategory {
+        switch self {
+        case .general: return .general
+        case .appearance: return .appearance
+        case .shortcuts: return .shortcuts
+        case .plan: return .plan
+        case .screens: return .screens
+        case .backups: return .backups
+        case .support: return .support
+        case .about: return .about
+        }
     }
 }

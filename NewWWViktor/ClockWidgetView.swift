@@ -3,6 +3,7 @@ import Combine
 
 struct ClockWidgetView: View {
     @State private var date = Date()
+    @StateObject private var locationProvider = LocationProvider()
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -39,7 +40,7 @@ struct ClockWidgetView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
 
-                Text(currentCity())
+                Text(locationLabel)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -53,10 +54,13 @@ struct ClockWidgetView: View {
         .onReceive(timer) { output in
             date = output
         }
+        .onAppear {
+            locationProvider.requestLocationIfNeeded()
+        }
         // ВАЖНО: не добавляем .background / .clipShape здесь.
         // Это делает WidgetHostView и превью-карточка, чтобы стиль везде был единый.
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(formattedTime(date)), \(formattedDate(date)), \(currentCity())")
+        .accessibilityLabel("\(formattedTime(date)), \(formattedDate(date)), \(locationLabel)")
     }
 
     // MARK: - Formatting
@@ -82,5 +86,9 @@ struct ClockWidgetView: View {
             return String(raw).replacingOccurrences(of: "_", with: " ")
         }
         return "Local time"
+    }
+
+    private var locationLabel: String {
+        locationProvider.cityName ?? currentCity()
     }
 }

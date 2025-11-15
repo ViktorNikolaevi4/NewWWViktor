@@ -25,11 +25,13 @@ struct WidgetHostView: View {
                     .opacity(isMenuVisible ? 1 : 0)
                     .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isMenuVisible)
                     .popover(isPresented: $showSettingsPanel, arrowEdge: .top) {
-                        WidgetSettingsMenuView()
-                            .frame(width: 360)
-                            .onDisappear {
-                                showSettingsPanel = false
-                            }
+                        WidgetSettingsMenuView(widget: instance) { updated in
+                            manager.update(updated)
+                        }
+                        .frame(width: 360, height: 520)
+                        .onDisappear {
+                            showSettingsPanel = false
+                        }
                     }
                 }
                 .padding(.trailing, 4)
@@ -70,7 +72,7 @@ struct WidgetHostView: View {
     private func widgetView(for instance: WidgetInstance) -> some View {
         switch instance.type {
         case .clock:
-            ClockWidgetView()
+            ClockWidgetView(widget: instance)
         }
     }
 }

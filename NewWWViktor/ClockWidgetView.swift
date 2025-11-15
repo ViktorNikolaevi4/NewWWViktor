@@ -2,6 +2,7 @@ import SwiftUI
 import Combine
 
 struct ClockWidgetView: View {
+    let widget: WidgetInstance
     @State private var date = Date()
     @StateObject private var locationProvider = LocationProvider()
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -22,7 +23,7 @@ struct ClockWidgetView: View {
             }
 
             // Основное время
-            Text(formattedTime(date))
+            Text(formattedTime(date, in: effectiveTimeZone))
                 .font(.system(size: 40, weight: .semibold, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(.primary)
@@ -30,7 +31,7 @@ struct ClockWidgetView: View {
                 .lineLimit(1)
 
             // Дата
-            Text(formattedDate(date))
+            Text(formattedDate(date, in: effectiveTimeZone))
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
@@ -60,35 +61,57 @@ struct ClockWidgetView: View {
         // ВАЖНО: не добавляем .background / .clipShape здесь.
         // Это делает WidgetHostView и превью-карточка, чтобы стиль везде был единый.
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(formattedTime(date)), \(formattedDate(date)), \(locationLabel)")
+        .accessibilityLabel("\(formattedTime(date, in: effectiveTimeZone)), \(formattedDate(date, in: effectiveTimeZone)), \(locationLabel)")
     }
 
     // MARK: - Formatting
 
-    private func formattedTime(_ date: Date) -> String {
+    private func formattedTime(_ date: Date, in timeZone: TimeZone) -> String {
         let f = DateFormatter()
         f.locale = .current
         f.timeStyle = .short
         f.dateStyle = .none
+        f.timeZone = timeZone
         return f.string(from: date)
     }
 
-    private func formattedDate(_ date: Date) -> String {
+    private func formattedDate(_ date: Date, in timeZone: TimeZone) -> String {
         let f = DateFormatter()
         f.locale = .current
         f.setLocalizedDateFormatFromTemplate("EEEE, MMM d")
+        f.timeZone = timeZone
         return f.string(from: date)
     }
 
-    private func currentCity() -> String {
+    private var locationLabel: String {
+        switch widget.location.mode {
+        case .current:
+            return locationProvider.cityName ?? fallbackCityName()
+        case .custom:
+            if let city = widget.location.city {
+                if let region = widget.location.region, !region.isEmpty {
+                    return "\(city), \(region)"
+                }
+                return city
+            }
+            return "Выбранный город"
+        }
+    }
+
+    private var effectiveTimeZone: TimeZone {
+        switch widget.location.mode {
+        case .current:
+            return locationProvider.currentTimeZone ?? .current
+        case .custom:
+            return widget.location.timeZone
+        }
+    }
+
+    private func fallbackCityName() -> String {
         let tz = TimeZone.current.identifier
         if let raw = tz.split(separator: "/").last {
             return String(raw).replacingOccurrences(of: "_", with: " ")
         }
         return "Local time"
-    }
-
-    private var locationLabel: String {
-        locationProvider.cityName ?? currentCity()
     }
 }

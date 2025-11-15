@@ -165,8 +165,14 @@ struct WidgetPreviewCard: View {
     private var preview: some View {
         switch type {
         case .clock:
-            ClockWidgetView()
+            ClockWidgetView(widget: previewWidget)
         }
+    }
+
+    private var previewWidget: WidgetInstance {
+        var instance = WidgetInstance(type: type)
+        instance.location = .current
+        return instance
     }
 }
 

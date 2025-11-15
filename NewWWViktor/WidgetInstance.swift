@@ -1,6 +1,6 @@
 import Foundation
 
-struct WidgetInstance: Identifiable, Codable {
+struct WidgetInstance: Identifiable, Codable, Equatable {
     let id: UUID
     var type: WidgetType
     var x: CGFloat
@@ -8,6 +8,7 @@ struct WidgetInstance: Identifiable, Codable {
     var width: CGFloat
     var height: CGFloat
     var isPinned: Bool
+    var location: WidgetLocation
 
     init(type: WidgetType,
          origin: CGPoint = CGPoint(x: 100, y: 100)) {
@@ -19,5 +20,6 @@ struct WidgetInstance: Identifiable, Codable {
         self.width = size.width
         self.height = size.height
         self.isPinned = false
+        self.location = .current
     }
 }

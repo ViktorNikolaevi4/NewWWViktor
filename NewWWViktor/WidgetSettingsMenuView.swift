@@ -1,6 +1,11 @@
 import SwiftUI
 
 struct WidgetSettingsMenuView: View {
+    let widget: WidgetInstance
+    let onUpdate: (WidgetInstance) -> Void
+
+    @State private var workingWidget: WidgetInstance
+    @State private var showLocationPicker = false
     @State private var showDate = true
     @State private var showLocation = true
     @State private var showWeather = false
@@ -9,7 +14,40 @@ struct WidgetSettingsMenuView: View {
     @State private var lockPosition = false
     @State private var snapToGrid = true
 
+    init(widget: WidgetInstance, onUpdate: @escaping (WidgetInstance) -> Void) {
+        self.widget = widget
+        self.onUpdate = onUpdate
+        _workingWidget = State(initialValue: widget)
+    }
+
     var body: some View {
+        ZStack {
+            panelContent
+                .disabled(showLocationPicker)
+                .blur(radius: showLocationPicker ? 3 : 0)
+                .opacity(showLocationPicker ? 0.4 : 1)
+
+            if showLocationPicker {
+                WidgetLocationPickerView(isPresented: $showLocationPicker,
+                                         selection: $workingWidget.location) { newLocation in
+                    apply(location: newLocation)
+                }
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showLocationPicker)
+        .frame(width: 360, height: 520)
+        .onChange(of: widget) { newValue in
+            workingWidget = newValue
+        }
+    }
+
+    private func apply(location: WidgetLocation) {
+        workingWidget.location = location
+        onUpdate(workingWidget)
+    }
+
+    private var panelContent: some View {
         VStack(spacing: 16) {
             handle
 
@@ -24,14 +62,7 @@ struct WidgetSettingsMenuView: View {
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 14)
-        .frame(minWidth: nil,
-               idealWidth: nil,
-               maxWidth: nil,
-               minHeight: nil,
-               idealHeight: nil,
-               maxHeight: 520,
-               alignment: .center)
-        .frame(width: 360)
+        .frame(maxHeight: 520)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(.ultraThinMaterial)
@@ -56,12 +87,15 @@ struct WidgetSettingsMenuView: View {
 
     private var generalSection: some View {
         WidgetSettingsGroup(title: "Позиция") {
-            WidgetSettingsRow(title: "Позиция") {
-                ValuePill(text: "Текущее местоположение", icon: "location.fill")
+            WidgetSettingsRowButton(title: "Позиция") {
+                showLocationPicker = true
+            } content: {
+                ValuePill(text: workingWidget.location.displayName,
+                          icon: workingWidget.location.iconName)
             }
 
             WidgetSettingsRow(title: "Название") {
-                ValuePill(text: "Сочи")
+                ValuePill(text: workingWidget.location.city ?? "—")
             }
 
             ToggleRow(title: "Показывать дату", isOn: $showDate)
@@ -166,6 +200,27 @@ private struct WidgetSettingsRow<Content: View>: View {
     }
 }
 
+private struct WidgetSettingsRowButton<Content: View>: View {
+    let title: String
+    let action: () -> Void
+    @ViewBuilder var trailing: Content
+
+    init(title: String, action: @escaping () -> Void, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.action = action
+        self.trailing = content()
+    }
+
+    var body: some View {
+        Button(action: action) {
+            WidgetSettingsRow(title: title) {
+                trailing
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 private struct ToggleRow: View {
     let title: String
     @Binding var isOn: Bool
@@ -265,6 +320,171 @@ private struct WidgetSettingsButton: View {
             .padding(.vertical, 12)
             .background(role == .destructive ? Color.red.opacity(0.15) : Color.black.opacity(0.15))
             .foregroundColor(role == .destructive ? .red : .white)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Location Picker
+
+private struct WidgetLocationPickerView: View {
+    @Binding var isPresented: Bool
+    @Binding var selection: WidgetLocation
+    let onSelect: (WidgetLocation) -> Void
+
+    @State private var searchText = ""
+    @StateObject private var searchService = LocationSearchService()
+
+    var body: some View {
+        VStack(spacing: 12) {
+            pickerHeader
+            searchField
+
+            ScrollView {
+                VStack(spacing: 10) {
+                    LocationOptionRow(title: "Текущее местоположение",
+                                      subtitle: nil,
+                                      icon: "location.fill",
+                                      isSelected: selection.mode == .current) {
+                        select(.current)
+                    }
+
+                    if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        searchPlaceholder
+                    } else if searchService.isSearching {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(.white)
+                            .padding(.top, 30)
+                    } else if searchService.results.isEmpty {
+                        Text("Ничего не найдено")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.top, 20)
+                    } else {
+                        ForEach(searchService.results) { result in
+                            LocationOptionRow(title: result.title,
+                                              subtitle: result.subtitle,
+                                              icon: "mappin.and.ellipse",
+                                              isSelected: isResultSelected(result)) {
+                                select(result.widgetLocation)
+                            }
+                        }
+                    }
+                }
+                .padding(.vertical, 6)
+            }
+        }
+        .padding(18)
+        .frame(width: 320, height: 440)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .stroke(Color.white.opacity(0.12))
+                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
+        .onChange(of: searchText) { newValue in
+            searchService.update(query: newValue)
+        }
+    }
+
+    private var pickerHeader: some View {
+        HStack {
+            Button {
+                isPresented = false
+            } label: {
+                Label("Назад", systemImage: "chevron.left")
+                    .labelStyle(.titleAndIcon)
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.white.opacity(0.9))
+
+            Spacer()
+
+            Text("Позиция")
+                .font(.headline.weight(.semibold))
+                .foregroundColor(.white)
+
+            Spacer()
+
+            Spacer()
+                .frame(width: 60)
+        }
+    }
+
+    private var searchField: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.white.opacity(0.6))
+
+            TextField("Поиск города...", text: $searchText)
+                .textFieldStyle(.plain)
+                .foregroundColor(.white)
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(Color.white.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    private var searchPlaceholder: some View {
+        Text("Введите название города, чтобы изменить зону.")
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundColor(.white.opacity(0.65))
+            .multilineTextAlignment(.center)
+            .padding(.top, 24)
+            .padding(.horizontal, 8)
+    }
+
+    private func isResultSelected(_ result: LocationSearchResult) -> Bool {
+        selection.mode == .custom &&
+        selection.city == result.title &&
+        selection.region == result.subtitle
+    }
+
+    private func select(_ location: WidgetLocation) {
+        selection = location
+        onSelect(location)
+        isPresented = false
+    }
+}
+
+private struct LocationOptionRow: View {
+    let title: String
+    let subtitle: String?
+    let icon: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .semibold))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 14, weight: .semibold))
+                    if let subtitle, !subtitle.isEmpty {
+                        Text(subtitle)
+                            .font(.system(size: 12))
+                            .foregroundColor(.white.opacity(0.7))
+                    }
+                }
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.yellow)
+                }
+            }
+            .foregroundColor(.white)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
+            .background(Color.black.opacity(0.18))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .buttonStyle(.plain)
     }

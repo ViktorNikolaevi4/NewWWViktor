@@ -27,7 +27,7 @@ enum WidgetSizeOption: String, CaseIterable, Identifiable, Codable {
     var dimensions: CGSize {
         switch self {
         case .small:
-            return CGSize(width: 200, height: 200)
+            return CGSize(width: 170, height: 180)
         case .medium:
             return CGSize(width: 320, height: 160)
         }

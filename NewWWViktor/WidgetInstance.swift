@@ -65,6 +65,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         secondaryColorName = try container.decodeIfPresent(String.self, forKey: .secondaryColorName)
         secondaryColorIntensity = try container.decodeIfPresent(Double.self, forKey: .secondaryColorIntensity) ?? 1.0
         sizeOption = try container.decodeIfPresent(WidgetSizeOption.self, forKey: .sizeOption) ?? .medium
+        applySizeOption(sizeOption)
     }
 
     func encode(to encoder: Encoder) throws {

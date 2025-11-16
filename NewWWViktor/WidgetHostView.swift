@@ -93,6 +93,18 @@ struct WidgetHostView: View {
             .onDisappear {
                 closeSettingsPanel()
             }
+            .onChange(of: instance.width) { _ in
+                repositionPanelIfNeeded(for: instance)
+            }
+            .onChange(of: instance.height) { _ in
+                repositionPanelIfNeeded(for: instance)
+            }
+            .onChange(of: instance.x) { _ in
+                repositionPanelIfNeeded(for: instance)
+            }
+            .onChange(of: instance.y) { _ in
+                repositionPanelIfNeeded(for: instance)
+            }
 #endif
         } else {
             EmptyView()
@@ -108,6 +120,18 @@ struct WidgetHostView: View {
     }
 
 #if os(macOS)
+    private func repositionPanelIfNeeded(for instance: WidgetInstance) {
+        guard let settingsPanel,
+              settingsPanelWidgetID == instance.id else { return }
+        let spacing: CGFloat = 20
+        let size = settingsPanel.frame.size
+        let origin = panelOrigin(for: instance,
+                                 panelSize: size,
+                                 spacing: spacing)
+        let newFrame = NSRect(origin: origin, size: size)
+        settingsPanel.setFrame(newFrame, display: true, animate: true)
+    }
+
     private func togglePanel(for instance: WidgetInstance) {
         if settingsPanel != nil {
             closeSettingsPanel()

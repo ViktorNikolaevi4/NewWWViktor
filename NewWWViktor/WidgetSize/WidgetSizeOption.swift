@@ -1,0 +1,35 @@
+import SwiftUI
+
+enum WidgetSizeOption: String, CaseIterable, Identifiable, Codable {
+    case small
+    case medium
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .small:
+            return "Маленький"
+        case .medium:
+            return "Средний"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .small:
+            return "Компактно"
+        case .medium:
+            return "Больше контента"
+        }
+    }
+
+    var dimensions: CGSize {
+        switch self {
+        case .small:
+            return CGSize(width: 200, height: 200)
+        case .medium:
+            return CGSize(width: 320, height: 160)
+        }
+    }
+}

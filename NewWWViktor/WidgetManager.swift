@@ -52,20 +52,19 @@ final class WidgetManager: ObservableObject {
             let frame = window.frame
             updatedInstance.x = frame.origin.x
             updatedInstance.y = frame.origin.y
-            updatedInstance.width = frame.width
-            updatedInstance.height = frame.height
         }
 
         widgets[idx] = updatedInstance
 
         if let window = windows[instance.id] {
-            window.setFrame(
-                NSRect(x: updatedInstance.x,
-                       y: updatedInstance.y,
-                       width: updatedInstance.width,
-                       height: updatedInstance.height),
-                display: true
-            )
+            let newFrame = NSRect(x: updatedInstance.x,
+                                  y: updatedInstance.y,
+                                  width: updatedInstance.width,
+                                  height: updatedInstance.height)
+            let shouldAnimate = window.frame.size != newFrame.size
+            window.setFrame(newFrame,
+                            display: true,
+                            animate: shouldAnimate)
             // Use .normal when not pinned. If you want behind-all-windows, consider .desktopIcon.
             window.level = updatedInstance.isPinned ? .floating : .normal
         }

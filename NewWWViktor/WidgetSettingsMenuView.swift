@@ -90,7 +90,8 @@ struct WidgetSettingsMenuView: View {
                     WidgetAppearanceSettingsSection(widget: $workingWidget) { colorRole in
                         activeColorRole = colorRole
                     }
-                    WidgetBehaviorSettingsSection(isPinnedTop: $isPinnedTop,
+                    WidgetBehaviorSettingsSection(sizeSelection: sizeSelectionBinding,
+                                                  isPinnedTop: $isPinnedTop,
                                                   lockPosition: $lockPosition,
                                                   snapToGrid: $snapToGrid)
                     WidgetManagementSettingsSection()
@@ -113,6 +114,16 @@ struct WidgetSettingsMenuView: View {
             .fill(Color.white.opacity(0.4))
             .frame(width: 38, height: 5)
             .padding(.top, 4)
+    }
+
+    private var sizeSelectionBinding: Binding<WidgetSizeOption> {
+        Binding(
+            get: { workingWidget.sizeOption },
+            set: { newValue in
+                workingWidget.applySizeOption(newValue)
+                onUpdate(workingWidget)
+            }
+        )
     }
 
     private func colorSelectionBinding(for role: WidgetColorRole) -> Binding<String?> {

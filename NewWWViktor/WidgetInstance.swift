@@ -16,6 +16,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var mainColorIntensity: Double
     var secondaryColorName: String?
     var secondaryColorIntensity: Double
+    var sizeOption: WidgetSizeOption
 
     init(type: WidgetType,
          origin: CGPoint = CGPoint(x: 100, y: 100)) {
@@ -35,10 +36,12 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.mainColorIntensity = 1.0
         self.secondaryColorName = nil
         self.secondaryColorIntensity = 1.0
+        self.sizeOption = .medium
+        applySizeOption(.medium)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, x, y, width, height, isPinned, showsDate, showsLocation, prefersTwelveHour, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity
+        case id, type, x, y, width, height, isPinned, showsDate, showsLocation, prefersTwelveHour, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, sizeOption
     }
 
     init(from decoder: Decoder) throws {
@@ -58,6 +61,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         mainColorIntensity = try container.decodeIfPresent(Double.self, forKey: .mainColorIntensity) ?? 1.0
         secondaryColorName = try container.decodeIfPresent(String.self, forKey: .secondaryColorName)
         secondaryColorIntensity = try container.decodeIfPresent(Double.self, forKey: .secondaryColorIntensity) ?? 1.0
+        sizeOption = try container.decodeIfPresent(WidgetSizeOption.self, forKey: .sizeOption) ?? .medium
     }
 
     func encode(to encoder: Encoder) throws {
@@ -77,5 +81,13 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(mainColorIntensity, forKey: .mainColorIntensity)
         try container.encodeIfPresent(secondaryColorName, forKey: .secondaryColorName)
         try container.encode(secondaryColorIntensity, forKey: .secondaryColorIntensity)
+        try container.encode(sizeOption, forKey: .sizeOption)
+    }
+
+    mutating func applySizeOption(_ option: WidgetSizeOption) {
+        sizeOption = option
+        let size = option.dimensions
+        width = size.width
+        height = size.height
     }
 }

@@ -69,6 +69,7 @@ struct WidgetAppearanceSettingsSection: View {
 }
 
 struct WidgetBehaviorSettingsSection: View {
+    @Binding var sizeSelection: WidgetSizeOption
     @Binding var isPinnedTop: Bool
     @Binding var lockPosition: Bool
     @Binding var snapToGrid: Bool
@@ -76,10 +77,7 @@ struct WidgetBehaviorSettingsSection: View {
     var body: some View {
         WidgetSettingsGroup(title: "Поведение") {
             WidgetSettingsRow(title: "Размер") {
-                HStack(spacing: 8) {
-                    IconButton(systemName: "rectangle.portrait", isSelected: true)
-                    IconButton(systemName: "rectangle", isSelected: false)
-                }
+                WidgetSizePicker(selection: $sizeSelection)
             }
             ToggleRow(title: "Закрепить сверху", isOn: $isPinnedTop)
             ToggleRow(title: "Зафиксировать положение", isOn: $lockPosition)

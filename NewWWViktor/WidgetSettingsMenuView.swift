@@ -255,7 +255,7 @@ private struct ToggleRow: View {
     var body: some View {
         WidgetSettingsRow(title: title) {
             Toggle("", isOn: $isOn)
-                .toggleStyle(SwitchToggleStyle(tint: Color.green.opacity(0.8)))
+                .toggleStyle(SwitchToggleStyle(tint: isOn ? Color.yellow : Color.gray.opacity(0.4)))
                 .labelsHidden()
         }
     }
@@ -308,6 +308,30 @@ private struct SegmentedPill: View {
     }
 }
 
+private struct WidgetSettingsButton: View {
+    enum Role {
+        case normal
+        case destructive
+    }
+
+    let title: String
+    var role: Role = .normal
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: .semibold))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(role == .destructive ? Color.red.opacity(0.2) : Color.white.opacity(0.12))
+                .foregroundColor(role == .destructive ? .red : .white)
+                .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 private struct IconButton: View {
     let systemName: String
     var isSelected: Bool
@@ -321,34 +345,6 @@ private struct IconButton: View {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(isSelected ? Color.white : Color.black.opacity(0.25))
             )
-    }
-}
-
-private struct WidgetSettingsButton: View {
-    enum Role {
-        case normal
-        case destructive
-    }
-
-    let title: String
-    var role: Role = .normal
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Text(title)
-                    .font(.system(size: 14, weight: .semibold))
-                Spacer()
-                Image(systemName: role == .destructive ? "trash" : "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(role == .destructive ? Color.red.opacity(0.15) : Color.black.opacity(0.15))
-            .foregroundColor(role == .destructive ? .red : .white)
-        }
-        .buttonStyle(.plain)
     }
 }
 

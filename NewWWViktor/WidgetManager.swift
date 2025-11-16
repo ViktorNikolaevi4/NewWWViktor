@@ -40,6 +40,10 @@ final class WidgetManager: ObservableObject {
         widgets.removeAll()
     }
 
+    func window(for id: UUID) -> NSWindow? {
+        windows[id]
+    }
+
     func update(_ instance: WidgetInstance) {
         guard let idx = widgets.firstIndex(where: { $0.id == instance.id }) else { return }
 

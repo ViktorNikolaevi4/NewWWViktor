@@ -7,6 +7,8 @@ final class WidgetManager: ObservableObject {
         didSet { persist() }
     }
     @Published var isPanelFullscreen: Bool = false
+    weak var panelController: SidePanelWindowController?
+    weak var settingsCoordinator: SettingsCoordinator?
 
     private var windows: [UUID: NSWindow] = [:]
 
@@ -121,5 +123,13 @@ final class WidgetManager: ObservableObject {
 
     func togglePanelFullscreen() {
         isPanelFullscreen.toggle()
+    }
+
+    func showSidePanel() {
+        panelController?.showPanel()
+    }
+
+    func showGeneralSettings() {
+        settingsCoordinator?.show(.general)
     }
 }

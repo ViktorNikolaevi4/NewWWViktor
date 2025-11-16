@@ -50,9 +50,12 @@ struct WidgetHostView: View {
                     .opacity(isMenuVisible ? 1 : 0)
                     .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isMenuVisible)
                     .popover(isPresented: $showSettingsPanel, arrowEdge: .top) {
-                        WidgetSettingsMenuView(widget: instance) { updated in
+                        WidgetSettingsMenuView(widget: instance, onUpdate: { updated in
                             manager.update(updated)
-                        }
+                        }, onDismiss: {
+                            showSettingsPanel = false
+                        })
+                        .environmentObject(manager)
                         .frame(width: 360, height: 520)
                         .onDisappear {
                             showSettingsPanel = false
@@ -181,9 +184,12 @@ struct WidgetHostView: View {
         panel.standardWindowButton(.miniaturizeButton)?.isHidden = true
         panel.standardWindowButton(.zoomButton)?.isHidden = true
 
-        let content = WidgetSettingsMenuView(widget: instance) { updated in
+        let content = WidgetSettingsMenuView(widget: instance, onUpdate: { updated in
             manager.update(updated)
-        }
+        }, onDismiss: {
+            closeSettingsPanel()
+        })
+        .environmentObject(manager)
         .frame(width: size.width, height: size.height)
 
         let hosting = NSHostingView(rootView: content)

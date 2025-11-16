@@ -17,6 +17,8 @@ struct MiniWWApp: App {
         let controller = SidePanelWindowController(manager: manager,
                                                    settingsCoordinator: settingsCoordinator)
         self.panelController = controller
+        manager.panelController = controller
+        manager.settingsCoordinator = settingsCoordinator
         appDelegate.configure(manager: manager, panelController: controller)
     }
 

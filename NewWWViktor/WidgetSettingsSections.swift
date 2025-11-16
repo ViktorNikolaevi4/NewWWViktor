@@ -87,15 +87,19 @@ struct WidgetBehaviorSettingsSection: View {
 }
 
 struct WidgetManagementSettingsSection: View {
+    var onAddWidgets: () -> Void
+    var onShowGeneralSettings: () -> Void
+    var onDelete: () -> Void
+
     var body: some View {
         WidgetSettingsGroup(title: "Действия") {
-            WidgetSettingsRow(title: "Добавить виджеты") {
+            WidgetSettingsRowButton(title: "Добавить виджеты", action: onAddWidgets) {
                 IconButton(systemName: "plus", isSelected: true)
             }
-            WidgetSettingsRow(title: "Основные настройки") {
+            WidgetSettingsRowButton(title: "Основные настройки", action: onShowGeneralSettings) {
                 IconButton(systemName: "gearshape", isSelected: true)
             }
-            WidgetSettingsButton(title: "Удалить", role: .destructive) { }
+            WidgetSettingsButton(title: "Удалить", role: .destructive, action: onDelete)
         }
     }
 }

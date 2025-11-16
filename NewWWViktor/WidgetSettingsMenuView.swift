@@ -6,8 +6,10 @@ import UIKit
 #endif
 
 struct WidgetSettingsMenuView: View {
+    @EnvironmentObject private var manager: WidgetManager
     let widget: WidgetInstance
     let onUpdate: (WidgetInstance) -> Void
+    let onDismiss: (() -> Void)?
 
     @State private var workingWidget: WidgetInstance
     @State private var showLocationPicker = false
@@ -17,9 +19,12 @@ struct WidgetSettingsMenuView: View {
     @State private var lockPosition = false
     @State private var snapToGrid = true
 
-    init(widget: WidgetInstance, onUpdate: @escaping (WidgetInstance) -> Void) {
+    init(widget: WidgetInstance,
+         onUpdate: @escaping (WidgetInstance) -> Void,
+         onDismiss: (() -> Void)? = nil) {
         self.widget = widget
         self.onUpdate = onUpdate
+        self.onDismiss = onDismiss
         _workingWidget = State(initialValue: widget)
         _isPinnedTop = State(initialValue: widget.isPinned)
         _lockPosition = State(initialValue: widget.isPositionLocked)
@@ -98,7 +103,9 @@ struct WidgetSettingsMenuView: View {
                                                   isPinnedTop: pinnedBinding,
                                                   lockPosition: lockedBinding,
                                                   snapToGrid: $snapToGrid)
-                    WidgetManagementSettingsSection()
+                    WidgetManagementSettingsSection(onAddWidgets: openSidePanel,
+                                                    onShowGeneralSettings: openGeneralSettings,
+                                                    onDelete: deleteWidget)
                 }
             }
         }
@@ -168,6 +175,19 @@ struct WidgetSettingsMenuView: View {
         case .secondary:
             return $workingWidget.secondaryColorIntensity
         }
+    }
+
+    private func openSidePanel() {
+        manager.showSidePanel()
+    }
+
+    private func openGeneralSettings() {
+        manager.showGeneralSettings()
+    }
+
+    private func deleteWidget() {
+        manager.removeWidget(id: workingWidget.id)
+        onDismiss?()
     }
 }
 

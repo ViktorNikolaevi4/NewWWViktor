@@ -11,7 +11,7 @@ struct WidgetSettingsMenuView: View {
 
     @State private var workingWidget: WidgetInstance
     @State private var showLocationPicker = false
-    @State private var showColorPicker = false
+    @State private var activeColorRole: WidgetColorRole?
     @State private var showWeather = false
     @State private var isPinnedTop = false
     @State private var lockPosition = false
@@ -24,7 +24,8 @@ struct WidgetSettingsMenuView: View {
     }
 
     var body: some View {
-        let isOverlayPresented = showLocationPicker || showColorPicker
+        let isColorPickerPresented = activeColorRole != nil
+        let isOverlayPresented = showLocationPicker || isColorPickerPresented
 
         return ZStack {
             panelContent
@@ -40,17 +41,23 @@ struct WidgetSettingsMenuView: View {
                 .transition(.move(edge: .trailing).combined(with: .opacity))
             }
 
-            if showColorPicker {
-                WidgetColorPickerView(isPresented: $showColorPicker,
-                                      selection: $workingWidget.mainColorName,
-                                      intensity: $workingWidget.mainColorIntensity) {
+            if let colorRole = activeColorRole {
+                WidgetColorPickerView(title: colorRole.title,
+                                      isPresented: Binding(
+                                        get: { activeColorRole != nil },
+                                        set: { shouldShow in
+                                            if !shouldShow { activeColorRole = nil }
+                                        }
+                                      ),
+                                      selection: colorSelectionBinding(for: colorRole),
+                                      intensity: colorIntensityBinding(for: colorRole)) {
                     onUpdate(workingWidget)
                 }
                 .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showLocationPicker)
-        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showColorPicker)
+        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: isColorPickerPresented)
         .frame(width: 360, height: 520)
         .onChange(of: widget) { newValue in
             workingWidget = newValue
@@ -80,8 +87,9 @@ struct WidgetSettingsMenuView: View {
                     WidgetGeneralSettingsSection(widget: $workingWidget,
                                                  isLocationPickerPresented: $showLocationPicker,
                                                  showWeather: $showWeather)
-                    WidgetAppearanceSettingsSection(widget: $workingWidget,
-                                                    isColorPickerPresented: $showColorPicker)
+                    WidgetAppearanceSettingsSection(widget: $workingWidget) { colorRole in
+                        activeColorRole = colorRole
+                    }
                     WidgetBehaviorSettingsSection(isPinnedTop: $isPinnedTop,
                                                   lockPosition: $lockPosition,
                                                   snapToGrid: $snapToGrid)
@@ -107,6 +115,23 @@ struct WidgetSettingsMenuView: View {
             .padding(.top, 4)
     }
 
+    private func colorSelectionBinding(for role: WidgetColorRole) -> Binding<String?> {
+        switch role {
+        case .main:
+            return $workingWidget.mainColorName
+        case .secondary:
+            return $workingWidget.secondaryColorName
+        }
+    }
+
+    private func colorIntensityBinding(for role: WidgetColorRole) -> Binding<Double> {
+        switch role {
+        case .main:
+            return $workingWidget.mainColorIntensity
+        case .secondary:
+            return $workingWidget.secondaryColorIntensity
+        }
+    }
 }
 
 // MARK: - Location Picker

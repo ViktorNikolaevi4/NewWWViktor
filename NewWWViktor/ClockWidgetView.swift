@@ -21,7 +21,7 @@ struct ClockWidgetView: View {
             if widget.showsDate {
                 Text(formattedDate(date, in: effectiveTimeZone))
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
             }
 
             // Город / зона (без реального Location, по таймзоне — как «Local»)
@@ -29,11 +29,11 @@ struct ClockWidgetView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "location.fill")
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(secondaryColor)
 
                     Text(locationLabel)
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(secondaryColor)
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
@@ -114,5 +114,11 @@ struct ClockWidgetView: View {
         WidgetPaletteColor.color(named: widget.mainColorName,
                                  intensity: widget.mainColorIntensity,
                                  fallback: .primary)
+    }
+
+    private var secondaryColor: Color {
+        WidgetPaletteColor.color(named: widget.secondaryColorName,
+                                 intensity: widget.secondaryColorIntensity,
+                                 fallback: .secondary)
     }
 }

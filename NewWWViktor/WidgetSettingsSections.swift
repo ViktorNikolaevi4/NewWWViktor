@@ -29,20 +29,37 @@ struct WidgetGeneralSettingsSection: View {
     }
 }
 
+enum WidgetColorRole {
+    case main
+    case secondary
+
+    var title: String {
+        switch self {
+        case .main:
+            return "Основной цвет"
+        case .secondary:
+            return "Вторичный цвет"
+        }
+    }
+}
+
 struct WidgetAppearanceSettingsSection: View {
     @Binding var widget: WidgetInstance
-    @Binding var isColorPickerPresented: Bool
+    let onColorPicker: (WidgetColorRole) -> Void
 
     var body: some View {
         WidgetSettingsGroup(title: "Цвета") {
             WidgetSettingsRowButton(title: "Основной цвет") {
-                isColorPickerPresented = true
+                onColorPicker(.main)
             } content: {
                 ColorChip(colorName: widget.mainColorName,
                           intensity: widget.mainColorIntensity)
             }
-            WidgetSettingsRow(title: "Вторичный цвет") {
-                ValuePill(text: "Глобальный", icon: "eyedropper")
+            WidgetSettingsRowButton(title: "Вторичный цвет") {
+                onColorPicker(.secondary)
+            } content: {
+                ColorChip(colorName: widget.secondaryColorName,
+                          intensity: widget.secondaryColorIntensity)
             }
             WidgetSettingsRow(title: "Фон") {
                 ValuePill(text: "Глобальный", icon: "circle.lefthalf.filled")

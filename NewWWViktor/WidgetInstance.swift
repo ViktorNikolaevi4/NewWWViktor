@@ -14,6 +14,8 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var location: WidgetLocation
     var mainColorName: String?
     var mainColorIntensity: Double
+    var secondaryColorName: String?
+    var secondaryColorIntensity: Double
 
     init(type: WidgetType,
          origin: CGPoint = CGPoint(x: 100, y: 100)) {
@@ -31,10 +33,12 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.prefersTwelveHour = true
         self.mainColorName = nil
         self.mainColorIntensity = 1.0
+        self.secondaryColorName = nil
+        self.secondaryColorIntensity = 1.0
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, x, y, width, height, isPinned, showsDate, showsLocation, prefersTwelveHour, location, mainColorName, mainColorIntensity
+        case id, type, x, y, width, height, isPinned, showsDate, showsLocation, prefersTwelveHour, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity
     }
 
     init(from decoder: Decoder) throws {
@@ -52,6 +56,8 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         location = try container.decodeIfPresent(WidgetLocation.self, forKey: .location) ?? .current
         mainColorName = try container.decodeIfPresent(String.self, forKey: .mainColorName)
         mainColorIntensity = try container.decodeIfPresent(Double.self, forKey: .mainColorIntensity) ?? 1.0
+        secondaryColorName = try container.decodeIfPresent(String.self, forKey: .secondaryColorName)
+        secondaryColorIntensity = try container.decodeIfPresent(Double.self, forKey: .secondaryColorIntensity) ?? 1.0
     }
 
     func encode(to encoder: Encoder) throws {
@@ -69,5 +75,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(location, forKey: .location)
         try container.encodeIfPresent(mainColorName, forKey: .mainColorName)
         try container.encode(mainColorIntensity, forKey: .mainColorIntensity)
+        try container.encodeIfPresent(secondaryColorName, forKey: .secondaryColorName)
+        try container.encode(secondaryColorIntensity, forKey: .secondaryColorIntensity)
     }
 }

@@ -11,6 +11,7 @@ struct WidgetColorPickerView: View {
         case selected = "Выбранный"
     }
 
+    let title: String
     @Binding var isPresented: Bool
     @Binding var selection: String?
     @Binding var intensity: Double
@@ -94,7 +95,7 @@ struct WidgetColorPickerView: View {
 
             Spacer()
 
-            Text("Основной цвет")
+            Text(title)
                 .font(.headline.weight(.semibold))
                 .foregroundColor(.white)
 

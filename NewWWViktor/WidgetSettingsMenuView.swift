@@ -77,10 +77,15 @@ struct WidgetSettingsMenuView: View {
 
             ScrollView {
                 VStack(spacing: 12) {
-                    generalSection
-                    appearanceSection
-                    behaviorSection
-                    managementSection
+                    WidgetGeneralSettingsSection(widget: $workingWidget,
+                                                 isLocationPickerPresented: $showLocationPicker,
+                                                 showWeather: $showWeather)
+                    WidgetAppearanceSettingsSection(widget: $workingWidget,
+                                                    isColorPickerPresented: $showColorPicker)
+                    WidgetBehaviorSettingsSection(isPinnedTop: $isPinnedTop,
+                                                  lockPosition: $lockPosition,
+                                                  snapToGrid: $snapToGrid)
+                    WidgetManagementSettingsSection()
                 }
             }
         }
@@ -109,243 +114,6 @@ struct WidgetSettingsMenuView: View {
             .padding(.top, 4)
     }
 
-    private var generalSection: some View {
-        WidgetSettingsGroup(title: "Позиция") {
-            WidgetSettingsRowButton(title: "Позиция") {
-                showLocationPicker = true
-            } content: {
-                ValuePill(text: workingWidget.location.displayName,
-                          icon: workingWidget.location.iconName)
-            }
-
-            WidgetSettingsRow(title: "Название") {
-                ValuePill(text: workingWidget.location.city ?? "—")
-            }
-
-            ToggleRow(title: "Показывать дату", isOn: $workingWidget.showsDate)
-            ToggleRow(title: "Показывать местоположение", isOn: $workingWidget.showsLocation)
-            ToggleRow(title: "Показывать погоду", isOn: $showWeather)
-
-            WidgetSettingsRow(title: "Время") {
-                SegmentedPill(options: ["12ч", "24ч"], selected: $workingWidget.prefersTwelveHour)
-            }
-        }
-    }
-
-    private var appearanceSection: some View {
-        WidgetSettingsGroup(title: "Цвета") {
-            WidgetSettingsRowButton(title: "Основной цвет") {
-                showColorPicker = true
-            } content: {
-                ColorChip(colorName: workingWidget.mainColorName,
-                          intensity: workingWidget.mainColorIntensity)
-            }
-            WidgetSettingsRow(title: "Вторичный цвет") {
-                ValuePill(text: "Глобальный", icon: "eyedropper")
-            }
-            WidgetSettingsRow(title: "Фон") {
-                ValuePill(text: "Глобальный", icon: "circle.lefthalf.filled")
-            }
-        }
-    }
-
-    private var behaviorSection: some View {
-        WidgetSettingsGroup(title: "Поведение") {
-            WidgetSettingsRow(title: "Размер") {
-                HStack(spacing: 8) {
-                    IconButton(systemName: "rectangle.portrait", isSelected: true)
-                    IconButton(systemName: "rectangle", isSelected: false)
-                }
-            }
-            ToggleRow(title: "Закрепить сверху", isOn: $isPinnedTop)
-            ToggleRow(title: "Зафиксировать положение", isOn: $lockPosition)
-            ToggleRow(title: "Привязать к сетке", isOn: $snapToGrid)
-        }
-    }
-
-    private var managementSection: some View {
-        WidgetSettingsGroup(title: "Действия") {
-            WidgetSettingsRow(title: "Добавить виджеты") {
-                IconButton(systemName: "plus", isSelected: true)
-            }
-            WidgetSettingsRow(title: "Основные настройки") {
-                IconButton(systemName: "gearshape", isSelected: true)
-            }
-            WidgetSettingsButton(title: "Удалить", role: .destructive) { }
-        }
-    }
-}
-
-// MARK: - Building Blocks
-
-private struct WidgetSettingsGroup<Content: View>: View {
-    let title: String
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(title.uppercased())
-                .font(.caption.weight(.semibold))
-                .foregroundColor(.white.opacity(0.7))
-
-            VStack(spacing: 1) {
-                content
-            }
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.white.opacity(0.06))
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.white.opacity(0.08))
-            )
-        }
-    }
-}
-
-private struct WidgetSettingsRow<Content: View>: View {
-    let title: String
-    @ViewBuilder var trailing: Content
-
-    init(title: String, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.trailing = content()
-    }
-
-    var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Text(title)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.white)
-            Spacer()
-            trailing
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(Color.black.opacity(0.15))
-    }
-}
-
-private struct WidgetSettingsRowButton<Content: View>: View {
-    let title: String
-    let action: () -> Void
-    @ViewBuilder var trailing: Content
-
-    init(title: String, action: @escaping () -> Void, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.action = action
-        self.trailing = content()
-    }
-
-    var body: some View {
-        Button(action: action) {
-            WidgetSettingsRow(title: title) {
-                trailing
-            }
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private struct ToggleRow: View {
-    let title: String
-    @Binding var isOn: Bool
-
-    var body: some View {
-        WidgetSettingsRow(title: title) {
-            Toggle("", isOn: $isOn)
-                .toggleStyle(SwitchToggleStyle(tint: isOn ? Color.yellow : Color.gray.opacity(0.4)))
-                .labelsHidden()
-        }
-    }
-}
-
-private struct ValuePill: View {
-    let text: String
-    var icon: String?
-
-    var body: some View {
-        HStack(spacing: 6) {
-            if let icon {
-                Image(systemName: icon)
-            }
-            Text(text)
-        }
-        .font(.system(size: 13, weight: .medium))
-        .padding(.vertical, 6)
-        .padding(.horizontal, 12)
-        .background(Color.white.opacity(0.14))
-        .clipShape(Capsule())
-    }
-}
-
-private struct SegmentedPill: View {
-    let options: [String]
-    @Binding var selected: Bool
-
-    var body: some View {
-        HStack(spacing: 0) {
-            segment(title: options.first ?? "", active: selected, toggleValue: true)
-            segment(title: options.last ?? "", active: !selected, toggleValue: false)
-        }
-        .background(Color.black.opacity(0.25))
-        .clipShape(Capsule())
-    }
-
-    private func segment(title: String, active: Bool, toggleValue: Bool) -> some View {
-        Button {
-            selected = toggleValue
-        } label: {
-            Text(title)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(active ? .black : .white.opacity(0.7))
-                .padding(.vertical, 6)
-                .padding(.horizontal, 18)
-                .background(active ? Color.white : Color.clear)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private struct WidgetSettingsButton: View {
-    enum Role {
-        case normal
-        case destructive
-    }
-
-    let title: String
-    var role: Role = .normal
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 14, weight: .semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(role == .destructive ? Color.red.opacity(0.2) : Color.white.opacity(0.12))
-                .foregroundColor(role == .destructive ? .red : .white)
-                .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private struct IconButton: View {
-    let systemName: String
-    var isSelected: Bool
-
-    var body: some View {
-        Image(systemName: systemName)
-            .font(.system(size: 15, weight: .semibold))
-            .foregroundColor(isSelected ? .black : .white.opacity(0.8))
-            .padding(10)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isSelected ? Color.white : Color.black.opacity(0.25))
-            )
-    }
 }
 
 // MARK: - Location Picker
@@ -515,260 +283,229 @@ private struct LocationOptionRow: View {
 
 // MARK: - Color Picker
 
-private struct ColorChip: View {
-    let colorName: String?
-    var intensity: Double = 1.0
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Circle()
-                .fill(displayColor)
-                .frame(width: 24, height: 24)
-                .overlay(
-                    Circle()
-                        .stroke(Color.white.opacity(0.4), lineWidth: 1)
-                )
-            Text(colorTitle)
-                .font(.system(size: 13, weight: .medium))
-        }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 10)
-        .background(Color.white.opacity(0.14))
-        .clipShape(Capsule())
-    }
-
-    private var displayColor: Color {
-        WidgetPaletteColor.color(named: colorName, intensity: intensity, fallback: .primary)
-    }
-
-    private var colorTitle: String {
-        colorName.map { $0 } ?? "Глобальный"
-    }
-}
-
-private struct WidgetColorPickerView: View {
-    enum Tab: String, CaseIterable {
-        case palette = "Палитра"
-        case selected = "Выбранный"
-    }
-
-    @Binding var isPresented: Bool
-    @Binding var selection: String?
-    @Binding var intensity: Double
-    let onChange: () -> Void
-
-    @State private var tab: Tab = .palette
-    @State private var customColorHex: String = "#FFFFFFFF"
-
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 5)
-    private let palette = PaletteColorOption.defaultPalette
-
-    var body: some View {
-        VStack(spacing: 16) {
-            header
-
-            Picker("", selection: $tab) {
-                ForEach(Tab.allCases, id: \.self) { tab in
-                    Text(tab.rawValue)
-                }
-            }
-            .pickerStyle(.segmented)
-
-            if tab == .palette {
-                paletteGrid
-            } else {
-                ScrollView {
-                    selectedSection
-                        .padding(.bottom, 8)
-                }
-                .frame(maxHeight: .infinity)
-            }
-
-            intensitySection
-
-            Button {
-                select(nil)
-            } label: {
-                HStack {
-                    Image(systemName: selection == nil ? "checkmark.circle.fill" : "circle")
-                    Text("Глобальный")
-                        .font(.system(size: 13, weight: .semibold))
-                    Spacer()
-                }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 10)
-                .background(Color.white.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(18)
-        .frame(width: 340, height: 460)
-        .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(Color.white.opacity(0.12))
-                )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
-        .onAppear {
-            syncCustomColorHex(with: selection)
-        }
-        .onChange(of: selection) { newValue in
-            syncCustomColorHex(with: newValue)
-        }
-    }
-
-    private var header: some View {
-        HStack {
-            Button {
-                isPresented = false
-            } label: {
-                Label("Назад", systemImage: "chevron.left")
-                    .labelStyle(.titleAndIcon)
-            }
-            .buttonStyle(.plain)
-            .foregroundColor(.white.opacity(0.9))
-
-            Spacer()
-
-            Text("Основной цвет")
-                .font(.headline.weight(.semibold))
-                .foregroundColor(.white)
-
-            Spacer()
-
-            Spacer()
-                .frame(width: 60)
-        }
-    }
-
-    private var paletteGrid: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(palette) { option in
-                    Button {
-                        select(option.assetName)
-                    } label: {
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color(option.assetName))
-                            .frame(height: 32)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .stroke(Color.white.opacity(selection == option.assetName ? 1 : 0.2),
-                                            lineWidth: selection == option.assetName ? 3 : 1)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.vertical, 4)
-        }
-    }
-
-    private var selectedSection: some View {
-        VStack(spacing: 14) {
-            if let selection {
-                ColorChip(colorName: selection, intensity: intensity)
-            } else {
-                Text("Цвет не выбран.\nИспользуйте палитру ниже, чтобы выбрать цвет.")
-                    .font(.system(size: 13))
-                    .foregroundColor(.white.opacity(0.7))
-                    .multilineTextAlignment(.center)
-                    .padding(.vertical, 4)
-            }
-
-            colorWheel
-
-            Button("Очистить") {
-                select(nil)
-            }
-            .buttonStyle(.plain)
-            .foregroundColor(.white.opacity(selection == nil ? 0.4 : 0.9))
-            .disabled(selection == nil)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .padding(.horizontal, 10)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-    }
-
-    private var intensitySection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Яркость")
-                .font(.caption.weight(.semibold))
-                .foregroundColor(.white.opacity(0.7))
-
-            Slider(value: $intensity, in: 0...1.0) {
-                Text("Яркость")
-            }
-            .accentColor(.white)
-            .onChange(of: intensity) { _ in
-                onChange()
-            }
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(
-                        LinearGradient(colors: [
-                            WidgetPaletteColor.color(named: selection, intensity: 0.0, fallback: .black),
-                            WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .primary)
-                        ], startPoint: .leading, endPoint: .trailing)
-                    )
-                    .opacity(0.35)
-            )
-        }
-    }
-
-    private var colorWheel: some View {
-        ColorWheelControl(color: customColorBinding)
-            .frame(height: 180)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
-            .padding(.horizontal, 8)
-            .background(Color.white.opacity(0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-
-    private var customColorBinding: Binding<Color> {
-        Binding(
-            get: {
-                HexColor.color(from: customColorHex)
-                ?? WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .white)
-            },
-            set: { newColor in
-                guard let hex = HexColor.hexString(from: newColor) else { return }
-                customColorHex = hex
-                selection = hex
-                onChange()
-            }
-        )
-    }
-
-    private func select(_ colorName: String?) {
-        selection = colorName
-        onChange()
-        if colorName == nil {
-            isPresented = false
-        }
-    }
-
-    private func syncCustomColorHex(with newValue: String?) {
-        guard let newValue else {
-            customColorHex = "#FFFFFFFF"
-            return
-        }
-
-        if let normalized = HexColor.normalizedHex(from: newValue) {
-            customColorHex = normalized
-        } else if let resolved = HexColor.hexStringForNamedColor(newValue) {
-            customColorHex = resolved
-        }
-    }
-}
+//private struct WidgetColorPickerView: View {
+//    enum Tab: String, CaseIterable {
+//        case palette = "Палитра"
+//        case selected = "Выбранный"
+//    }
+//
+//    @Binding var isPresented: Bool
+//    @Binding var selection: String?
+//    @Binding var intensity: Double
+//    let onChange: () -> Void
+//
+//    @State private var tab: Tab = .palette
+//    @State private var customColorHex: String = "#FFFFFFFF"
+//
+//    private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 5)
+//    private let palette = PaletteColorOption.defaultPalette
+//
+//    var body: some View {
+//        VStack(spacing: 16) {
+//            header
+//
+//            Picker("", selection: $tab) {
+//                ForEach(Tab.allCases, id: \.self) { tab in
+//                    Text(tab.rawValue)
+//                }
+//            }
+//            .pickerStyle(.segmented)
+//
+//            if tab == .palette {
+//                paletteGrid
+//            } else {
+//                ScrollView {
+//                    selectedSection
+//                        .padding(.bottom, 8)
+//                }
+//                .frame(maxHeight: .infinity)
+//            }
+//
+//            intensitySection
+//
+//            Button {
+//                select(nil)
+//            } label: {
+//                HStack {
+//                    Image(systemName: selection == nil ? "checkmark.circle.fill" : "circle")
+//                    Text("Глобальный")
+//                        .font(.system(size: 13, weight: .semibold))
+//                    Spacer()
+//                }
+//                .padding(.vertical, 8)
+//                .padding(.horizontal, 10)
+//                .background(Color.white.opacity(0.12))
+//                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+//            }
+//            .buttonStyle(.plain)
+//        }
+//        .padding(18)
+//        .frame(width: 340, height: 460)
+//        .background(
+//            RoundedRectangle(cornerRadius: 28, style: .continuous)
+//                .fill(.ultraThinMaterial)
+//                .overlay(
+//                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+//                        .stroke(Color.white.opacity(0.12))
+//                )
+//        )
+//        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+//        .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
+//        .onAppear {
+//            syncCustomColorHex(with: selection)
+//        }
+//        .onChange(of: selection) { newValue in
+//            syncCustomColorHex(with: newValue)
+//        }
+//    }
+//
+//    private var header: some View {
+//        HStack {
+//            Button {
+//                isPresented = false
+//            } label: {
+//                Label("Назад", systemImage: "chevron.left")
+//                    .labelStyle(.titleAndIcon)
+//            }
+//            .buttonStyle(.plain)
+//            .foregroundColor(.white.opacity(0.9))
+//
+//            Spacer()
+//
+//            Text("Основной цвет")
+//                .font(.headline.weight(.semibold))
+//                .foregroundColor(.white)
+//
+//            Spacer()
+//
+//            Spacer()
+//                .frame(width: 60)
+//        }
+//    }
+//
+//    private var paletteGrid: some View {
+//        ScrollView {
+//            LazyVGrid(columns: columns, spacing: 12) {
+//                ForEach(palette) { option in
+//                    Button {
+//                        select(option.assetName)
+//                    } label: {
+//                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+//                            .fill(Color(option.assetName))
+//                            .frame(height: 32)
+//                            .overlay(
+//                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+//                                    .stroke(Color.white.opacity(selection == option.assetName ? 1 : 0.2),
+//                                            lineWidth: selection == option.assetName ? 3 : 1)
+//                            )
+//                    }
+//                    .buttonStyle(.plain)
+//                }
+//            }
+//            .padding(.vertical, 4)
+//        }
+//    }
+//
+//    private var selectedSection: some View {
+//        VStack(spacing: 14) {
+//            if let selection {
+//                ColorChip(colorName: selection, intensity: intensity)
+//            } else {
+//                Text("Цвет не выбран.\nИспользуйте палитру ниже, чтобы выбрать цвет.")
+//                    .font(.system(size: 13))
+//                    .foregroundColor(.white.opacity(0.7))
+//                    .multilineTextAlignment(.center)
+//                    .padding(.vertical, 4)
+//            }
+//
+//            colorWheel
+//
+//            Button("Очистить") {
+//                select(nil)
+//            }
+//            .buttonStyle(.plain)
+//            .foregroundColor(.white.opacity(selection == nil ? 0.4 : 0.9))
+//            .disabled(selection == nil)
+//        }
+//        .frame(maxWidth: .infinity)
+//        .padding(.vertical, 12)
+//        .padding(.horizontal, 10)
+//        .background(Color.white.opacity(0.08))
+//        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+//    }
+//
+//    private var intensitySection: some View {
+//        VStack(alignment: .leading, spacing: 8) {
+//            Text("Яркость")
+//                .font(.caption.weight(.semibold))
+//                .foregroundColor(.white.opacity(0.7))
+//
+//            Slider(value: $intensity, in: 0...1.0) {
+//                Text("Яркость")
+//            }
+//            .accentColor(.white)
+//            .onChange(of: intensity) { _ in
+//                onChange()
+//            }
+//            .background(
+//                RoundedRectangle(cornerRadius: 10, style: .continuous)
+//                    .fill(
+//                        LinearGradient(colors: [
+//                            WidgetPaletteColor.color(named: selection, intensity: 0.0, fallback: .black),
+//                            WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .primary)
+//                        ], startPoint: .leading, endPoint: .trailing)
+//                    )
+//                    .opacity(0.35)
+//            )
+//        }
+//    }
+//
+//    private var colorWheel: some View {
+//        ColorWheelControl(color: customColorBinding)
+//            .frame(height: 180)
+//            .frame(maxWidth: .infinity)
+//            .padding(.vertical, 6)
+//            .padding(.horizontal, 8)
+//            .background(Color.white.opacity(0.06))
+//            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+//    }
+//
+//    private var customColorBinding: Binding<Color> {
+//        Binding(
+//            get: {
+//                HexColor.color(from: customColorHex)
+//                ?? WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .white)
+//            },
+//            set: { newColor in
+//                guard let hex = HexColor.hexString(from: newColor) else { return }
+//                customColorHex = hex
+//                selection = hex
+//                onChange()
+//            }
+//        )
+//    }
+//
+//    private func select(_ colorName: String?) {
+//        selection = colorName
+//        onChange()
+//        if colorName == nil {
+//            isPresented = false
+//        }
+//    }
+//
+//    private func syncCustomColorHex(with newValue: String?) {
+//        guard let newValue else {
+//            customColorHex = "#FFFFFFFF"
+//            return
+//        }
+//
+//        if let normalized = HexColor.normalizedHex(from: newValue) {
+//            customColorHex = normalized
+//        } else if let resolved = HexColor.hexStringForNamedColor(newValue) {
+//            customColorHex = resolved
+//        }
+//    }
+//}
 
 private struct PaletteColorOption: Identifiable {
     let id = UUID()

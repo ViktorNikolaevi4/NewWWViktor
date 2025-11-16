@@ -59,16 +59,16 @@ struct WidgetSettingsMenuView: View {
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showLocationPicker)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: isColorPickerPresented)
         .frame(width: 360, height: 520)
-        .onChange(of: widget) { newValue in
+        .onChange(of: widget) { _, newValue in
             workingWidget = newValue
         }
-        .onChange(of: workingWidget.showsDate) { _ in
+        .onChange(of: workingWidget.showsDate) { _, _ in
             onUpdate(workingWidget)
         }
-        .onChange(of: workingWidget.showsLocation) { _ in
+        .onChange(of: workingWidget.showsLocation) { _, _ in
             onUpdate(workingWidget)
         }
-        .onChange(of: workingWidget.prefersTwelveHour) { _ in
+        .onChange(of: workingWidget.prefersTwelveHour) { _, _ in
             onUpdate(workingWidget)
         }
     }
@@ -207,7 +207,7 @@ private struct WidgetLocationPickerView: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
-        .onChange(of: searchText) { newValue in
+        .onChange(of: searchText) { _, newValue in
             searchService.update(query: newValue)
         }
     }
@@ -604,7 +604,7 @@ private struct ColorWheelControl: View {
             .onAppear {
                 hsb = HSBColor(color: color)
             }
-            .onChange(of: color) { newValue in
+            .onChange(of: color) { _, newValue in
                 hsb = HSBColor(color: newValue)
             }
         }

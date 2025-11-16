@@ -93,16 +93,16 @@ struct WidgetHostView: View {
             .onDisappear {
                 closeSettingsPanel()
             }
-            .onChange(of: instance.width) { _ in
+            .onChange(of: instance.width) { _, _ in
                 repositionPanelIfNeeded(for: instance)
             }
-            .onChange(of: instance.height) { _ in
+            .onChange(of: instance.height) { _, _ in
                 repositionPanelIfNeeded(for: instance)
             }
-            .onChange(of: instance.x) { _ in
+            .onChange(of: instance.x) { _, _ in
                 repositionPanelIfNeeded(for: instance)
             }
-            .onChange(of: instance.y) { _ in
+            .onChange(of: instance.y) { _, _ in
                 repositionPanelIfNeeded(for: instance)
             }
 #endif

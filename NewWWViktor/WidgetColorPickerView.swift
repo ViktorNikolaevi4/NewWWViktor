@@ -77,7 +77,7 @@ struct WidgetColorPickerView: View {
         .onAppear {
             syncCustomColorHex(with: selection)
         }
-        .onChange(of: selection) { newValue in
+        .onChange(of: selection) { _, newValue in
             syncCustomColorHex(with: newValue)
         }
     }
@@ -173,7 +173,7 @@ struct WidgetColorPickerView: View {
                 Text("Яркость")
             }
             .accentColor(.white)
-            .onChange(of: intensity) { _ in
+            .onChange(of: intensity) { _, _ in
                 onChange()
             }
             .background(
@@ -292,7 +292,7 @@ private struct ColorWheelControl: View {
             .onAppear {
                 hsb = HSBColor(color: color)
             }
-            .onChange(of: color) { newValue in
+            .onChange(of: color) { _, newValue in
                 hsb = HSBColor(color: newValue)
             }
         }

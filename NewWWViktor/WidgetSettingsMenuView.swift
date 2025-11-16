@@ -93,17 +93,10 @@ struct WidgetSettingsMenuView: View {
         .padding(.horizontal, 14)
         .frame(maxHeight: 520)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 36, style: .continuous)
                 .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(LinearGradient(colors: [Color.white.opacity(0.25), Color.black.opacity(0.15)],
-                                               startPoint: .topLeading,
-                                               endPoint: .bottomTrailing))
-                )
         )
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .shadow(color: .black.opacity(0.35), radius: 30, x: 0, y: 30)
+        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
         .frame(minHeight: 400)
     }
 

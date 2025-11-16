@@ -9,18 +9,6 @@ struct ClockWidgetView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            // Верхний служебный заголовок (как у системных виджетов)
-            HStack(spacing: 6) {
-                Image(systemName: "clock")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-
-                Text("Clock")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-            }
 
             // Основное время
             Text(formattedTime(date, in: effectiveTimeZone))

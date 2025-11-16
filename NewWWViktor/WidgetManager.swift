@@ -67,6 +67,7 @@ final class WidgetManager: ObservableObject {
                             animate: shouldAnimate)
             // Use .normal when not pinned. If you want behind-all-windows, consider .desktopIcon.
             window.level = updatedInstance.isPinned ? .floating : .normal
+            window.isMovableByWindowBackground = !updatedInstance.isPositionLocked
         }
     }
 
@@ -92,7 +93,7 @@ final class WidgetManager: ObservableObject {
         window.hasShadow = false
         window.ignoresMouseEvents = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        window.isMovableByWindowBackground = true
+        window.isMovableByWindowBackground = !instance.isPositionLocked
         window.contentView = NSHostingView(rootView: content)
         window.makeKeyAndOrderFront(nil)
 

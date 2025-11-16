@@ -8,6 +8,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var width: CGFloat
     var height: CGFloat
     var isPinned: Bool
+    var isPositionLocked: Bool
     var showsDate: Bool
     var showsLocation: Bool
     var prefersTwelveHour: Bool
@@ -28,6 +29,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.width = size.width
         self.height = size.height
         self.isPinned = false
+        self.isPositionLocked = false
         self.showsDate = true
         self.showsLocation = true
         self.location = .current
@@ -41,7 +43,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, x, y, width, height, isPinned, showsDate, showsLocation, prefersTwelveHour, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, sizeOption
+        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, sizeOption
     }
 
     init(from decoder: Decoder) throws {
@@ -53,6 +55,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         width = try container.decode(CGFloat.self, forKey: .width)
         height = try container.decode(CGFloat.self, forKey: .height)
         isPinned = try container.decodeIfPresent(Bool.self, forKey: .isPinned) ?? false
+        isPositionLocked = try container.decodeIfPresent(Bool.self, forKey: .isPositionLocked) ?? false
         showsDate = try container.decodeIfPresent(Bool.self, forKey: .showsDate) ?? true
         showsLocation = try container.decodeIfPresent(Bool.self, forKey: .showsLocation) ?? true
         prefersTwelveHour = try container.decodeIfPresent(Bool.self, forKey: .prefersTwelveHour) ?? true
@@ -73,6 +76,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(width, forKey: .width)
         try container.encode(height, forKey: .height)
         try container.encode(isPinned, forKey: .isPinned)
+        try container.encode(isPositionLocked, forKey: .isPositionLocked)
         try container.encode(showsDate, forKey: .showsDate)
         try container.encode(showsLocation, forKey: .showsLocation)
         try container.encode(prefersTwelveHour, forKey: .prefersTwelveHour)

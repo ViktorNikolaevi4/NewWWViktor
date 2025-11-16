@@ -21,6 +21,8 @@ struct WidgetSettingsMenuView: View {
         self.widget = widget
         self.onUpdate = onUpdate
         _workingWidget = State(initialValue: widget)
+        _isPinnedTop = State(initialValue: widget.isPinned)
+        _lockPosition = State(initialValue: widget.isPositionLocked)
     }
 
     var body: some View {
@@ -61,6 +63,8 @@ struct WidgetSettingsMenuView: View {
         .frame(width: 360, height: 520)
         .onChange(of: widget) { _, newValue in
             workingWidget = newValue
+            isPinnedTop = newValue.isPinned
+            lockPosition = newValue.isPositionLocked
         }
         .onChange(of: workingWidget.showsDate) { _, _ in
             onUpdate(workingWidget)
@@ -91,8 +95,8 @@ struct WidgetSettingsMenuView: View {
                         activeColorRole = colorRole
                     }
                     WidgetBehaviorSettingsSection(sizeSelection: sizeSelectionBinding,
-                                                  isPinnedTop: $isPinnedTop,
-                                                  lockPosition: $lockPosition,
+                                                  isPinnedTop: pinnedBinding,
+                                                  lockPosition: lockedBinding,
                                                   snapToGrid: $snapToGrid)
                     WidgetManagementSettingsSection()
                 }
@@ -121,6 +125,28 @@ struct WidgetSettingsMenuView: View {
             get: { workingWidget.sizeOption },
             set: { newValue in
                 workingWidget.applySizeOption(newValue)
+                onUpdate(workingWidget)
+            }
+        )
+    }
+
+    private var pinnedBinding: Binding<Bool> {
+        Binding(
+            get: { isPinnedTop },
+            set: { newValue in
+                isPinnedTop = newValue
+                workingWidget.isPinned = newValue
+                onUpdate(workingWidget)
+            }
+        )
+    }
+
+    private var lockedBinding: Binding<Bool> {
+        Binding(
+            get: { lockPosition },
+            set: { newValue in
+                lockPosition = newValue
+                workingWidget.isPositionLocked = newValue
                 onUpdate(workingWidget)
             }
         )

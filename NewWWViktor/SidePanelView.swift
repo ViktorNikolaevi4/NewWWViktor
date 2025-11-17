@@ -12,8 +12,6 @@ struct SidePanelView: View {
             // Шапка
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("miniWW")
-                        .font(.system(size: 20, weight: .semibold))
                     Text("Choose a widget to add")
                         .font(.caption)
                         .foregroundColor(.secondary)

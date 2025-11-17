@@ -14,6 +14,7 @@ final class SidePanelWindowController {
     private let edgeInset: CGFloat = 16
 
     private var screenChangeObserver: Any?
+    private var outsideClickMonitor: Any?
 
     init(manager: WidgetManager, settingsCoordinator: SettingsCoordinator) {
         self.manager = manager
@@ -40,6 +41,7 @@ final class SidePanelWindowController {
         if let observer = screenChangeObserver {
             NotificationCenter.default.removeObserver(observer)
         }
+        removeOutsideClickMonitor()
     }
 
     // MARK: - Public API
@@ -74,9 +76,11 @@ final class SidePanelWindowController {
             window.animator().setFrame(targetFrame, display: true)
         }
         updateHostingFrame(for: targetFrame)
+        installOutsideClickMonitor(for: window)
     }
 
     func hidePanel() {
+        removeOutsideClickMonitor()
         guard let window, window.isVisible, let screen = NSScreen.main else {
             window?.orderOut(nil)
             return
@@ -186,6 +190,25 @@ final class SidePanelWindowController {
     private func updateHostingFrame(for frame: NSRect) {
         if let hosting = window?.contentView as? NSHostingView<SidePanelView> {
             hosting.frame = NSRect(origin: .zero, size: frame.size)
+        }
+    }
+
+    private func installOutsideClickMonitor(for panel: NSPanel) {
+        removeOutsideClickMonitor()
+        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak panel, weak self] event in
+            guard let self, let panel else { return }
+            if event.windowNumber != panel.windowNumber {
+                DispatchQueue.main.async {
+                    self.hidePanel()
+                }
+            }
+        }
+    }
+
+    private func removeOutsideClickMonitor() {
+        if let monitor = outsideClickMonitor {
+            NSEvent.removeMonitor(monitor)
+            outsideClickMonitor = nil
         }
     }
 

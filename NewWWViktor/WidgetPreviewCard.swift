@@ -42,19 +42,9 @@ struct WidgetPreviewCard: View {
             HStack(spacing: 8) {
                 Text(type.categoryLabel.uppercased())
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(.secondary)
+                .foregroundColor(.secondary)
                 Spacer()
                 layoutControls
-            }
-
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(type.heroTitle)
-                        .font(.title3.weight(.semibold))
-                    Text(type.heroSubtitle)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
             }
         }
     }

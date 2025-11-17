@@ -22,8 +22,9 @@ final class WidgetManager: ObservableObject {
         windowCloseObservers.values.forEach(NotificationCenter.default.removeObserver)
     }
 
-    func addWidget(type: WidgetType) {
-        let instance = WidgetInstance(type: type)
+    func addWidget(type: WidgetType, size: WidgetSizeOption = .medium) {
+        var instance = WidgetInstance(type: type)
+        instance.applySizeOption(size)
         // Можно раскидывать по сетке/стеку
         widgets.append(instance)
         attachWindow(for: instance)

@@ -3,17 +3,17 @@ import AppKit
 
 struct WidgetPreviewCard: View {
     let type: WidgetType
-    let onAdd: () -> Void
+    let onAdd: (WidgetSizeOption) -> Void
 
     @State private var isHovered = false
     @State private var isPressed = false
+    @State private var previewSizeOption: WidgetSizeOption = .medium
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             headerSection
 
             previewContainer
-                .frame(height: 140)
                 #if os(macOS)
                 .onHover { hover in
                     withAnimation(.spring(response: 0.22, dampingFraction: 0.9)) {
@@ -50,16 +50,18 @@ struct WidgetPreviewCard: View {
     }
 
     private var previewContainer: some View {
-        ZStack(alignment: .bottomLeading) {
+        let size = previewDisplaySize
+        return ZStack(alignment: .bottomLeading) {
             roundedPreviewBackground
-                .scaleEffect(scale)
-                .animation(.spring(response: 0.22, dampingFraction: 0.9), value: isHovered)
-                .animation(.spring(response: 0.16, dampingFraction: 0.8), value: isPressed)
 
             preview
                 .padding(.horizontal, 14)
                 .padding(.vertical, 18)
         }
+        .frame(width: size.width, height: size.height, alignment: .topLeading)
+        .scaleEffect(scale, anchor: .topLeading)
+        .animation(.spring(response: 0.22, dampingFraction: 0.9), value: isHovered)
+        .animation(.spring(response: 0.16, dampingFraction: 0.8), value: isPressed)
         .overlay(alignment: .topTrailing) {
             addButton
                 .opacity(showAddButton ? 1 : 0)
@@ -68,6 +70,9 @@ struct WidgetPreviewCard: View {
                 .padding(12)
                 .allowsHitTesting(showAddButton)
         }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.top, 4)
+        .animation(.spring(response: 0.3, dampingFraction: 0.85), value: previewSizeOption)
     }
 
     private var roundedPreviewBackground: some View {
@@ -84,7 +89,7 @@ struct WidgetPreviewCard: View {
     private var addButton: some View {
         Button {
             isPressed = true
-            onAdd()
+            onAdd(previewSizeOption)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
                 isPressed = false
             }
@@ -105,11 +110,28 @@ struct WidgetPreviewCard: View {
     }
 
     private var layoutControls: some View {
-        HStack(spacing: 6) {
-            ForEach(WidgetLayoutControl.allCases) { control in
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(control == .active ? Color.white.opacity(0.25) : Color.white.opacity(0.08))
-                    .frame(width: control.size.width, height: control.size.height)
+        HStack(spacing: 8) {
+            ForEach(WidgetSizeOption.allCases) { option in
+                let isSelected = previewSizeOption == option
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                        previewSizeOption = option
+                    }
+                } label: {
+                    Image(option.iconAssetName)
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 32, height: 20)
+                        .foregroundColor(isSelected ? .white : .white.opacity(0.6))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(isSelected ? Color.white.opacity(0.25) : Color.white.opacity(0.08))
+                        )
+                }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -162,20 +184,28 @@ struct WidgetPreviewCard: View {
     private var previewWidget: WidgetInstance {
         var instance = WidgetInstance(type: type)
         instance.location = .current
+        instance.applySizeOption(previewSizeOption)
         return instance
+    }
+
+    private var previewDisplaySize: CGSize {
+        let maxWidth: CGFloat = 300
+        let maxHeight: CGFloat = 170
+        let size = previewSizeOption.dimensions
+        let widthScale = maxWidth / size.width
+        let heightScale = maxHeight / size.height
+        let scale = min(widthScale, heightScale)
+        return CGSize(width: size.width * scale, height: size.height * scale)
     }
 }
 
-private enum WidgetLayoutControl: CaseIterable, Identifiable {
-    case active, medium, large
-
-    var id: Self { self }
-
-    var size: CGSize {
+private extension WidgetSizeOption {
+    var iconAssetName: String {
         switch self {
-        case .active: return CGSize(width: 22, height: 14)
-        case .medium: return CGSize(width: 28, height: 14)
-        case .large: return CGSize(width: 34, height: 14)
+        case .small:
+            return "widget size s"
+        case .medium:
+            return "widget size m"
         }
     }
 }

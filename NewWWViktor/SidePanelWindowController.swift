@@ -9,8 +9,8 @@ final class SidePanelWindowController {
     private let settingsCoordinator: SettingsCoordinator
     private var cancellables = Set<AnyCancellable>()
 
-    // Ширина, близкая к системной панели (можешь подправить под вкус)
-    private let panelWidth: CGFloat = 360
+    // Ширина панели (чуть шире базового значения)
+    private let panelWidth: CGFloat = 414
     private let edgeInset: CGFloat = 16
 
     private var screenChangeObserver: Any?

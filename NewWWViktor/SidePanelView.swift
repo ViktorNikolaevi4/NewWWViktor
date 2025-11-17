@@ -4,7 +4,7 @@ import AppKit
 struct SidePanelView: View {
     @EnvironmentObject var manager: WidgetManager
     @EnvironmentObject var settingsCoordinator: SettingsCoordinator
-    private let cardMaxWidth: CGFloat = 320
+    private let cardMaxWidth: CGFloat = 368
     @State private var showSettingsPopover = false
 
     var body: some View {
@@ -55,15 +55,15 @@ struct SidePanelView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     ForEach(WidgetType.allCases) { type in
-                        WidgetPreviewCard(type: type) {
-                            manager.addWidget(type: type)
+                        WidgetPreviewCard(type: type) { size in
+                            manager.addWidget(type: type, size: size)
                         }
                         .frame(maxWidth: cardMaxWidth, alignment: .leading)
                     }
                 }
                 .padding(.top, 4)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
 
             Divider()
                 .padding(.top, 4)
@@ -78,7 +78,7 @@ struct SidePanelView: View {
             .foregroundColor(.secondary)
         }
         .padding(.top, 20)
-        .padding(.horizontal, 14)
+        .padding(.horizontal, 18)
         .padding(.bottom, 16)
         .frame(maxWidth: .infinity,
                maxHeight: .infinity,

@@ -11,10 +11,15 @@ final class WidgetManager: ObservableObject {
     weak var settingsCoordinator: SettingsCoordinator?
 
     private var windows: [UUID: NSWindow] = [:]
+    private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
 
     init() {
         load()
         widgets.forEach { attachWindow(for: $0) }
+    }
+
+    deinit {
+        windowCloseObservers.values.forEach(NotificationCenter.default.removeObserver)
     }
 
     func addWidget(type: WidgetType) {
@@ -28,7 +33,9 @@ final class WidgetManager: ObservableObject {
         widgets.removeAll { $0.id == id }
         if let window = windows[id] {
             window.close()
-            windows[id] = nil
+        } else if let observer = windowCloseObservers[id] {
+            NotificationCenter.default.removeObserver(observer)
+            windowCloseObservers[id] = nil
         }
     }
 
@@ -36,9 +43,11 @@ final class WidgetManager: ObservableObject {
         widgets.forEach { instance in
             if let window = windows[instance.id] {
                 window.close()
+            } else if let observer = windowCloseObservers[instance.id] {
+                NotificationCenter.default.removeObserver(observer)
+                windowCloseObservers[instance.id] = nil
             }
         }
-        windows.removeAll()
         widgets.removeAll()
     }
 
@@ -94,12 +103,28 @@ final class WidgetManager: ObservableObject {
         window.level = instance.isPinned ? .floating : .normal
         window.hasShadow = false
         window.ignoresMouseEvents = false
+        window.animationBehavior = .none
+        window.isReleasedWhenClosed = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         window.isMovableByWindowBackground = !instance.isPositionLocked
         window.contentView = NSHostingView(rootView: content)
-        window.makeKeyAndOrderFront(nil)
+        window.orderFrontRegardless()
 
         windows[instance.id] = window
+
+        let observer = NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification,
+            object: window,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            if let existing = self.windowCloseObservers[instance.id] {
+                NotificationCenter.default.removeObserver(existing)
+                self.windowCloseObservers[instance.id] = nil
+            }
+            self.windows[instance.id] = nil
+        }
+        windowCloseObservers[instance.id] = observer
     }
 
     // MARK: - Persistence (ультра-просто)

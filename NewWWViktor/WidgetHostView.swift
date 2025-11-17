@@ -50,11 +50,18 @@ struct WidgetHostView: View {
                     .opacity(isMenuVisible ? 1 : 0)
                     .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isMenuVisible)
                     .popover(isPresented: $showSettingsPanel, arrowEdge: .top) {
-                        WidgetSettingsMenuView(widget: instance, onUpdate: { updated in
-                            manager.update(updated)
-                        }, onDismiss: {
-                            showSettingsPanel = false
-                        })
+                        WidgetSettingsMenuView(
+                            widget: instance,
+                            onUpdate: { updated in
+                                manager.update(updated)
+                            },
+                            onDelete: { id in
+                                showSettingsPanel = false
+                                DispatchQueue.main.async {
+                                    manager.removeWidget(id: id)
+                                }
+                            }
+                        )
                         .environmentObject(manager)
                         .frame(width: 360, height: 520)
                         .onDisappear {
@@ -178,17 +185,25 @@ struct WidgetHostView: View {
         panel.backgroundColor = .clear
         panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.animationBehavior = .none
         panel.isReleasedWhenClosed = false
         panel.hidesOnDeactivate = false
         panel.standardWindowButton(.closeButton)?.isHidden = true
         panel.standardWindowButton(.miniaturizeButton)?.isHidden = true
         panel.standardWindowButton(.zoomButton)?.isHidden = true
 
-        let content = WidgetSettingsMenuView(widget: instance, onUpdate: { updated in
-            manager.update(updated)
-        }, onDismiss: {
-            closeSettingsPanel()
-        })
+        let content = WidgetSettingsMenuView(
+            widget: instance,
+            onUpdate: { updated in
+                manager.update(updated)
+            },
+            onDelete: { id in
+                DispatchQueue.main.async {
+                    closeSettingsPanel()
+                    manager.removeWidget(id: id)
+                }
+            }
+        )
         .environmentObject(manager)
         .frame(width: size.width, height: size.height)
 

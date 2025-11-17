@@ -9,7 +9,7 @@ struct WidgetSettingsMenuView: View {
     @EnvironmentObject private var manager: WidgetManager
     let widget: WidgetInstance
     let onUpdate: (WidgetInstance) -> Void
-    let onDismiss: (() -> Void)?
+    let onDeleteCallback: ((UUID) -> Void)?
 
     @State private var workingWidget: WidgetInstance
     @State private var showLocationPicker = false
@@ -21,10 +21,10 @@ struct WidgetSettingsMenuView: View {
 
     init(widget: WidgetInstance,
          onUpdate: @escaping (WidgetInstance) -> Void,
-         onDismiss: (() -> Void)? = nil) {
+         onDelete: ((UUID) -> Void)? = nil) {
         self.widget = widget
         self.onUpdate = onUpdate
-        self.onDismiss = onDismiss
+        self.onDeleteCallback = onDelete
         _workingWidget = State(initialValue: widget)
         _isPinnedTop = State(initialValue: widget.isPinned)
         _lockPosition = State(initialValue: widget.isPositionLocked)
@@ -186,8 +186,7 @@ struct WidgetSettingsMenuView: View {
     }
 
     private func deleteWidget() {
-        manager.removeWidget(id: workingWidget.id)
-        onDismiss?()
+        onDeleteCallback?(workingWidget.id)
     }
 }
 

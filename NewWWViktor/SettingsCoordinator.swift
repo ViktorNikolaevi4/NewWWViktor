@@ -30,6 +30,7 @@ final class SettingsCoordinator: ObservableObject {
     @Published var selectedCategory: SettingsCategory = .general
 
     private var window: NSWindow?
+    var appIconController: AppIconController?
 
     func show(_ category: SettingsCategory) {
         selectedCategory = category
@@ -46,8 +47,14 @@ final class SettingsCoordinator: ObservableObject {
     }
 
     private func createWindow() {
+        guard let iconController = appIconController else {
+            assertionFailure("AppIconController must be provided before showing settings.")
+            return
+        }
+
         let content = SettingsWindowContent()
             .environmentObject(self)
+            .environmentObject(iconController)
 
         let hosting = NSHostingController(rootView: content)
 

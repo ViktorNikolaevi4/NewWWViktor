@@ -4,9 +4,11 @@ import AppKit
 
 @main
 struct MiniWWApp: App {
+    @StateObject private var appIconController: AppIconController
     private let manager: WidgetManager
     private let settingsCoordinator: SettingsCoordinator
     private let panelController: SidePanelWindowController
+    private let statusItemController: StatusItemController
     @NSApplicationDelegateAdaptor(MiniWWAppDelegate.self) private var appDelegate
 
     init() {
@@ -14,22 +16,20 @@ struct MiniWWApp: App {
         self.manager = manager
         let settingsCoordinator = SettingsCoordinator()
         self.settingsCoordinator = settingsCoordinator
+        let iconController = AppIconController()
+        _appIconController = StateObject(wrappedValue: iconController)
         let controller = SidePanelWindowController(manager: manager,
                                                    settingsCoordinator: settingsCoordinator)
         self.panelController = controller
         manager.panelController = controller
         manager.settingsCoordinator = settingsCoordinator
+        settingsCoordinator.appIconController = iconController
+        self.statusItemController = StatusItemController(panelController: controller,
+                                                         appIconController: iconController)
         appDelegate.configure(manager: manager, panelController: controller)
     }
 
     var body: some Scene {
-        MenuBarExtra("miniWW", systemImage: "square.grid.3x3") {
-            PanelMenuTriggerView {
-                panelController.togglePanel()
-            }
-        }
-        .menuBarExtraStyle(.window)
-
         Settings {
             VStack(alignment: .leading, spacing: 8) {
                 Text("miniWW is controlled from the floating side panel.")
@@ -40,20 +40,5 @@ struct MiniWWApp: App {
             .padding()
             .frame(width: 300)
         }
-    }
-}
-
-private struct PanelMenuTriggerView: View {
-    let toggle: () -> Void
-
-    var body: some View {
-        Color.clear
-            .frame(width: 0, height: 0)
-            .onAppear {
-                DispatchQueue.main.async {
-                    toggle()
-                    NSApplication.shared.sendAction(#selector(NSMenu.cancelTracking), to: nil, from: nil)
-                }
-            }
     }
 }

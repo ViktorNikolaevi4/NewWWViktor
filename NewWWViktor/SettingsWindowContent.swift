@@ -113,8 +113,8 @@ struct SettingsWindowContent: View {
 }
 
 private struct GeneralSettingsDetailView: View {
+    @EnvironmentObject private var appIconController: AppIconController
     @StateObject private var launchAtLoginManager = LaunchAtLoginManager()
-    @State private var showMenuIcon = true
     @State private var duplicateMonitors = false
     @State private var duplicateSpaces = true
     @State private var hideWidgets = false
@@ -123,7 +123,6 @@ private struct GeneralSettingsDetailView: View {
     @State private var snapToGrid = true
     @State private var focusOnHover = true
     @State private var scrollBarsAutomatic = true
-    @State private var appIconMode: AppIconMode = .menuAndDock
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -138,7 +137,11 @@ private struct GeneralSettingsDetailView: View {
                                   ))
 
                     section(title: "Иконка приложения", inline: true) {
-                        Picker("", selection: $appIconMode) {
+                        Picker("",
+                               selection: Binding(
+                                get: { appIconController.mode },
+                                set: { appIconController.updateMode($0) }
+                               )) {
                             Text("Показывать в строке меню")
                                 .tag(AppIconMode.menuOnly)
 

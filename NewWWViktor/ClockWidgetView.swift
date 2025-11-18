@@ -65,15 +65,21 @@ struct ClockWidgetView: View {
     }
 
     private func formattedHourMinute(_ date: Date, in timeZone: TimeZone) -> String {
-        let f = DateFormatter()
-        f.locale = .current
-        f.timeZone = timeZone
+        var calendar = Calendar.current
+        calendar.timeZone = timeZone
+        let components = calendar.dateComponents([.hour, .minute], from: date)
+        guard let hour = components.hour, let minute = components.minute else { return "" }
+
+        let minuteString = String(format: "%02d", minute)
+
         if widget.prefersTwelveHour {
-            f.setLocalizedDateFormatFromTemplate("h:mm")
+            var normalizedHour = hour % 12
+            if normalizedHour == 0 { normalizedHour = 12 }
+            return "\(normalizedHour):\(minuteString)"
         } else {
-            f.setLocalizedDateFormatFromTemplate("HH:mm")
+            let hourString = String(format: "%02d", hour)
+            return "\(hourString):\(minuteString)"
         }
-        return f.string(from: date)
     }
 
     private func formattedMeridiem(_ date: Date, in timeZone: TimeZone) -> String? {
@@ -149,11 +155,19 @@ struct ClockWidgetView: View {
     }
 
     private var timeFont: Font {
-        .system(size: isSmallWidget ? 60 : 48, weight: .regular, design: .rounded)
+        if isSmallWidget {
+            .system(size: 58, weight: .medium, design: .rounded)
+        } else {
+            .system(size: 68, weight: .medium, design: .rounded)
+        }
     }
 
     private var meridiemFont: Font {
-        .system(size: isSmallWidget ? 15 : 13, weight: .light, design: .rounded)
+        if isSmallWidget {
+            .system(size: 18, weight: .medium, design: .rounded) // маленький, но читаемый
+        } else {
+            .system(size: 20, weight: .medium, design: .rounded)
+        }
     }
 
     private var dateFont: Font {
@@ -173,25 +187,26 @@ struct ClockWidgetView: View {
     }
 
     private var timeDisplay: some View {
-        let hourMinute = formattedHourMinute(date, in: effectiveTimeZone)
-        let meridiem = formattedMeridiem(date, in: effectiveTimeZone)
-        return HStack(alignment: .firstTextBaseline, spacing: 3) {
-            Text(hourMinute)
+        HStack(alignment: .bottom, spacing: 3) {
+            // Только часы и минуты — без AM/PM внутри
+            Text(formattedHourMinute(date, in: effectiveTimeZone))
                 .font(timeFont)
+                .fontWeight(.medium)
                 .monospacedDigit()
                 .foregroundStyle(timeColor)
-                .minimumScaleFactor(0.65)
-                .lineLimit(1)
-                .allowsTightening(true)
-                .layoutPriority(1)
-            if let meridiem {
-                Spacer(minLength: 6)
-                Text(meridiem)
+                .contentTransition(.numericText())
+
+            // Маленький AM/PM, если нужен
+            if let meridiem = formattedMeridiem(date, in: effectiveTimeZone) {
+                Text(meridiem.uppercased())
                     .font(meridiemFont)
-                    .foregroundStyle(timeColor.opacity(0.85))
-                    .textCase(.uppercase)
+                    .foregroundStyle(timeColor.opacity(0.8))
+                    .offset(y: -6) // ← вот эта магия поднимает PM точно как у Apple
+                    .contentTransition(.opacity)
             }
         }
+        .lineLimit(1)
+        .minimumScaleFactor(0.5) // один раз на весь HStack — и больше никаких троеточий
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

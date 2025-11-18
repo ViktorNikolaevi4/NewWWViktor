@@ -113,7 +113,7 @@ struct SettingsWindowContent: View {
 }
 
 private struct GeneralSettingsDetailView: View {
-    @State private var openAtLogin = true
+    @StateObject private var launchAtLoginManager = LaunchAtLoginManager()
     @State private var showMenuIcon = true
     @State private var duplicateMonitors = false
     @State private var duplicateSpaces = true
@@ -132,7 +132,10 @@ private struct GeneralSettingsDetailView: View {
             ScrollView {
                 VStack(spacing: 22) {
                     toggleSection(title: "Открывать при входе в систему (рекомендуется)",
-                                  isOn: $openAtLogin)
+                                  isOn: Binding(
+                                    get: { launchAtLoginManager.isEnabled },
+                                    set: { launchAtLoginManager.setEnabled($0) }
+                                  ))
 
                     section(title: "Иконка приложения", inline: true) {
                         Picker("", selection: $appIconMode) {

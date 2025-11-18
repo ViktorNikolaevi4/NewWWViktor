@@ -4,15 +4,16 @@ import AppKit
 struct SidePanelView: View {
     @EnvironmentObject var manager: WidgetManager
     @EnvironmentObject var settingsCoordinator: SettingsCoordinator
+    @EnvironmentObject var localization: LocalizationManager
     private let cardMaxWidth: CGFloat = 368
     @State private var showSettingsPopover = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Шапка
+            // Header
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Choose a widget to add")
+                    Text(localization.text(.panelChooseWidget))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -40,6 +41,7 @@ struct SidePanelView: View {
                     SettingsPopoverView { selection in
                         handleSettingsSelection(selection)
                     }
+                    .environmentObject(localization)
                 }
 
                 Button {
@@ -51,7 +53,7 @@ struct SidePanelView: View {
                 .help("Quit miniWW")
             }
 
-            // Список превью (как WidgetWall)
+            // Widget preview list (WidgetWall style)
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     ForEach(WidgetType.allCases) { type in
@@ -71,7 +73,7 @@ struct SidePanelView: View {
             Button {
                 manager.removeAllWidgets()
             } label: {
-                Label("Clear all widgets", systemImage: "trash")
+                Label(localization.text(.panelClearWidgets), systemImage: "trash")
                     .labelStyle(.titleAndIcon)
             }
             .buttonStyle(.borderless)

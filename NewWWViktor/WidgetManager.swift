@@ -9,6 +9,7 @@ final class WidgetManager: ObservableObject {
     @Published var isPanelFullscreen: Bool = false
     weak var panelController: SidePanelWindowController?
     weak var settingsCoordinator: SettingsCoordinator?
+    weak var localizationManager: LocalizationManager?
 
     private var windows: [UUID: NSWindow] = [:]
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
@@ -25,7 +26,7 @@ final class WidgetManager: ObservableObject {
     func addWidget(type: WidgetType, size: WidgetSizeOption = .medium) {
         var instance = WidgetInstance(type: type)
         instance.applySizeOption(size)
-        // Можно раскидывать по сетке/стеку
+        // Could be distributed via grid/stack layouts later
         widgets.append(instance)
         attachWindow(for: instance)
     }
@@ -86,8 +87,15 @@ final class WidgetManager: ObservableObject {
     // MARK: - Windows
 
     private func attachWindow(for instance: WidgetInstance) {
-        let content = WidgetHostView(instanceID: instance.id)
+        let baseView = WidgetHostView(instanceID: instance.id)
             .environmentObject(self)
+
+        let content: AnyView
+        if let localizationManager {
+            content = AnyView(baseView.environmentObject(localizationManager))
+        } else {
+            content = AnyView(baseView)
+        }
 
         let window = NSWindow(
             contentRect: NSRect(x: instance.x,
@@ -128,7 +136,7 @@ final class WidgetManager: ObservableObject {
         windowCloseObservers[instance.id] = observer
     }
 
-    // MARK: - Persistence (ультра-просто)
+    // MARK: - Persistence (very simple)
 
     private let storageKey = "miniww.widgets"
 

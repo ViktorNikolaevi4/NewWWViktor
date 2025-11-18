@@ -5,9 +5,9 @@ enum WidgetStyle {
 }
 
  enum AppIconMode: Int, CaseIterable, Identifiable {
-    case menuOnly      // только строка меню
-    case dockOnly      // только Dock
-    case menuAndDock   // и там, и там
+    case menuOnly      // menu bar only
+    case dockOnly      // Dock only
+    case menuAndDock   // show in both places
 
     var id: Int { rawValue }
 }

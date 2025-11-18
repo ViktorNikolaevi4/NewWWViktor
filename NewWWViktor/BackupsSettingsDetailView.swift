@@ -19,9 +19,9 @@ struct BackupsSettingsDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Резервные копии")
+            Text("Backups")
                 .font(.title3.weight(.semibold))
-            Text("Храните конфигурации miniWW в безопасном месте.")
+            Text("Keep your miniWW configuration stored safely.")
                 .font(.footnote)
                 .foregroundColor(.secondary)
         }
@@ -29,19 +29,19 @@ struct BackupsSettingsDetailView: View {
 
     private var backupSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Ручное копирование")
+            Text("Manual backup")
                 .font(.headline.weight(.semibold))
 
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Создать резервную копию")
+                    Text("Create a backup")
                         .font(.body.weight(.semibold))
-                    Text("Сохраните текущие виджеты и их позицию.")
+                    Text("Save the current widgets and their layout.")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 Spacer()
-                Button("Сохранить сейчас") {}
+                Button("Save Now") {}
                     .buttonStyle(.borderedProminent)
                     .tint(.orange)
             }

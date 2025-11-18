@@ -7,18 +7,20 @@ final class SidePanelWindowController {
     private var window: NSPanel?
     private let manager: WidgetManager
     private let settingsCoordinator: SettingsCoordinator
+    private let localizationManager: LocalizationManager
     private var cancellables = Set<AnyCancellable>()
 
-    // Ширина панели (чуть шире базового значения)
+    // Panel width (slightly wider than the default)
     private let panelWidth: CGFloat = 414
     private let edgeInset: CGFloat = 16
 
     private var screenChangeObserver: Any?
     private var outsideClickMonitor: Any?
 
-    init(manager: WidgetManager, settingsCoordinator: SettingsCoordinator) {
+    init(manager: WidgetManager, settingsCoordinator: SettingsCoordinator, localizationManager: LocalizationManager) {
         self.manager = manager
         self.settingsCoordinator = settingsCoordinator
+        self.localizationManager = localizationManager
 
         screenChangeObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
@@ -117,11 +119,11 @@ final class SidePanelWindowController {
 
         panel.titleVisibility = .hidden
         panel.titlebarAppearsTransparent = true
-        panel.isMovableByWindowBackground = false      // фиксируем у правого края
+        panel.isMovableByWindowBackground = false      // lock near the right edge
         panel.isReleasedWhenClosed = false
         panel.hasShadow = true
 
-        // Поверх обычных окон, как системная панель
+        // Float above standard windows, similar to a system panel
         panel.level = .statusBar
 
         panel.collectionBehavior = [
@@ -138,6 +140,7 @@ final class SidePanelWindowController {
             rootView: SidePanelView()
                 .environmentObject(manager)
                 .environmentObject(settingsCoordinator)
+                .environmentObject(localizationManager)
         )
         hostingView.frame = NSRect(origin: .zero, size: initialFrame.size)
         panel.contentView = hostingView

@@ -102,7 +102,7 @@ struct ClockWidgetView: View {
                 }
                 return city
             }
-            return "Выбранный город"
+            return "Selected city"
         }
     }
 
@@ -164,7 +164,7 @@ struct ClockWidgetView: View {
 
     private var meridiemFont: Font {
         if isSmallWidget {
-            .system(size: 18, weight: .medium, design: .rounded) // маленький, но читаемый
+            .system(size: 18, weight: .medium, design: .rounded) // small but readable
         } else {
             .system(size: 20, weight: .medium, design: .rounded)
         }
@@ -188,7 +188,7 @@ struct ClockWidgetView: View {
 
     private var timeDisplay: some View {
         HStack(alignment: .center, spacing: 3) {
-            // Только часы и минуты — без AM/PM внутри
+            // Only hours and minutes — AM/PM rendered separately
             Text(formattedHourMinute(date, in: effectiveTimeZone))
                 .font(timeFont)
                 .fontWeight(.medium)
@@ -196,17 +196,17 @@ struct ClockWidgetView: View {
                 .foregroundStyle(timeColor)
                 .contentTransition(.numericText())
 
-            // Маленький AM/PM, если нужен
+            // Small AM/PM when needed
             if let meridiem = formattedMeridiem(date, in: effectiveTimeZone) {
                 Text(meridiem.uppercased())
                     .font(meridiemFont)
                     .foregroundStyle(timeColor.opacity(0.8))
-                    .offset(y: -8) // немного выше, как на референсе
+                    .offset(y: -8) // slightly higher to match the reference design
                     .contentTransition(.opacity)
             }
         }
         .lineLimit(1)
-        .minimumScaleFactor(0.5) // один раз на весь HStack — и больше никаких троеточий
+        .minimumScaleFactor(0.5) // apply once to the HStack to avoid ellipsis
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

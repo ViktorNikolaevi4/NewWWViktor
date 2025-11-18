@@ -6,6 +6,7 @@ import AppKit
 
 struct WidgetHostView: View {
     @EnvironmentObject var manager: WidgetManager
+    @EnvironmentObject var localization: LocalizationManager
     let instanceID: UUID
     @State private var isMenuVisible = false
     @State private var showSettingsPanel = false
@@ -63,6 +64,7 @@ struct WidgetHostView: View {
                             }
                         )
                         .environmentObject(manager)
+                        .environmentObject(localization)
                         .frame(width: 360, height: 520)
                         .onDisappear {
                             showSettingsPanel = false
@@ -205,6 +207,7 @@ struct WidgetHostView: View {
             }
         )
         .environmentObject(manager)
+        .environmentObject(localization)
         .frame(width: size.width, height: size.height)
 
         let hosting = NSHostingView(rootView: content)

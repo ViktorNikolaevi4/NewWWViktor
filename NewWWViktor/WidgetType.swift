@@ -19,7 +19,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
 
     var categoryLabel: String {
         switch self {
-        case .clock: return "Виджет"
+        case .clock: return "Widget"
         }
     }
 
@@ -31,19 +31,19 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
 
     var heroSubtitle: String {
         switch self {
-        case .clock: return "Суббота, 15 ноября"
+        case .clock: return "Saturday, 15 November"
         }
     }
 
     var detailTitle: String {
         switch self {
-        case .clock: return "Часы"
+        case .clock: return "Clock"
         }
     }
 
     var detailDescription: String {
         switch self {
-        case .clock: return "Узнавайте местное время или время ваших близких, друзей и даже заклятых врагов. Всё на одном виджете."
+        case .clock: return "Track local time for yourself, friends, and even rivals all in one widget."
         }
     }
 
@@ -56,7 +56,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
     var defaultSize: CGSize {
         switch self {
         case .clock:
-            // Близко к medium-виджету: 2:1, ощущается как системный
+            // Similar to a medium widget: 2:1 ratio, feels native
             return CGSize(width: 320, height: 160)
         }
     }

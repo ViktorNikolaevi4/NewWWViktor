@@ -6,24 +6,24 @@ struct WidgetGeneralSettingsSection: View {
     @Binding var showWeather: Bool
 
     var body: some View {
-        WidgetSettingsGroup(title: "Позиция") {
-            WidgetSettingsRowButton(title: "Позиция") {
+        WidgetSettingsGroup(title: "Location") {
+            WidgetSettingsRowButton(title: "Location") {
                 isLocationPickerPresented = true
             } content: {
                 ValuePill(text: widget.location.displayName,
                           icon: widget.location.iconName)
             }
 
-            WidgetSettingsRow(title: "Название") {
+            WidgetSettingsRow(title: "Name") {
                 ValuePill(text: widget.location.city ?? "—")
             }
 
-            ToggleRow(title: "Показывать дату", isOn: $widget.showsDate)
-            ToggleRow(title: "Показывать местоположение", isOn: $widget.showsLocation)
-            ToggleRow(title: "Показывать погоду", isOn: $showWeather)
+            ToggleRow(title: "Show Date", isOn: $widget.showsDate)
+            ToggleRow(title: "Show Location", isOn: $widget.showsLocation)
+            ToggleRow(title: "Show Weather", isOn: $showWeather)
 
-            WidgetSettingsRow(title: "Время") {
-                SegmentedPill(options: ["12ч", "24ч"], selected: $widget.prefersTwelveHour)
+            WidgetSettingsRow(title: "Time") {
+                SegmentedPill(options: ["12h", "24h"], selected: $widget.prefersTwelveHour)
             }
         }
     }
@@ -36,9 +36,9 @@ enum WidgetColorRole {
     var title: String {
         switch self {
         case .main:
-            return "Основной цвет"
+            return "Primary Color"
         case .secondary:
-            return "Вторичный цвет"
+            return "Secondary Color"
         }
     }
 }
@@ -48,21 +48,21 @@ struct WidgetAppearanceSettingsSection: View {
     let onColorPicker: (WidgetColorRole) -> Void
 
     var body: some View {
-        WidgetSettingsGroup(title: "Цвета") {
-            WidgetSettingsRowButton(title: "Основной цвет") {
+        WidgetSettingsGroup(title: "Colors") {
+            WidgetSettingsRowButton(title: "Primary Color") {
                 onColorPicker(.main)
             } content: {
                 ColorChip(colorName: widget.mainColorName,
                           intensity: widget.mainColorIntensity)
             }
-            WidgetSettingsRowButton(title: "Вторичный цвет") {
+            WidgetSettingsRowButton(title: "Secondary Color") {
                 onColorPicker(.secondary)
             } content: {
                 ColorChip(colorName: widget.secondaryColorName,
                           intensity: widget.secondaryColorIntensity)
             }
-            WidgetSettingsRow(title: "Фон") {
-                ValuePill(text: "Глобальный", icon: "circle.lefthalf.filled")
+            WidgetSettingsRow(title: "Background") {
+                ValuePill(text: "Global", icon: "circle.lefthalf.filled")
             }
         }
     }
@@ -75,13 +75,13 @@ struct WidgetBehaviorSettingsSection: View {
     @Binding var snapToGrid: Bool
 
     var body: some View {
-        WidgetSettingsGroup(title: "Поведение") {
-            WidgetSettingsRow(title: "Размер") {
+        WidgetSettingsGroup(title: "Behavior") {
+            WidgetSettingsRow(title: "Size") {
                 WidgetSizePicker(selection: $sizeSelection)
             }
-            ToggleRow(title: "Закрепить сверху", isOn: $isPinnedTop)
-            ToggleRow(title: "Зафиксировать положение", isOn: $lockPosition)
-            ToggleRow(title: "Привязать к сетке", isOn: $snapToGrid)
+            ToggleRow(title: "Pin to Top", isOn: $isPinnedTop)
+            ToggleRow(title: "Lock Position", isOn: $lockPosition)
+            ToggleRow(title: "Snap to Grid", isOn: $snapToGrid)
         }
     }
 }
@@ -92,14 +92,14 @@ struct WidgetManagementSettingsSection: View {
     var onDelete: () -> Void
 
     var body: some View {
-        WidgetSettingsGroup(title: "Действия") {
-            WidgetSettingsRowButton(title: "Добавить виджеты", action: onAddWidgets) {
+        WidgetSettingsGroup(title: "Actions") {
+            WidgetSettingsRowButton(title: "Add Widgets", action: onAddWidgets) {
                 IconButton(systemName: "plus", isSelected: true)
             }
-            WidgetSettingsRowButton(title: "Основные настройки", action: onShowGeneralSettings) {
+            WidgetSettingsRowButton(title: "General Settings", action: onShowGeneralSettings) {
                 IconButton(systemName: "gearshape", isSelected: true)
             }
-            WidgetSettingsButton(title: "Удалить", role: .destructive, action: onDelete)
+            WidgetSettingsButton(title: "Delete", role: .destructive, action: onDelete)
         }
     }
 }

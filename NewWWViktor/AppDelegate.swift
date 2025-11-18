@@ -10,7 +10,7 @@ final class MiniWWAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Панель теперь открывается вручную через иконку MenuBarExtra.
+        // Panel now opens manually via the menu bar icon.
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

@@ -16,7 +16,7 @@ struct AppearanceSettingsDetailView: View {
 
             ScrollView {
                 VStack(spacing: 22) {
-                    section(title: "Цветовая тема") {
+                    section(title: "Color Theme") {
                         VStack(alignment: .leading, spacing: 14) {
                             Picker("", selection: $selectedTheme) {
                                 ForEach(ThemeOption.allCases) { option in
@@ -25,26 +25,26 @@ struct AppearanceSettingsDetailView: View {
                             }
                             .pickerStyle(.segmented)
 
-                            modeToggleRow(title: "Светлый режим",
-                                          description: "Используйте светлую палитру",
+                            modeToggleRow(title: "Light Mode",
+                                          description: "Use the light palette",
                                           isOn: $lightModePreview)
 
-                            modeToggleRow(title: "Темный режим",
-                                          description: "Включен",
+                            modeToggleRow(title: "Dark Mode",
+                                          description: "Enabled",
                                           isOn: $darkModePreview)
                         }
                     }
 
-                    section(title: "Цвета") {
+                    section(title: "Colors") {
                         VStack(spacing: 12) {
-                            colorPickerRow(title: "Основной цвет",
+                            colorPickerRow(title: "Primary Color",
                                            selection: $primaryColor)
-                            colorPickerRow(title: "Вторичный цвет",
+                            colorPickerRow(title: "Secondary Color",
                                            selection: $secondaryColor)
                         }
                     }
 
-                    section(title: "Фон") {
+                    section(title: "Background") {
                         VStack(alignment: .leading, spacing: 16) {
                             Picker("", selection: $backgroundStyle) {
                                 ForEach(BackgroundStyle.allCases) { style in
@@ -55,7 +55,7 @@ struct AppearanceSettingsDetailView: View {
                             }
                             .pickerStyle(.segmented)
 
-                            Picker("Источник изображения", selection: $imageSource) {
+                            Picker("Image Source", selection: $imageSource) {
                                 ForEach(ImageSource.allCases) { source in
                                     Text(source.rawValue).tag(source)
                                 }
@@ -64,25 +64,25 @@ struct AppearanceSettingsDetailView: View {
 
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("Фото")
+                                    Text("Photo")
                                         .font(.headline.weight(.semibold))
-                                    Text("Выберите изображение для виджета")
+                                    Text("Choose an image for the widget")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
                                 Spacer()
-                                Button("Обзор") {}
+                                Button("Browse") {}
                                     .buttonStyle(.borderedProminent)
                                     .tint(.orange)
                             }
 
-                            Toggle("Размытие фона", isOn: $blurBackground)
+                            Toggle("Blur background", isOn: $blurBackground)
                                 .toggleStyle(SwitchToggleStyle(tint: .orange))
                         }
                     }
 
-                    section(title: "Сброс внешнего вида") {
-                        Button("Сбросить внешний вид") {}
+                    section(title: "Reset appearance") {
+                        Button("Reset appearance") {}
                             .frame(maxWidth: .infinity)
                             .buttonStyle(.bordered)
                     }
@@ -97,9 +97,9 @@ struct AppearanceSettingsDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Оформление")
+            Text("Appearance")
                 .font(.title3.weight(.semibold))
-            Text("Настройте внешний вид miniWW под себя.")
+            Text("Customize how miniWW looks.")
                 .font(.footnote)
                 .foregroundColor(.secondary)
         }
@@ -154,18 +154,18 @@ struct AppearanceSettingsDetailView: View {
 }
 
 enum ThemeOption: String, CaseIterable, Identifiable {
-    case system = "Системная"
-    case dark = "Темная"
-    case light = "Светлая"
+    case system = "System"
+    case dark = "Dark"
+    case light = "Light"
 
     var id: String { rawValue }
 }
 
 enum ColorAccent: String, CaseIterable, Identifiable {
-    case system = "Системная"
-    case custom = "Пользовательская"
-    case orange = "Оранжевый"
-    case purple = "Фиолетовый"
+    case system = "System"
+    case custom = "Custom"
+    case orange = "Orange"
+    case purple = "Purple"
 
     var id: String { rawValue }
 }
@@ -179,9 +179,9 @@ enum BackgroundStyle: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .solid: return "Цвет"
-        case .gradient: return "Градиент"
-        case .photo: return "Фото"
+        case .solid: return "Color"
+        case .gradient: return "Gradient"
+        case .photo: return "Photo"
         }
     }
 
@@ -195,9 +195,9 @@ enum BackgroundStyle: String, CaseIterable, Identifiable {
 }
 
 enum ImageSource: String, CaseIterable, Identifiable {
-    case photos = "Фото"
-    case files = "Файлы"
-    case widgets = "Виджеты"
+    case photos = "Photos"
+    case files = "Files"
+    case widgets = "Widgets"
 
     var id: String { rawValue }
 }

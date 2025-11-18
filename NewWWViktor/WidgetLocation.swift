@@ -34,9 +34,9 @@ struct WidgetLocation: Codable, Equatable {
     var displayName: String {
         switch mode {
         case .current:
-            return "Текущее местоположение"
+            return "Current location"
         case .custom:
-            return city ?? "Выбранный город"
+            return city ?? "Selected city"
         }
     }
 

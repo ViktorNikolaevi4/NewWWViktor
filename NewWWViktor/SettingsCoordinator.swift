@@ -2,16 +2,16 @@ import SwiftUI
 import AppKit
 import Combine
 
-enum SettingsCategory: String, CaseIterable, Identifiable {
-    case general = "Основные"
-    case appearance = "Оформление"
-    case plan = "План"
-    case backups = "Резервные копии"
-    case screens = "Экраны"
-    case support = "Поддержка"
-    case about = "О нас"
+enum SettingsCategory: CaseIterable, Identifiable {
+    case general
+    case appearance
+    case plan
+    case backups
+    case screens
+    case support
+    case about
 
-    var id: String { rawValue }
+    var id: String { String(describing: self) }
 
     var systemImage: String {
         switch self {
@@ -24,6 +24,18 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .about: return "info.circle"
         }
     }
+
+    var titleKey: LocalizationKey {
+        switch self {
+        case .general: return .categoryGeneral
+        case .appearance: return .categoryAppearance
+        case .plan: return .categoryPlan
+        case .backups: return .categoryBackups
+        case .screens: return .categoryScreens
+        case .support: return .categorySupport
+        case .about: return .categoryAbout
+        }
+    }
 }
 
 final class SettingsCoordinator: ObservableObject {
@@ -31,6 +43,7 @@ final class SettingsCoordinator: ObservableObject {
 
     private var window: NSWindow?
     var appIconController: AppIconController?
+    var localizationManager: LocalizationManager?
 
     func show(_ category: SettingsCategory) {
         selectedCategory = category
@@ -52,9 +65,15 @@ final class SettingsCoordinator: ObservableObject {
             return
         }
 
+        guard let localizationManager = localizationManager else {
+            assertionFailure("LocalizationManager must be provided before showing settings.")
+            return
+        }
+
         let content = SettingsWindowContent()
             .environmentObject(self)
             .environmentObject(iconController)
+            .environmentObject(localizationManager)
 
         let hosting = NSHostingController(rootView: content)
 

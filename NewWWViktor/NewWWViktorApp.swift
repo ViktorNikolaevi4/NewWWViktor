@@ -5,6 +5,7 @@ import AppKit
 @main
 struct MiniWWApp: App {
     @StateObject private var appIconController: AppIconController
+    @StateObject private var localizationManager: LocalizationManager
     private let manager: WidgetManager
     private let settingsCoordinator: SettingsCoordinator
     private let panelController: SidePanelWindowController
@@ -12,6 +13,9 @@ struct MiniWWApp: App {
     @NSApplicationDelegateAdaptor(MiniWWAppDelegate.self) private var appDelegate
 
     init() {
+        let localizationManager = LocalizationManager()
+        _localizationManager = StateObject(wrappedValue: localizationManager)
+
         let manager = WidgetManager()
         self.manager = manager
         let settingsCoordinator = SettingsCoordinator()
@@ -19,11 +23,14 @@ struct MiniWWApp: App {
         let iconController = AppIconController()
         _appIconController = StateObject(wrappedValue: iconController)
         let controller = SidePanelWindowController(manager: manager,
-                                                   settingsCoordinator: settingsCoordinator)
+                                                   settingsCoordinator: settingsCoordinator,
+                                                   localizationManager: localizationManager)
         self.panelController = controller
         manager.panelController = controller
         manager.settingsCoordinator = settingsCoordinator
+        manager.localizationManager = localizationManager
         settingsCoordinator.appIconController = iconController
+        settingsCoordinator.localizationManager = localizationManager
         self.statusItemController = StatusItemController(panelController: controller,
                                                          appIconController: iconController)
         appDelegate.configure(manager: manager, panelController: controller)
@@ -40,5 +47,7 @@ struct MiniWWApp: App {
             .padding()
             .frame(width: 300)
         }
+        .environmentObject(localizationManager)
+        .environmentObject(appIconController)
     }
 }

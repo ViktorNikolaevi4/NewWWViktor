@@ -1,7 +1,9 @@
 import SwiftUI
+import AppKit
 
 struct SettingsWindowContent: View {
     @EnvironmentObject var settings: SettingsCoordinator
+    @EnvironmentObject var localization: LocalizationManager
 
     var body: some View {
         ZStack {
@@ -68,7 +70,7 @@ struct SettingsWindowContent: View {
             HStack(spacing: 12) {
                 Image(systemName: category.systemImage)
                     .font(.system(size: 14, weight: .semibold))
-                Text(category.rawValue)
+                Text(localization.text(category.titleKey))
                     .font(.system(size: 14, weight: .semibold))
                 Spacer()
             }
@@ -95,16 +97,16 @@ struct SettingsWindowContent: View {
         case .support:
             SupportSettingsDetailView()
         default:
-            placeholderDetail(title: settings.selectedCategory.rawValue)
+            placeholderDetail(for: settings.selectedCategory)
         }
     }
 
-    private func placeholderDetail(title: String) -> some View {
+    private func placeholderDetail(for category: SettingsCategory) -> some View {
         VStack {
             Spacer()
-            Text(title)
+            Text(localization.text(category.titleKey))
                 .font(.title3.weight(.semibold))
-            Text("Контент появится позже")
+            Text(localization.text(.placeholderComingSoon))
                 .foregroundColor(.secondary)
             Spacer()
         }
@@ -113,6 +115,7 @@ struct SettingsWindowContent: View {
 }
 
 private struct GeneralSettingsDetailView: View {
+    @EnvironmentObject private var localization: LocalizationManager
     @EnvironmentObject private var appIconController: AppIconController
     @StateObject private var launchAtLoginManager = LaunchAtLoginManager()
     @State private var duplicateMonitors = false
@@ -130,84 +133,77 @@ private struct GeneralSettingsDetailView: View {
 
             ScrollView {
                 VStack(spacing: 22) {
-                    toggleSection(title: "Открывать при входе в систему (рекомендуется)",
+                    toggleSection(title: localization.text(.launchAtLogin),
                                   isOn: Binding(
                                     get: { launchAtLoginManager.isEnabled },
                                     set: { launchAtLoginManager.setEnabled($0) }
                                   ))
 
-                    section(title: "Иконка приложения", inline: true) {
+                    section(title: localization.text(.appIconSectionTitle), inline: true) {
                         Picker("",
                                selection: Binding(
                                 get: { appIconController.mode },
                                 set: { appIconController.updateMode($0) }
                                )) {
-                            Text("Показывать в строке меню")
+                            Text(localization.text(.appIconMenuOnly))
                                 .tag(AppIconMode.menuOnly)
 
-                            Text("Показывать в Dock")
+                            Text(localization.text(.appIconDockOnly))
                                 .tag(AppIconMode.dockOnly)
 
-                            Text("Показывать в строке и в Dock")
+                            Text(localization.text(.appIconBoth))
                                 .tag(AppIconMode.menuAndDock)
                         }
                         .pickerStyle(.menu)
                         .frame(width: 260)
                     }
 
-                    section(title: "Язык") {
-                        HStack {
-                            Text("Запросы или отзывы о языке?")
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Link("Отправь сюда!", destination: URL(string: "https://example.com")!)
-                        }
-                    }
+                    languageSection
 
-                    toggleSection(title: "Дублировать на всех мониторах",
+                    toggleSection(title: localization.text(.mirrorDisplays),
                                   isOn: $duplicateMonitors)
 
-                    toggleSection(title: "Дублировать на всех пространствах",
+                    toggleSection(title: localization.text(.mirrorSpaces),
                                   isOn: $duplicateSpaces)
 
-                    toggleSection(title: "Скрыть виджеты",
+                    toggleSection(title: localization.text(.hideWidgets),
                                   isOn: $hideWidgets)
 
-                    toggleSection(title: "Закрепить виджеты на рабочем столе",
+                    toggleSection(title: localization.text(.pinWidgets),
                                   isOn: $pinWidgets)
 
-                    section(title: "Размер сетки") {
+                    section(title: localization.text(.gridSize)) {
                         Picker("", selection: $gridSize) {
-                            Text("macOS").tag(0)
-                            Text("WidgetWall").tag(1)
+                            Text(localization.text(.gridOptionMacOS)).tag(0)
+                            Text(localization.text(.gridOptionWidgetWall)).tag(1)
                         }
                         .pickerStyle(.segmented)
                         .frame(width: 260)
                     }
 
-                    toggleSection(title: "Привязать к сетке",
+                    toggleSection(title: localization.text(.snapToGrid),
                                   isOn: $snapToGrid)
 
-                    toggleSection(title: "Фокус при наведении",
+                    toggleSection(title: localization.text(.focusOnHover),
                                   isOn: $focusOnHover)
 
-                    section(title: "Показать системные полосы прокрутки") {
+                    section(title: localization.text(.scrollBarsTitle)) {
                         Picker("", selection: $scrollBarsAutomatic) {
-                            Text("Автоматический").tag(true)
-                            Text("Всегда").tag(false)
+                            Text(localization.text(.scrollBarsAutomatic)).tag(true)
+                            Text(localization.text(.scrollBarsAlways)).tag(false)
                         }
                         .pickerStyle(.menu)
                         .frame(width: 200)
                     }
 
-                    section(title: "Уведомления") {
-                        Button("Управление уведомлениями") {}
+                    section(title: localization.text(.notificationsTitle)) {
+                        Button(localization.text(.notificationsButton)) {}
                             .buttonStyle(.borderedProminent)
                             .tint(.orange)
                     }
 
-                    section(title: "Сброс") {
-                        Button("Сбросить все настройки") {}
+                    section(title: localization.text(.resetTitle)) {
+                        Button(localization.text(.resetButton)) {}
                             .buttonStyle(.bordered)
                     }
                 }
@@ -221,9 +217,9 @@ private struct GeneralSettingsDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Основные")
+            Text(localization.text(.categoryGeneral))
                 .font(.title3.weight(.semibold))
-            Text("Управляйте поведением miniWW и настройте рабочее пространство.")
+            Text(localization.text(.generalSubtitle))
                 .font(.footnote)
                 .foregroundColor(.secondary)
         }
@@ -247,6 +243,61 @@ private struct GeneralSettingsDetailView: View {
                         .stroke(Color.white.opacity(0.05))
                 )
         )
+    }
+
+    @ViewBuilder
+    private var languageSection: some View {
+        section(title: localization.text(.languageSectionTitle)) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(localization.text(.languageDescription))
+                    .foregroundColor(.secondary)
+                Picker("",
+                       selection: Binding(
+                        get: { localization.pendingLanguage },
+                        set: { localization.requestLanguageChange(to: $0) }
+                       )) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Text(language.displayName).tag(language)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 260)
+            }
+        }
+        .alert(localization.text(.languageRestartTitle),
+               isPresented: Binding(
+                get: { localization.showingRestartPrompt },
+                set: { value in
+                    DispatchQueue.main.async {
+                        localization.showingRestartPrompt = value
+                    }
+                }
+               )) {
+            Button(localization.text(.languageRestartLater), role: .cancel) {
+                DispatchQueue.main.async {
+                    localization.pendingLanguage = localization.language
+                    localization.showingRestartPrompt = false
+                }
+            }
+            Button(localization.text(.languageRestartNow)) {
+                DispatchQueue.main.async {
+                    localization.showingRestartPrompt = false
+                }
+                localization.confirmLanguageChange()
+                relaunchApp()
+            }
+        } message: {
+            Text(localization.text(.languageRestartMessage))
+        }
+    }
+
+    private func relaunchApp() {
+        guard let executableURL = Bundle.main.executableURL else { return }
+        let configuration = NSWorkspace.OpenConfiguration()
+        NSWorkspace.shared.openApplication(at: executableURL,
+                                           configuration: configuration,
+                                           completionHandler: nil)
+        NSApplication.shared.terminate(nil)
     }
 
     private func toggleSection(title: String, isOn: Binding<Bool>) -> some View {

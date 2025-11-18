@@ -7,8 +7,8 @@ import UIKit
 
 struct WidgetColorPickerView: View {
     enum Tab: String, CaseIterable {
-        case palette = "Палитра"
-        case selected = "Выбранный"
+        case palette = "Palette"
+        case selected = "Selected"
     }
 
     let title: String
@@ -51,7 +51,7 @@ struct WidgetColorPickerView: View {
             } label: {
                 HStack {
                     Image(systemName: selection == nil ? "checkmark.circle.fill" : "circle")
-                    Text("Глобальный")
+                    Text("Global")
                         .font(.system(size: 13, weight: .semibold))
                     Spacer()
                 }
@@ -87,7 +87,7 @@ struct WidgetColorPickerView: View {
             Button {
                 isPresented = false
             } label: {
-                Label("Назад", systemImage: "chevron.left")
+                Label("Back", systemImage: "chevron.left")
                     .labelStyle(.titleAndIcon)
             }
             .buttonStyle(.plain)
@@ -134,7 +134,7 @@ struct WidgetColorPickerView: View {
             if let selection {
                 ColorChip(colorName: selection, intensity: intensity)
             } else {
-                Text("Цвет не выбран.\nИспользуйте палитру ниже, чтобы выбрать цвет.")
+                Text("No color selected.\nUse the palette below to pick one.")
                     .font(.system(size: 13))
                     .foregroundColor(.white.opacity(0.7))
                     .multilineTextAlignment(.center)
@@ -149,7 +149,7 @@ struct WidgetColorPickerView: View {
                 .background(Color.white.opacity(0.06))
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
-            Button("Очистить") {
+            Button("Clear") {
                 select(nil)
             }
             .buttonStyle(.plain)
@@ -165,12 +165,12 @@ struct WidgetColorPickerView: View {
 
     private var intensitySection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Яркость")
+            Text("Brightness")
                 .font(.caption.weight(.semibold))
                 .foregroundColor(.white.opacity(0.7))
 
             Slider(value: $intensity, in: 0...1.0) {
-                Text("Яркость")
+                Text("Brightness")
             }
             .accentColor(.white)
             .onChange(of: intensity) { _, _ in

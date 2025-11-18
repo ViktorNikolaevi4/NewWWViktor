@@ -197,6 +197,6 @@ struct ColorChip: View {
     }
 
     private var colorTitle: String {
-        colorName.map { $0 } ?? "Глобальный"
+        colorName.map { $0 } ?? "Global"
     }
 }

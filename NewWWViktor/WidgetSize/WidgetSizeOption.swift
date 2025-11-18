@@ -9,18 +9,18 @@ enum WidgetSizeOption: String, CaseIterable, Identifiable, Codable {
     var title: String {
         switch self {
         case .small:
-            return "Маленький"
+            return "Small"
         case .medium:
-            return "Средний"
+            return "Medium"
         }
     }
 
     var subtitle: String {
         switch self {
         case .small:
-            return "Компактно"
+            return "Compact"
         case .medium:
-            return "Больше контента"
+            return "More content"
         }
     }
 

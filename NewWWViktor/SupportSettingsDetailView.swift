@@ -20,9 +20,9 @@ struct SupportSettingsDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Поддержка")
+            Text("Support")
                 .font(.title3.weight(.semibold))
-            Text("Если у вас возникли вопросы, предложения или идеи, напишите нам!")
+            Text("Questions, ideas, or feedback? Reach out anytime!")
                 .font(.footnote)
                 .foregroundColor(.secondary)
         }
@@ -30,9 +30,9 @@ struct SupportSettingsDetailView: View {
 
     private var callout: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Нужна помощь?")
+            Text("Need help?")
                 .font(.headline.weight(.semibold))
-            Text("Мы всегда готовы помочь с настройкой, импортом виджетов или новыми идеями.")
+            Text("We can help with setup, imports, or brainstorming new widgets.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -45,10 +45,10 @@ struct SupportSettingsDetailView: View {
 
     private var supportList: some View {
         VStack(spacing: 16) {
-            supportRow(title: "У вас есть вопрос?", actionTitle: "Посетить FAQ")
-            supportRow(title: "Вам нужна помощь?", actionTitle: "Связаться с нами")
-            supportRow(title: "Посмотреть приветственный экран", actionTitle: "Просмотреть")
-            supportRow(title: "Есть идея нового виджета?", actionTitle: "Поделиться")
+            supportRow(title: "Have a question?", actionTitle: "Visit FAQ")
+            supportRow(title: "Need assistance?", actionTitle: "Contact us")
+            supportRow(title: "Rewatch the welcome tour", actionTitle: "Open")
+            supportRow(title: "Have an idea for a widget?", actionTitle: "Share it")
         }
         .padding()
         .background(

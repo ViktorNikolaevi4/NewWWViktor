@@ -207,7 +207,7 @@ private struct WidgetLocationPickerView: View {
 
             ScrollView {
                 VStack(spacing: 10) {
-                    LocationOptionRow(title: "Текущее местоположение",
+                    LocationOptionRow(title: "Current Location",
                                       subtitle: nil,
                                       icon: "location.fill",
                                       isSelected: selection.mode == .current) {
@@ -222,7 +222,7 @@ private struct WidgetLocationPickerView: View {
                             .tint(.white)
                             .padding(.top, 30)
                     } else if searchService.results.isEmpty {
-                        Text("Ничего не найдено")
+                        Text("No results")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.white.opacity(0.7))
                             .padding(.top, 20)
@@ -262,7 +262,7 @@ private struct WidgetLocationPickerView: View {
             Button {
                 isPresented = false
             } label: {
-                Label("Назад", systemImage: "chevron.left")
+                Label("Back", systemImage: "chevron.left")
                     .labelStyle(.titleAndIcon)
             }
             .buttonStyle(.plain)
@@ -270,7 +270,7 @@ private struct WidgetLocationPickerView: View {
 
             Spacer()
 
-            Text("Позиция")
+            Text("Location")
                 .font(.headline.weight(.semibold))
                 .foregroundColor(.white)
 
@@ -286,7 +286,7 @@ private struct WidgetLocationPickerView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.white.opacity(0.6))
 
-            TextField("Поиск города...", text: $searchText)
+            TextField("Search city...", text: $searchText)
                 .textFieldStyle(.plain)
                 .foregroundColor(.white)
         }
@@ -297,7 +297,7 @@ private struct WidgetLocationPickerView: View {
     }
 
     private var searchPlaceholder: some View {
-        Text("Введите название города, чтобы изменить зону.")
+        Text("Enter a city name to change the zone.")
             .font(.system(size: 13, weight: .semibold))
             .foregroundColor(.white.opacity(0.65))
             .multilineTextAlignment(.center)
@@ -359,8 +359,8 @@ private struct LocationOptionRow: View {
 
 //private struct WidgetColorPickerView: View {
 //    enum Tab: String, CaseIterable {
-//        case palette = "Палитра"
-//        case selected = "Выбранный"
+//        case palette = "Palette"
+//        case selected = "Selected"
 //    }
 //
 //    @Binding var isPresented: Bool
@@ -402,7 +402,7 @@ private struct LocationOptionRow: View {
 //            } label: {
 //                HStack {
 //                    Image(systemName: selection == nil ? "checkmark.circle.fill" : "circle")
-//                    Text("Глобальный")
+//                    Text("Global")
 //                        .font(.system(size: 13, weight: .semibold))
 //                    Spacer()
 //                }
@@ -438,7 +438,7 @@ private struct LocationOptionRow: View {
 //            Button {
 //                isPresented = false
 //            } label: {
-//                Label("Назад", systemImage: "chevron.left")
+//                Label("Back", systemImage: "chevron.left")
 //                    .labelStyle(.titleAndIcon)
 //            }
 //            .buttonStyle(.plain)
@@ -446,7 +446,7 @@ private struct LocationOptionRow: View {
 //
 //            Spacer()
 //
-//            Text("Основной цвет")
+//            Text("Primary Color")
 //                .font(.headline.weight(.semibold))
 //                .foregroundColor(.white)
 //
@@ -485,7 +485,7 @@ private struct LocationOptionRow: View {
 //            if let selection {
 //                ColorChip(colorName: selection, intensity: intensity)
 //            } else {
-//                Text("Цвет не выбран.\nИспользуйте палитру ниже, чтобы выбрать цвет.")
+//                Text("No color selected.\nUse the palette below to pick one.")
 //                    .font(.system(size: 13))
 //                    .foregroundColor(.white.opacity(0.7))
 //                    .multilineTextAlignment(.center)
@@ -494,7 +494,7 @@ private struct LocationOptionRow: View {
 //
 //            colorWheel
 //
-//            Button("Очистить") {
+//            Button("Clear") {
 //                select(nil)
 //            }
 //            .buttonStyle(.plain)
@@ -510,12 +510,12 @@ private struct LocationOptionRow: View {
 //
 //    private var intensitySection: some View {
 //        VStack(alignment: .leading, spacing: 8) {
-//            Text("Яркость")
+//            Text("Brightness")
 //                .font(.caption.weight(.semibold))
 //                .foregroundColor(.white.opacity(0.7))
 //
 //            Slider(value: $intensity, in: 0...1.0) {
-//                Text("Яркость")
+//                Text("Brightness")
 //            }
 //            .accentColor(.white)
 //            .onChange(of: intensity) { _ in

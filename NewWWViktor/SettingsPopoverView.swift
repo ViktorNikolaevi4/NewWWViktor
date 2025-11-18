@@ -2,20 +2,21 @@ import SwiftUI
 
 struct SettingsMenuItem: Identifiable {
     let id: String
-    let title: String
+    let titleKey: LocalizationKey
     let systemImage: String
 }
 
 struct SettingsPopoverView: View {
+    @EnvironmentObject private var localization: LocalizationManager
     let onSelect: (String) -> Void
     private let primaryItems: [SettingsMenuItem] = [
-        SettingsMenuItem(id: "general", title: "Основные", systemImage: "slider.horizontal.3"),
-        SettingsMenuItem(id: "appearance", title: "Оформление", systemImage: "paintbrush"),
-        SettingsMenuItem(id: "plan", title: "План", systemImage: "calendar"),
-        SettingsMenuItem(id: "screens", title: "Экраны", systemImage: "macwindow"),
-        SettingsMenuItem(id: "backups", title: "Резервные копии", systemImage: "externaldrive"),
-        SettingsMenuItem(id: "support", title: "Поддержка", systemImage: "lifepreserver"),
-        SettingsMenuItem(id: "about", title: "О нас", systemImage: "info.circle")
+        SettingsMenuItem(id: "general", titleKey: .categoryGeneral, systemImage: "slider.horizontal.3"),
+        SettingsMenuItem(id: "appearance", titleKey: .categoryAppearance, systemImage: "paintbrush"),
+        SettingsMenuItem(id: "plan", titleKey: .categoryPlan, systemImage: "calendar"),
+        SettingsMenuItem(id: "screens", titleKey: .categoryScreens, systemImage: "macwindow"),
+        SettingsMenuItem(id: "backups", titleKey: .categoryBackups, systemImage: "externaldrive"),
+        SettingsMenuItem(id: "support", titleKey: .categorySupport, systemImage: "lifepreserver"),
+        SettingsMenuItem(id: "about", titleKey: .categoryAbout, systemImage: "info.circle")
     ]
 
     var body: some View {
@@ -27,7 +28,7 @@ struct SettingsPopoverView: View {
             Divider()
 
             SettingsMenuRow(item: SettingsMenuItem(id: "logout",
-                                                   title: "Выйти",
+                                                   titleKey: .menuLogout,
                                                    systemImage: "power"),
                             onSelect: onSelect)
         }
@@ -45,6 +46,7 @@ struct SettingsPopoverView: View {
 private struct SettingsMenuRow: View {
     let item: SettingsMenuItem
     let onSelect: (String) -> Void
+    @EnvironmentObject private var localization: LocalizationManager
 
     var body: some View {
         Button {
@@ -57,7 +59,7 @@ private struct SettingsMenuRow: View {
                     .background(Color.white.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
-                Text(item.title)
+                Text(localization.text(item.titleKey))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.primary)
 

@@ -9,39 +9,31 @@ struct ClockWidgetView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
+            timeDisplay
 
-            // Основное время
-            Text(formattedTime(date, in: effectiveTimeZone))
-                .font(.system(size: 40, weight: .semibold, design: .rounded))
-                .monospacedDigit()
-                .foregroundStyle(timeColor)
-                .minimumScaleFactor(0.7)
-                .lineLimit(1)
+            Spacer(minLength: lowerContentSpacing)
 
-            if widget.showsDate {
-                Text(formattedDate(date, in: effectiveTimeZone))
-                    .font(.footnote)
+            VStack(alignment: .leading, spacing: 6) {
+                if widget.showsDate {
+                    HStack(spacing: 5) {
+                        Text("\(weekdayString),")
+                        Text(formattedDate(date, in: effectiveTimeZone))
+                    }
+                    .font(dateFont)
                     .foregroundStyle(secondaryColor)
-            }
+                }
 
-            // Город / зона (без реального Location, по таймзоне — как «Local»)
-            if widget.showsLocation {
-                HStack(spacing: 4) {
-                    Image(systemName: "location.fill")
-                        .font(.caption2)
-                        .foregroundStyle(secondaryColor)
-
+                if widget.showsLocation {
                     Text(locationLabel)
-                        .font(.caption2)
+                        .font(locationFont)
                         .foregroundStyle(secondaryColor)
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
             }
-
-            Spacer(minLength: 0)
+            .padding(.top, dateTopPadding)
         }
-        .padding(12)
+        .padding(contentPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onReceive(timer) { output in
             date = output
@@ -49,13 +41,9 @@ struct ClockWidgetView: View {
         .onAppear {
             locationProvider.requestLocationIfNeeded()
         }
-        // ВАЖНО: не добавляем .background / .clipShape здесь.
-        // Это делает WidgetHostView и превью-карточка, чтобы стиль везде был единый.
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(formattedTime(date, in: effectiveTimeZone)), \(formattedDate(date, in: effectiveTimeZone)), \(locationLabel)")
     }
-
-    // MARK: - Formatting
 
     private func formattedTime(_ date: Date, in timeZone: TimeZone) -> String {
         let f = DateFormatter()
@@ -73,8 +61,29 @@ struct ClockWidgetView: View {
     private func formattedDate(_ date: Date, in timeZone: TimeZone) -> String {
         let f = DateFormatter()
         f.locale = .current
-        f.setLocalizedDateFormatFromTemplate("EEEE, MMM d")
+        f.setLocalizedDateFormatFromTemplate("MMM d")
         f.timeZone = timeZone
+        return f.string(from: date)
+    }
+
+    private func formattedHourMinute(_ date: Date, in timeZone: TimeZone) -> String {
+        let f = DateFormatter()
+        f.locale = .current
+        f.timeZone = timeZone
+        if widget.prefersTwelveHour {
+            f.setLocalizedDateFormatFromTemplate("h:mm")
+        } else {
+            f.setLocalizedDateFormatFromTemplate("HH:mm")
+        }
+        return f.string(from: date)
+    }
+
+    private func formattedMeridiem(_ date: Date, in timeZone: TimeZone) -> String? {
+        guard widget.prefersTwelveHour else { return nil }
+        let f = DateFormatter()
+        f.locale = .current
+        f.timeZone = timeZone
+        f.setLocalizedDateFormatFromTemplate("a")
         return f.string(from: date)
     }
 
@@ -107,18 +116,86 @@ struct ClockWidgetView: View {
         if let raw = tz.split(separator: "/").last {
             return String(raw).replacingOccurrences(of: "_", with: " ")
         }
-            return "Local time"
+        return "Local time"
     }
 
     private var timeColor: Color {
         WidgetPaletteColor.color(named: widget.mainColorName,
                                  intensity: widget.mainColorIntensity,
-                                 fallback: .primary)
+                                 fallback: highlightColor)
     }
 
     private var secondaryColor: Color {
         WidgetPaletteColor.color(named: widget.secondaryColorName,
                                  intensity: widget.secondaryColorIntensity,
                                  fallback: .secondary)
+    }
+
+    private var highlightColor: Color {
+        Color(red: 1.0, green: 0.84, blue: 0.25)
+    }
+
+    private var contentPadding: EdgeInsets {
+        EdgeInsets(top: isSmallWidget ? 2 : 4,
+                   leading: isSmallWidget ? 4 : 6,
+                   bottom: 12,
+                   trailing: 12)
+    }
+
+    private var dateTopPadding: CGFloat {
+        isSmallWidget ? 10 : 8
+    }
+
+    private var isSmallWidget: Bool {
+        widget.sizeOption == .small
+    }
+
+    private var timeFont: Font {
+        .system(size: isSmallWidget ? 48 : 40, weight: .semibold, design: .rounded)
+    }
+
+    private var meridiemFont: Font {
+        .system(size: isSmallWidget ? 20 : 16, weight: .bold, design: .rounded)
+    }
+
+    private var dateFont: Font {
+        .system(size: isSmallWidget ? 16 : 15, weight: .medium)
+    }
+
+    private var locationFont: Font {
+        .system(size: isSmallWidget ? 18 : 16, weight: .semibold)
+    }
+
+    private var weekdayString: String {
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.setLocalizedDateFormatFromTemplate("EEE")
+        formatter.timeZone = effectiveTimeZone
+        return formatter.string(from: date).capitalized
+    }
+
+    private var lowerContentSpacing: CGFloat {
+        isSmallWidget ? 16 : 12
+    }
+
+    private var timeDisplay: some View {
+        let hourMinute = formattedHourMinute(date, in: effectiveTimeZone)
+        let meridiem = formattedMeridiem(date, in: effectiveTimeZone)
+        return HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Text(hourMinute)
+                .font(timeFont)
+                .monospacedDigit()
+                .foregroundStyle(timeColor)
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
+                .allowsTightening(true)
+            if let meridiem {
+                Text(meridiem)
+                    .font(meridiemFont)
+                    .foregroundStyle(timeColor.opacity(0.9))
+                    .textCase(.uppercase)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

@@ -187,7 +187,7 @@ struct ClockWidgetView: View {
     }
 
     private var timeDisplay: some View {
-        HStack(alignment: .bottom, spacing: 3) {
+        HStack(alignment: .center, spacing: 3) {
             // Только часы и минуты — без AM/PM внутри
             Text(formattedHourMinute(date, in: effectiveTimeZone))
                 .font(timeFont)
@@ -201,7 +201,7 @@ struct ClockWidgetView: View {
                 Text(meridiem.uppercased())
                     .font(meridiemFont)
                     .foregroundStyle(timeColor.opacity(0.8))
-                    .offset(y: -6) // ← вот эта магия поднимает PM точно как у Apple
+                    .offset(y: -8) // немного выше, как на референсе
                     .contentTransition(.opacity)
             }
         }

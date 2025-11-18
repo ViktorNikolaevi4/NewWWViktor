@@ -29,7 +29,7 @@ enum WidgetSizeOption: String, CaseIterable, Identifiable, Codable {
         case .small:
             return CGSize(width: 170, height: 180)
         case .medium:
-            return CGSize(width: 320, height: 160)
+            return CGSize(width: 360, height: 190)
         }
     }
 }

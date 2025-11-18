@@ -11,8 +11,6 @@ struct ClockWidgetView: View {
         VStack(alignment: .leading, spacing: 6) {
             timeDisplay
 
-            Spacer(minLength: lowerContentSpacing)
-
             VStack(alignment: .leading, spacing: 6) {
                 if widget.showsDate {
                     HStack(spacing: 5) {
@@ -151,11 +149,11 @@ struct ClockWidgetView: View {
     }
 
     private var timeFont: Font {
-        .system(size: isSmallWidget ? 48 : 40, weight: .semibold, design: .rounded)
+        .system(size: isSmallWidget ? 60 : 48, weight: .regular, design: .rounded)
     }
 
     private var meridiemFont: Font {
-        .system(size: isSmallWidget ? 20 : 16, weight: .bold, design: .rounded)
+        .system(size: isSmallWidget ? 15 : 13, weight: .light, design: .rounded)
     }
 
     private var dateFont: Font {
@@ -174,25 +172,23 @@ struct ClockWidgetView: View {
         return formatter.string(from: date).capitalized
     }
 
-    private var lowerContentSpacing: CGFloat {
-        isSmallWidget ? 16 : 12
-    }
-
     private var timeDisplay: some View {
         let hourMinute = formattedHourMinute(date, in: effectiveTimeZone)
         let meridiem = formattedMeridiem(date, in: effectiveTimeZone)
-        return HStack(alignment: .firstTextBaseline, spacing: 4) {
+        return HStack(alignment: .firstTextBaseline, spacing: 3) {
             Text(hourMinute)
                 .font(timeFont)
                 .monospacedDigit()
                 .foregroundStyle(timeColor)
-                .minimumScaleFactor(0.5)
+                .minimumScaleFactor(0.65)
                 .lineLimit(1)
                 .allowsTightening(true)
+                .layoutPriority(1)
             if let meridiem {
+                Spacer(minLength: 6)
                 Text(meridiem)
                     .font(meridiemFont)
-                    .foregroundStyle(timeColor.opacity(0.9))
+                    .foregroundStyle(timeColor.opacity(0.85))
                     .textCase(.uppercase)
             }
         }

@@ -9,6 +9,8 @@ final class LocationProvider: NSObject, ObservableObject {
     private let manager = CLLocationManager()
     private let geocoder = CLGeocoder()
     private var lastRequestDate: Date?
+    private var preferredLocale: Locale = .current
+    private var lastKnownLocation: CLLocation?
 
     override init() {
         super.init()
@@ -22,6 +24,14 @@ final class LocationProvider: NSObject, ObservableObject {
 
     func refresh() {
         requestLocation(forced: true)
+    }
+
+    func updatePreferredLocale(_ locale: Locale) {
+        guard preferredLocale.identifier != locale.identifier else { return }
+        preferredLocale = locale
+        if let lastKnownLocation {
+            geocode(location: lastKnownLocation)
+        }
     }
 
     private func requestLocation(forced: Bool) {
@@ -56,7 +66,19 @@ extension LocationProvider: CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        geocoder.reverseGeocodeLocation(location) { placemarks, error in
+        lastKnownLocation = location
+        geocode(location: location)
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        DispatchQueue.main.async {
+            self.cityName = "Location unavailable"
+            self.currentTimeZone = .current
+        }
+    }
+
+    private func geocode(location: CLLocation) {
+        geocoder.reverseGeocodeLocation(location, preferredLocale: preferredLocale) { placemarks, error in
             if error != nil {
                 DispatchQueue.main.async {
                     self.cityName = "Location unavailable"
@@ -74,13 +96,6 @@ extension LocationProvider: CLLocationManagerDelegate {
                 self.cityName = city ?? "Current location"
                 self.currentTimeZone = bestMatch?.timeZone ?? .current
             }
-        }
-    }
-
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        DispatchQueue.main.async {
-            self.cityName = "Location unavailable"
-            self.currentTimeZone = .current
         }
     }
 }

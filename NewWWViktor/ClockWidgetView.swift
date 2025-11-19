@@ -3,6 +3,7 @@ import Combine
 
 struct ClockWidgetView: View {
     let widget: WidgetInstance
+    @EnvironmentObject private var localization: LocalizationManager
     @State private var date = Date()
     @StateObject private var locationProvider = LocationProvider()
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -37,7 +38,11 @@ struct ClockWidgetView: View {
             date = output
         }
         .onAppear {
+            locationProvider.updatePreferredLocale(interfaceLocale)
             locationProvider.requestLocationIfNeeded()
+        }
+        .onChange(of: localization.selectedLanguage) { _, _ in
+            locationProvider.updatePreferredLocale(interfaceLocale)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(formattedTime(date, in: effectiveTimeZone)), \(formattedDate(date, in: effectiveTimeZone)), \(locationLabel)")
@@ -45,7 +50,7 @@ struct ClockWidgetView: View {
 
     private func formattedTime(_ date: Date, in timeZone: TimeZone) -> String {
         let f = DateFormatter()
-        f.locale = .current
+        f.locale = interfaceLocale
         f.timeZone = timeZone
         if widget.prefersTwelveHour {
             f.setLocalizedDateFormatFromTemplate("h:mm a")
@@ -58,7 +63,7 @@ struct ClockWidgetView: View {
 
     private func formattedDate(_ date: Date, in timeZone: TimeZone) -> String {
         let f = DateFormatter()
-        f.locale = .current
+        f.locale = interfaceLocale
         f.setLocalizedDateFormatFromTemplate("MMM d")
         f.timeZone = timeZone
         return f.string(from: date)
@@ -85,7 +90,7 @@ struct ClockWidgetView: View {
     private func formattedMeridiem(_ date: Date, in timeZone: TimeZone) -> String? {
         guard widget.prefersTwelveHour else { return nil }
         let f = DateFormatter()
-        f.locale = .current
+        f.locale = interfaceLocale
         f.timeZone = timeZone
         f.setLocalizedDateFormatFromTemplate("a")
         return f.string(from: date)
@@ -102,7 +107,7 @@ struct ClockWidgetView: View {
                 }
                 return city
             }
-            return "Selected city"
+            return localization.text(.widgetSelectedCityFallback)
         }
     }
 
@@ -120,7 +125,7 @@ struct ClockWidgetView: View {
         if let raw = tz.split(separator: "/").last {
             return String(raw).replacingOccurrences(of: "_", with: " ")
         }
-        return "Local time"
+        return localization.text(.widgetLocalTimeFallback)
     }
 
     private var timeColor: Color {
@@ -180,7 +185,7 @@ struct ClockWidgetView: View {
 
     private var weekdayString: String {
         let formatter = DateFormatter()
-        formatter.locale = .current
+        formatter.locale = interfaceLocale
         formatter.setLocalizedDateFormatFromTemplate("EEE")
         formatter.timeZone = effectiveTimeZone
         return formatter.string(from: date).capitalized
@@ -208,5 +213,11 @@ struct ClockWidgetView: View {
         .lineLimit(1)
         .minimumScaleFactor(0.5) // apply once to the HStack to avoid ellipsis
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private extension ClockWidgetView {
+    var interfaceLocale: Locale {
+        localization.selectedLanguage.locale
     }
 }

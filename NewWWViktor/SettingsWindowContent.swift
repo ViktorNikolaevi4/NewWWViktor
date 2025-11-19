@@ -118,6 +118,7 @@ private struct GeneralSettingsDetailView: View {
     @EnvironmentObject private var localization: LocalizationManager
     @EnvironmentObject private var appIconController: AppIconController
     @StateObject private var launchAtLoginManager = LaunchAtLoginManager()
+    @State private var languageSelection: LocalizationManager.Language = .english
     @State private var duplicateMonitors = false
     @State private var duplicateSpaces = true
     @State private var hideWidgets = false
@@ -213,6 +214,13 @@ private struct GeneralSettingsDetailView: View {
         }
         .padding(.horizontal, 24)
         .frame(maxWidth: .infinity)
+        .onAppear {
+            languageSelection = localization.selectedLanguage
+        }
+        .onChange(of: localization.selectedLanguage) { newValue in
+            guard languageSelection != newValue else { return }
+            languageSelection = newValue
+        }
     }
 
     private var header: some View {
@@ -226,16 +234,11 @@ private struct GeneralSettingsDetailView: View {
     }
 
     private var languageSection: some View {
-        let binding = Binding(
-            get: { localization.selectedLanguage },
-            set: { localization.setLanguage($0) }
-        )
-
-        return section(title: localization.text(.languageSectionTitle)) {
+        section(title: localization.text(.languageSectionTitle)) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(localization.text(.languageDescription))
                     .foregroundColor(.secondary)
-                Picker("", selection: binding) {
+                Picker("", selection: $languageSelection) {
                     Text(localization.text(.languageEnglishOption))
                         .tag(LocalizationManager.Language.english)
                     Text(localization.text(.languageRussianOption))
@@ -244,6 +247,9 @@ private struct GeneralSettingsDetailView: View {
                 .pickerStyle(.segmented)
                 .frame(width: 260)
             }
+        }
+        .onChange(of: languageSelection) { newValue in
+            localization.setLanguage(newValue)
         }
     }
 

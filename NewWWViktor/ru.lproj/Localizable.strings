@@ -42,3 +42,8 @@
 "panelChooseWidget" = "Выберите виджет для добавления";
 "panelClearWidgets" = "Удалить все виджеты";
 "menuLogout" = "Выйти";
+"widgetSelectedCityFallback" = "Выбранный город";
+"widgetLocalTimeFallback" = "Местное время";
+"widgetCategoryLabel" = "Виджет";
+"widgetClockDetailTitle" = "Часы";
+"widgetClockDetailDescription" = "Следите за временем у себя, друзей и даже соперников в одном виджете.";

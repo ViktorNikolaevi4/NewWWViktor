@@ -5,51 +5,27 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var title: String {
+    var categoryLabelKey: LocalizationKey {
         switch self {
-        case .clock: return "Clock"
+        case .clock: return .widgetCategoryLabel
         }
     }
 
-    var subtitle: String {
+    var detailTitleKey: LocalizationKey {
         switch self {
-        case .clock: return "Clean time, date & city widget"
+        case .clock: return .widgetClockDetailTitle
         }
     }
 
-    var categoryLabel: String {
+    var detailDescriptionKey: LocalizationKey {
         switch self {
-        case .clock: return "Widget"
+        case .clock: return .widgetClockDetailDescription
         }
     }
 
-    var heroTitle: String {
+    var detailLinkTitleKey: LocalizationKey? {
         switch self {
-        case .clock: return "Moscow"
-        }
-    }
-
-    var heroSubtitle: String {
-        switch self {
-        case .clock: return "Saturday, 15 November"
-        }
-    }
-
-    var detailTitle: String {
-        switch self {
-        case .clock: return "Clock"
-        }
-    }
-
-    var detailDescription: String {
-        switch self {
-        case .clock: return "Track local time for yourself, friends, and even rivals all in one widget."
-        }
-    }
-
-    var detailLinkTitle: String {
-        switch self {
-        case .clock: return ""
+        case .clock: return nil
         }
     }
 

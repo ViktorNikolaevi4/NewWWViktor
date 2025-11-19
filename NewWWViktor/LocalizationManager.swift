@@ -41,6 +41,11 @@ enum LocalizationKey: String {
     case menuLogout
     case panelChooseWidget
     case panelClearWidgets
+    case widgetSelectedCityFallback
+    case widgetLocalTimeFallback
+    case widgetCategoryLabel
+    case widgetClockDetailTitle
+    case widgetClockDetailDescription
 }
 
 final class LocalizationManager: ObservableObject {
@@ -49,6 +54,17 @@ final class LocalizationManager: ObservableObject {
         case russian = "ru"
 
         var id: String { rawValue }
+
+        var locale: Locale {
+            Locale(identifier: localeIdentifier)
+        }
+
+        private var localeIdentifier: String {
+            switch self {
+            case .english: return "en_US"
+            case .russian: return "ru_RU"
+            }
+        }
     }
 
     @Published var selectedLanguage: Language {
@@ -75,6 +91,7 @@ final class LocalizationManager: ObservableObject {
     }
 
     func setLanguage(_ language: Language) {
+        guard language != selectedLanguage else { return }
         selectedLanguage = language
     }
 

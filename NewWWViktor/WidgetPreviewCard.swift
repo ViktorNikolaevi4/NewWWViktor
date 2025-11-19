@@ -5,6 +5,7 @@ struct WidgetPreviewCard: View {
     let type: WidgetType
     let onAdd: (WidgetSizeOption) -> Void
 
+    @EnvironmentObject private var localization: LocalizationManager
     @State private var isHovered = false
     @State private var isPressed = false
     @State private var previewSizeOption: WidgetSizeOption = .medium
@@ -40,7 +41,7 @@ struct WidgetPreviewCard: View {
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                Text(type.categoryLabel.uppercased())
+                Text(localization.text(type.categoryLabelKey).uppercased())
                     .font(.caption.weight(.semibold))
                 .foregroundColor(.secondary)
                 Spacer()
@@ -138,15 +139,17 @@ struct WidgetPreviewCard: View {
 
     private var infoSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(type.detailTitle)
+            Text(localization.text(type.detailTitleKey))
                 .font(.headline.weight(.semibold))
-            Text(type.detailDescription)
+            Text(localization.text(type.detailDescriptionKey))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 
-            Text(type.detailLinkTitle)
-                .font(.footnote.weight(.semibold))
-                .foregroundColor(.primary)
+            if let linkKey = type.detailLinkTitleKey {
+                Text(localization.text(linkKey))
+                    .font(.footnote.weight(.semibold))
+                    .foregroundColor(.primary)
+            }
         }
     }
 

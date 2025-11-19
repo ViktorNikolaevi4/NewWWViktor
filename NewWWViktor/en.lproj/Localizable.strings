@@ -42,3 +42,8 @@
 "panelChooseWidget" = "Choose a widget to add";
 "panelClearWidgets" = "Clear all widgets";
 "menuLogout" = "Log out";
+"widgetSelectedCityFallback" = "Selected city";
+"widgetLocalTimeFallback" = "Local time";
+"widgetCategoryLabel" = "Widget";
+"widgetClockDetailTitle" = "Clock";
+"widgetClockDetailDescription" = "Track local time for yourself, friends, and even rivals all in one widget.";

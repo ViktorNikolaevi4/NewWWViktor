@@ -225,26 +225,6 @@ private struct GeneralSettingsDetailView: View {
         }
     }
 
-    private func section<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.headline.weight(.semibold))
-            HStack {
-                content()
-                Spacer()
-            }
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.white.opacity(0.04))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(Color.white.opacity(0.05))
-                )
-        )
-    }
-
     private var languageSection: some View {
         section(title: localization.text(.languageSectionTitle)) {
             VStack(alignment: .leading, spacing: 8) {

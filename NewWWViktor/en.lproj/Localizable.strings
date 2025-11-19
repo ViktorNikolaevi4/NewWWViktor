@@ -5,3 +5,39 @@
   Created by Виктор Корольков on 19.11.2025.
   
 */
+"placeholderComingSoon" = "Content coming soon";
+"categoryGeneral" = "General";
+"categoryAppearance" = "Appearance";
+"categoryPlan" = "Plan";
+"categoryBackups" = "Backups";
+"categoryScreens" = "Screens";
+"categorySupport" = "Support";
+"categoryAbout" = "About";
+"generalSubtitle" = "Control how miniWW behaves and tune your workspace.";
+"launchAtLogin" = "Launch at login (recommended)";
+"appIconSectionTitle" = "App icon";
+"appIconMenuOnly" = "Show in menu bar";
+"appIconDockOnly" = "Show in Dock";
+"appIconBoth" = "Show in menu bar & Dock";
+"languageSectionTitle" = "Language";
+"languageDescription" = "Switch the interface language.";
+"languageEnglishOption" = "English";
+"mirrorDisplays" = "Mirror on all displays";
+"mirrorSpaces" = "Mirror on all spaces";
+"hideWidgets" = "Hide widgets";
+"pinWidgets" = "Pin widgets to desktop";
+"gridSize" = "Grid size";
+"gridOptionMacOS" = "macOS";
+"gridOptionWidgetWall" = "WidgetWall";
+"snapToGrid" = "Snap to grid";
+"focusOnHover" = "Focus on hover";
+"scrollBarsTitle" = "Show system scroll bars";
+"scrollBarsAutomatic" = "Automatic";
+"scrollBarsAlways" = "Always";
+"notificationsTitle" = "Notifications";
+"notificationsButton" = "Manage notifications";
+"resetTitle" = "Reset";
+"resetButton" = "Reset all settings";
+"panelChooseWidget" = "Choose a widget to add";
+"panelClearWidgets" = "Clear all widgets";
+"menuLogout" = "Log out";

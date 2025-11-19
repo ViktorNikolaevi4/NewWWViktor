@@ -245,59 +245,18 @@ private struct GeneralSettingsDetailView: View {
         )
     }
 
-    @ViewBuilder
     private var languageSection: some View {
         section(title: localization.text(.languageSectionTitle)) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(localization.text(.languageDescription))
                     .foregroundColor(.secondary)
-                Picker("",
-                       selection: Binding(
-                        get: { localization.pendingLanguage },
-                        set: { localization.requestLanguageChange(to: $0) }
-                       )) {
-                    ForEach(AppLanguage.allCases) { language in
-                        Text(language.displayName).tag(language)
-                    }
+                Picker("", selection: .constant(0)) {
+                    Text(localization.text(.languageEnglishOption)).tag(0)
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 260)
             }
         }
-        .alert(localization.text(.languageRestartTitle),
-               isPresented: Binding(
-                get: { localization.showingRestartPrompt },
-                set: { value in
-                    DispatchQueue.main.async {
-                        localization.showingRestartPrompt = value
-                    }
-                }
-               )) {
-            Button(localization.text(.languageRestartLater), role: .cancel) {
-                DispatchQueue.main.async {
-                    localization.pendingLanguage = localization.language
-                    localization.showingRestartPrompt = false
-                }
-            }
-            Button(localization.text(.languageRestartNow)) {
-                DispatchQueue.main.async {
-                    localization.showingRestartPrompt = false
-                }
-                localization.confirmLanguageChange()
-                relaunchApp()
-            }
-        } message: {
-            Text(localization.text(.languageRestartMessage))
-        }
-    }
-
-    private func relaunchApp() {
-        guard let executableURL = Bundle.main.executableURL else { return }
-        let configuration = NSWorkspace.OpenConfiguration()
-        NSWorkspace.shared.openApplication(at: executableURL,
-                                           configuration: configuration,
-                                           completionHandler: nil)
-        NSApplication.shared.terminate(nil)
     }
 
     private func toggleSection(title: String, isOn: Binding<Bool>) -> some View {

@@ -16,7 +16,7 @@ struct MiniWWApp: App {
         let localizationManager = LocalizationManager()
         _localizationManager = StateObject(wrappedValue: localizationManager)
 
-        let manager = WidgetManager()
+        let manager = WidgetManager(localizationManager: localizationManager)
         self.manager = manager
         let settingsCoordinator = SettingsCoordinator()
         self.settingsCoordinator = settingsCoordinator
@@ -28,7 +28,6 @@ struct MiniWWApp: App {
         self.panelController = controller
         manager.panelController = controller
         manager.settingsCoordinator = settingsCoordinator
-        manager.localizationManager = localizationManager
         settingsCoordinator.appIconController = iconController
         settingsCoordinator.localizationManager = localizationManager
         self.statusItemController = StatusItemController(panelController: controller,

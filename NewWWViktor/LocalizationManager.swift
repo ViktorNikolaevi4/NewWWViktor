@@ -21,6 +21,7 @@ enum LocalizationKey: String {
     case languageSectionTitle
     case languageDescription
     case languageEnglishOption
+    case languageRussianOption
     case mirrorDisplays
     case mirrorSpaces
     case hideWidgets
@@ -43,50 +44,59 @@ enum LocalizationKey: String {
 }
 
 final class LocalizationManager: ObservableObject {
-    func text(_ key: LocalizationKey) -> String {
-        LocalizationManager.translations[key] ?? key.rawValue
+    enum Language: String, CaseIterable, Identifiable {
+        case english = "en"
+        case russian = "ru"
+
+        var id: String { rawValue }
     }
-}
 
-extension LocalizationManager {
-    private static let translations: [LocalizationKey: String] = [
-        .placeholderComingSoon: "Content coming soon",
+    @Published var selectedLanguage: Language {
+        didSet {
+            guard oldValue != selectedLanguage else { return }
+            bundle = LocalizationManager.bundle(for: selectedLanguage)
+            storage.set(selectedLanguage.rawValue, forKey: Self.storageKey)
+        }
+    }
 
-        .categoryGeneral: "General",
-        .categoryAppearance: "Appearance",
-        .categoryPlan: "Plan",
-        .categoryBackups: "Backups",
-        .categoryScreens: "Screens",
-        .categorySupport: "Support",
-        .categoryAbout: "About",
+    private var bundle: Bundle
+    private let storage: UserDefaults
+    private static let storageKey = "miniww.localization.language"
 
-        .generalSubtitle: "Control how miniWW behaves and tune your workspace.",
-        .launchAtLogin: "Launch at login (recommended)",
-        .appIconSectionTitle: "App icon",
-        .appIconMenuOnly: "Show in menu bar",
-        .appIconDockOnly: "Show in Dock",
-        .appIconBoth: "Show in menu bar & Dock",
-        .languageSectionTitle: "Language",
-        .languageDescription: "Switch the interface language.",
-        .languageEnglishOption: "English",
-        .mirrorDisplays: "Mirror on all displays",
-        .mirrorSpaces: "Mirror on all spaces",
-        .hideWidgets: "Hide widgets",
-        .pinWidgets: "Pin widgets to desktop",
-        .gridSize: "Grid size",
-        .gridOptionMacOS: "macOS",
-        .gridOptionWidgetWall: "WidgetWall",
-        .snapToGrid: "Snap to grid",
-        .focusOnHover: "Focus on hover",
-        .scrollBarsTitle: "Show system scroll bars",
-        .scrollBarsAutomatic: "Automatic",
-        .scrollBarsAlways: "Always",
-        .notificationsTitle: "Notifications",
-        .notificationsButton: "Manage notifications",
-        .resetTitle: "Reset",
-        .resetButton: "Reset all settings",
-        .panelChooseWidget: "Choose a widget to add",
-        .panelClearWidgets: "Clear all widgets",
-        .menuLogout: "Log out"
-    ]
+    init(storage: UserDefaults = .standard) {
+        self.storage = storage
+        let initialLanguage = LocalizationManager.loadInitialLanguage(from: storage)
+        self.selectedLanguage = initialLanguage
+        self.bundle = LocalizationManager.bundle(for: initialLanguage)
+    }
+
+    func text(_ key: LocalizationKey) -> String {
+        bundle.localizedString(forKey: key.rawValue, value: nil, table: nil)
+    }
+
+    func setLanguage(_ language: Language) {
+        selectedLanguage = language
+    }
+
+    private static func loadInitialLanguage(from storage: UserDefaults) -> Language {
+        if let stored = storage.string(forKey: storageKey),
+           let language = Language(rawValue: stored) {
+            return language
+        }
+
+        if let preferred = Bundle.main.preferredLocalizations.first,
+           let language = Language(rawValue: preferred) {
+            return language
+        }
+
+        return .english
+    }
+
+    private static func bundle(for language: Language) -> Bundle {
+        guard let path = Bundle.main.path(forResource: language.rawValue, ofType: "lproj"),
+              let bundle = Bundle(path: path) else {
+            return .main
+        }
+        return bundle
+    }
 }

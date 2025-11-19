@@ -20,8 +20,9 @@
 "appIconDockOnly" = "Show in Dock";
 "appIconBoth" = "Show in menu bar & Dock";
 "languageSectionTitle" = "Language";
-"languageDescription" = "Switch the interface language.";
+"languageDescription" = "Choose the interface language. Changes are applied instantly.";
 "languageEnglishOption" = "English";
+"languageRussianOption" = "Russian";
 "mirrorDisplays" = "Mirror on all displays";
 "mirrorSpaces" = "Mirror on all spaces";
 "hideWidgets" = "Hide widgets";

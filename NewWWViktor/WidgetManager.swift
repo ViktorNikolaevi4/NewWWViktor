@@ -14,7 +14,8 @@ final class WidgetManager: ObservableObject {
     private var windows: [UUID: NSWindow] = [:]
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
 
-    init() {
+    init(localizationManager: LocalizationManager? = nil) {
+        self.localizationManager = localizationManager
         load()
         widgets.forEach { attachWindow(for: $0) }
     }

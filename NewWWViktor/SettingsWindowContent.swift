@@ -226,12 +226,20 @@ private struct GeneralSettingsDetailView: View {
     }
 
     private var languageSection: some View {
-        section(title: localization.text(.languageSectionTitle)) {
+        let binding = Binding(
+            get: { localization.selectedLanguage },
+            set: { localization.setLanguage($0) }
+        )
+
+        return section(title: localization.text(.languageSectionTitle)) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(localization.text(.languageDescription))
                     .foregroundColor(.secondary)
-                Picker("", selection: .constant(0)) {
-                    Text(localization.text(.languageEnglishOption)).tag(0)
+                Picker("", selection: binding) {
+                    Text(localization.text(.languageEnglishOption))
+                        .tag(LocalizationManager.Language.english)
+                    Text(localization.text(.languageRussianOption))
+                        .tag(LocalizationManager.Language.russian)
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 260)

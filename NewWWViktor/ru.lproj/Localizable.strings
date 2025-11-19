@@ -20,8 +20,9 @@
 "appIconDockOnly" = "Показывать в Dock";
 "appIconBoth" = "Показывать в строке и в Dock";
 "languageSectionTitle" = "Язык";
-"languageDescription" = "Выберите язык интерфейса.";
+"languageDescription" = "Выберите язык интерфейса. Изменения применяются сразу.";
 "languageEnglishOption" = "Английский";
+"languageRussianOption" = "Русский";
 "mirrorDisplays" = "Дублировать на всех мониторах";
 "mirrorSpaces" = "Дублировать на всех пространствах";
 "hideWidgets" = "Скрыть виджеты";

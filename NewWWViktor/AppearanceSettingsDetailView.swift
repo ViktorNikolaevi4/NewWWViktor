@@ -269,6 +269,7 @@ enum ColorAccent: String, CaseIterable, Identifiable {
 
 enum BackgroundStyle: String, CaseIterable, Identifiable {
     case solid
+    case palette
     case gradient
     case photo
 
@@ -277,6 +278,7 @@ enum BackgroundStyle: String, CaseIterable, Identifiable {
     var systemImage: String {
         switch self {
         case .solid: return "square.fill"
+        case .palette: return "paintpalette"
         case .gradient: return "square.split.2x1"
         case .photo: return "photo"
         }
@@ -316,6 +318,7 @@ private extension BackgroundStyle {
     var localizationKey: LocalizationKey {
         switch self {
         case .solid: return .appearanceBackgroundSolid
+        case .palette: return .appearanceBackgroundPalette
         case .gradient: return .appearanceBackgroundGradient
         case .photo: return .appearanceBackgroundPhoto
         }

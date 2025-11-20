@@ -66,6 +66,7 @@ enum LocalizationKey: String {
     case appearanceBackgroundSolid
     case appearanceBackgroundGradient
     case appearanceBackgroundPhoto
+    case appearanceBackgroundPalette
     case appearanceImageSourceLabel
     case appearanceImageSourcePhotos
     case appearanceImageSourceFiles

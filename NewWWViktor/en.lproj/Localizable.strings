@@ -67,6 +67,7 @@
 "appearanceBackgroundSolid" = "Color";
 "appearanceBackgroundGradient" = "Gradient";
 "appearanceBackgroundPhoto" = "Photo";
+"appearanceBackgroundPalette" = "Palette";
 "appearanceImageSourceLabel" = "Image Source";
 "appearanceImageSourcePhotos" = "Photos";
 "appearanceImageSourceFiles" = "Files";

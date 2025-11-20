@@ -67,6 +67,7 @@
 "appearanceBackgroundSolid" = "Цвет";
 "appearanceBackgroundGradient" = "Градиент";
 "appearanceBackgroundPhoto" = "Фото";
+"appearanceBackgroundPalette" = "Палитра";
 "appearanceImageSourceLabel" = "Источник изображения";
 "appearanceImageSourcePhotos" = "Фото";
 "appearanceImageSourceFiles" = "Файлы";

@@ -85,7 +85,10 @@ final class WidgetManager: ObservableObject {
     func addWidget(type: WidgetType, size: WidgetSizeOption = .medium) {
         var instance = WidgetInstance(type: type)
         instance.applySizeOption(size)
-        // Could be distributed via grid/stack layouts later
+        // Place near the grid with the first free slot.
+        let origin = nextGridOrigin(for: instance)
+        instance.x = origin.x
+        instance.y = origin.y
         widgets.append(instance)
         attachWindow(for: instance)
     }
@@ -144,6 +147,43 @@ final class WidgetManager: ObservableObject {
         let clampedX = max(minX, min(origin.x, maxX))
         let clampedY = max(minY, min(origin.y, maxY))
         return CGPoint(x: clampedX, y: clampedY)
+    }
+
+    // Find the first free spot in a grid-like scan, starting from top-left of visible screen.
+    private func nextGridOrigin(for instance: WidgetInstance) -> CGPoint {
+        let spacing = gridMode.spacing
+        let size = CGSize(width: instance.width, height: instance.height)
+        guard let screenFrame = NSScreen.main?.visibleFrame else {
+            return CGPoint(x: safeInset, y: safeInset)
+        }
+
+        let startX = screenFrame.minX + safeInset
+        let startY = screenFrame.maxY - size.height - safeInset
+        let maxX = screenFrame.maxX - size.width - safeInset
+        let minY = screenFrame.minY + safeInset
+
+        let stepX = size.width + spacing
+        let stepY = size.height + spacing
+
+        let existingFrames = widgets.map {
+            NSRect(x: $0.x, y: $0.y, width: $0.width, height: $0.height)
+        }
+
+        var y = startY
+        while y >= minY {
+            var x = startX
+            while x <= maxX {
+                let candidate = NSRect(x: x, y: y, width: size.width, height: size.height)
+                if !existingFrames.contains(where: { $0.intersects(candidate) }) {
+                    return CGPoint(x: x, y: y)
+                }
+                x += stepX
+            }
+            y -= stepY
+        }
+
+        // Fallback: clamp at start.
+        return clamp(origin: CGPoint(x: startX, y: startY), size: size, screen: NSScreen.main)
     }
 
     func removeAllWidgets() {

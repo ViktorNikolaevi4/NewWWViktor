@@ -46,6 +46,7 @@ final class WidgetManager: ObservableObject {
             UserDefaults.standard.set(gridMode.rawValue, forKey: gridModeKey)
         }
     }
+    @Published private(set) var globalColorsVersion: Int = 0
     weak var panelController: SidePanelWindowController?
     weak var settingsCoordinator: SettingsCoordinator?
     weak var localizationManager: LocalizationManager?
@@ -53,10 +54,20 @@ final class WidgetManager: ObservableObject {
     private var windows: [UUID: NSWindow] = [:]
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
     private var mouseUpMonitor: Any?
+    private var appearanceObserver: NSObjectProtocol?
     private let hideWidgetsKey = "miniww.widgets.hidden"
     private let snapToGridKey = "miniww.widgets.snap"
     private let gridModeKey = "miniww.widgets.gridmode"
     private let safeInset: CGFloat = 4 // чуть ближе к краям, но не вылезая за visibleFrame
+    // Global appearance keys (shared with AppearanceSettingsDetailView)
+    private let primaryColorKey = "appearance.primaryColorName"
+    private let primaryIntensityKey = "appearance.primaryIntensity"
+    private let secondaryColorKey = "appearance.secondaryColorName"
+    private let secondaryIntensityKey = "appearance.secondaryIntensity"
+    private(set) var globalPrimaryColorName: String?
+    private(set) var globalPrimaryIntensity: Double = 1.0
+    private(set) var globalSecondaryColorName: String?
+    private(set) var globalSecondaryIntensity: Double = 1.0
 
     init(localizationManager: LocalizationManager? = nil) {
         let hidden = UserDefaults.standard.object(forKey: hideWidgetsKey) as? Bool ?? false
@@ -67,11 +78,22 @@ final class WidgetManager: ObservableObject {
         _snapToGrid = Published(initialValue: snapStored)
         _gridMode = Published(initialValue: gridStored)
         self.localizationManager = localizationManager
+        loadGlobalColors()
         load()
         widgets.forEach { attachWindow(for: $0) }
 
         mouseUpMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] _ in
             self?.snapAllWidgetsToGrid()
+        }
+
+        appearanceObserver = NotificationCenter.default.addObserver(
+            forName: Notification.Name("appearance.colors.changed"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            self.loadGlobalColors()
+            self.globalColorsVersion &+= 1
         }
     }
 
@@ -79,6 +101,9 @@ final class WidgetManager: ObservableObject {
         windowCloseObservers.values.forEach(NotificationCenter.default.removeObserver)
         if let monitor = mouseUpMonitor {
             NSEvent.removeMonitor(monitor)
+        }
+        if let observer = appearanceObserver {
+            NotificationCenter.default.removeObserver(observer)
         }
     }
 
@@ -101,6 +126,15 @@ final class WidgetManager: ObservableObject {
             NotificationCenter.default.removeObserver(observer)
             windowCloseObservers[id] = nil
         }
+    }
+
+    private func loadGlobalColors() {
+        let defaults = UserDefaults.standard
+        globalPrimaryColorName = defaults.string(forKey: primaryColorKey)
+        globalSecondaryColorName = defaults.string(forKey: secondaryColorKey)
+        globalPrimaryIntensity = defaults.object(forKey: primaryIntensityKey) as? Double ?? 1.0
+        globalSecondaryIntensity = defaults.object(forKey: secondaryIntensityKey) as? Double ?? 1.0
+        globalColorsVersion &+= 1
     }
 
     private func snapAllWidgetsToGrid() {

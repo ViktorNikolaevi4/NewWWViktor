@@ -3,6 +3,7 @@ import Combine
 
 struct ClockWidgetView: View {
     let widget: WidgetInstance
+    @EnvironmentObject private var manager: WidgetManager
     @EnvironmentObject private var localization: LocalizationManager
     @State private var date = Date()
     @StateObject private var locationProvider = LocationProvider()
@@ -129,14 +130,20 @@ struct ClockWidgetView: View {
     }
 
     private var timeColor: Color {
-        WidgetPaletteColor.color(named: widget.mainColorName,
-                                 intensity: widget.mainColorIntensity,
+        let name = widget.mainColorName ?? manager.globalPrimaryColorName
+        let intensity = widget.mainColorName == nil ? manager.globalPrimaryIntensity : widget.mainColorIntensity
+        _ = manager.globalColorsVersion // dependency to refresh when global colors change
+        return WidgetPaletteColor.color(named: name,
+                                 intensity: intensity,
                                  fallback: highlightColor)
     }
 
     private var secondaryColor: Color {
-        WidgetPaletteColor.color(named: widget.secondaryColorName,
-                                 intensity: widget.secondaryColorIntensity,
+        let name = widget.secondaryColorName ?? manager.globalSecondaryColorName
+        let intensity = widget.secondaryColorName == nil ? manager.globalSecondaryIntensity : widget.secondaryColorIntensity
+        _ = manager.globalColorsVersion
+        return WidgetPaletteColor.color(named: name,
+                                 intensity: intensity,
                                  fallback: .secondary)
     }
 

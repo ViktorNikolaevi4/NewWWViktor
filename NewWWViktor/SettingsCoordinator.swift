@@ -42,6 +42,7 @@ final class SettingsCoordinator: ObservableObject {
     @Published var selectedCategory: SettingsCategory = .general
 
     private var window: NSWindow?
+    private var hasPositionedWindow = false
     var appIconController: AppIconController?
     var localizationManager: LocalizationManager?
 
@@ -53,7 +54,7 @@ final class SettingsCoordinator: ObservableObject {
         guard let window else { return }
 
         if !window.isVisible {
-            window.center()
+            applyInitialWindowPositionIfNeeded(for: window)
         }
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -90,5 +91,18 @@ final class SettingsCoordinator: ObservableObject {
         window.backgroundColor = .clear
         window.contentViewController = hosting
         self.window = window
+    }
+
+    // Position the settings window near the lower-left edge only on the first presentation.
+    private func applyInitialWindowPositionIfNeeded(for window: NSWindow) {
+        guard !hasPositionedWindow else { return }
+        guard let screen = window.screen ?? NSScreen.main ?? NSScreen.screens.first else { return }
+
+        let padding: CGFloat = 72
+        var frame = window.frame
+        frame.origin = NSPoint(x: screen.visibleFrame.minX + padding,
+                               y: screen.visibleFrame.minY + padding)
+        window.setFrame(frame, display: false)
+        hasPositionedWindow = true
     }
 }

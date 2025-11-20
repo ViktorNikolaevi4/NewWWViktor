@@ -119,8 +119,6 @@ private struct GeneralSettingsDetailView: View {
     @EnvironmentObject private var appIconController: AppIconController
     @StateObject private var launchAtLoginManager = LaunchAtLoginManager()
     @State private var languageSelection: LocalizationManager.Language = .english
-    @State private var duplicateMonitors = false
-    @State private var duplicateSpaces = true
     @State private var hideWidgets = false
     @State private var pinWidgets = true
     @State private var gridSize = 0
@@ -160,12 +158,6 @@ private struct GeneralSettingsDetailView: View {
                     }
 
                     languageSection
-
-                    toggleSection(title: localization.text(.mirrorDisplays),
-                                  isOn: $duplicateMonitors)
-
-                    toggleSection(title: localization.text(.mirrorSpaces),
-                                  isOn: $duplicateSpaces)
 
                     toggleSection(title: localization.text(.hideWidgets),
                                   isOn: $hideWidgets)

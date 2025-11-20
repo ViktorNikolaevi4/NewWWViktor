@@ -56,7 +56,7 @@ final class WidgetManager: ObservableObject {
     private let hideWidgetsKey = "miniww.widgets.hidden"
     private let snapToGridKey = "miniww.widgets.snap"
     private let gridModeKey = "miniww.widgets.gridmode"
-    private let safeInset: CGFloat = 12 // не позволяем виджетам уходить за границы visibleFrame
+    private let safeInset: CGFloat = 4 // чуть ближе к краям, но не вылезая за visibleFrame
 
     init(localizationManager: LocalizationManager? = nil) {
         let hidden = UserDefaults.standard.object(forKey: hideWidgetsKey) as? Bool ?? false

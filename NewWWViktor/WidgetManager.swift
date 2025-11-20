@@ -7,6 +7,18 @@ private extension NSWindow.Level {
     static let desktopAboveIcons = NSWindow.Level(Int(CGWindowLevelForKey(.desktopIconWindow)) + 1)
 }
 
+enum WidgetGridMode: Int, Codable {
+    case macOS = 0
+    case widgetWall = 1
+
+    var spacing: CGFloat {
+        switch self {
+        case .macOS: return 18 // close to native widget spacing
+        case .widgetWall: return 12
+        }
+    }
+}
+
 // Panel that doesn’t activate the app when interacting, so Show Desktop не отменяется от кликов/перетаскиваний.
 private final class WidgetPanel: NSPanel {
     override var canBecomeKey: Bool { true }
@@ -24,24 +36,49 @@ final class WidgetManager: ObservableObject {
             updateWidgetVisibility()
         }
     }
+    @Published var snapToGrid: Bool {
+        didSet {
+            UserDefaults.standard.set(snapToGrid, forKey: snapToGridKey)
+        }
+    }
+    @Published var gridMode: WidgetGridMode {
+        didSet {
+            UserDefaults.standard.set(gridMode.rawValue, forKey: gridModeKey)
+        }
+    }
     weak var panelController: SidePanelWindowController?
     weak var settingsCoordinator: SettingsCoordinator?
     weak var localizationManager: LocalizationManager?
 
     private var windows: [UUID: NSWindow] = [:]
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
+    private var mouseUpMonitor: Any?
     private let hideWidgetsKey = "miniww.widgets.hidden"
+    private let snapToGridKey = "miniww.widgets.snap"
+    private let gridModeKey = "miniww.widgets.gridmode"
 
     init(localizationManager: LocalizationManager? = nil) {
         let hidden = UserDefaults.standard.object(forKey: hideWidgetsKey) as? Bool ?? false
+        let snapStored = UserDefaults.standard.object(forKey: snapToGridKey) as? Bool ?? true
+        let gridStoredRaw = UserDefaults.standard.object(forKey: gridModeKey) as? Int
+        let gridStored = WidgetGridMode(rawValue: gridStoredRaw ?? 0) ?? .macOS
         _areWidgetsHidden = Published(initialValue: hidden)
+        _snapToGrid = Published(initialValue: snapStored)
+        _gridMode = Published(initialValue: gridStored)
         self.localizationManager = localizationManager
         load()
         widgets.forEach { attachWindow(for: $0) }
+
+        mouseUpMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] _ in
+            self?.snapAllWidgetsToGrid()
+        }
     }
 
     deinit {
         windowCloseObservers.values.forEach(NotificationCenter.default.removeObserver)
+        if let monitor = mouseUpMonitor {
+            NSEvent.removeMonitor(monitor)
+        }
     }
 
     func addWidget(type: WidgetType, size: WidgetSizeOption = .medium) {
@@ -60,6 +97,39 @@ final class WidgetManager: ObservableObject {
             NotificationCenter.default.removeObserver(observer)
             windowCloseObservers[id] = nil
         }
+    }
+
+    private func snapAllWidgetsToGrid() {
+        guard snapToGrid else { return }
+
+        for (id, window) in windows {
+            guard let idx = widgets.firstIndex(where: { $0.id == id }) else { continue }
+            var instance = widgets[idx]
+            guard !instance.isPositionLocked else { continue }
+
+            let frame = window.frame
+            let snappedOrigin = snap(origin: frame.origin, spacing: gridMode.spacing)
+            if snappedOrigin != frame.origin {
+                let newFrame = NSRect(origin: snappedOrigin, size: frame.size)
+                window.setFrame(newFrame, display: true, animate: false)
+                instance.x = snappedOrigin.x
+                instance.y = snappedOrigin.y
+                widgets[idx] = instance
+            }
+        }
+    }
+
+    private func snap(origin: CGPoint, spacing: CGFloat) -> CGPoint {
+        let snapValue: (CGFloat) -> CGFloat = { value in
+            let remainder = value.truncatingRemainder(dividingBy: spacing)
+            let half = spacing / 2
+            if remainder >= half {
+                return value - remainder + spacing
+            } else {
+                return value - remainder
+            }
+        }
+        return CGPoint(x: snapValue(origin.x), y: snapValue(origin.y))
     }
 
     func removeAllWidgets() {

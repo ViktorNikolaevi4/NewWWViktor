@@ -171,7 +171,15 @@ private struct GeneralSettingsDetailView: View {
                                   isOn: $pinWidgets)
 
                     section(title: localization.text(.gridSize)) {
-                        Picker("", selection: $gridSize) {
+                        Picker("", selection: Binding(
+                            get: { manager.gridMode.rawValue },
+                            set: { newValue in
+                                gridSize = newValue
+                                if let mode = WidgetGridMode(rawValue: newValue) {
+                                    manager.gridMode = mode
+                                }
+                            }
+                        )) {
                             Text(localization.text(.gridOptionMacOS)).tag(0)
                             Text(localization.text(.gridOptionWidgetWall)).tag(1)
                         }
@@ -180,7 +188,10 @@ private struct GeneralSettingsDetailView: View {
                     }
 
                     toggleSection(title: localization.text(.snapToGrid),
-                                  isOn: $snapToGrid)
+                                  isOn: Binding(
+                                    get: { manager.snapToGrid },
+                                    set: { manager.snapToGrid = $0 }
+                                  ))
 
                     toggleSection(title: localization.text(.focusOnHover),
                                   isOn: $focusOnHover)
@@ -213,6 +224,8 @@ private struct GeneralSettingsDetailView: View {
         .frame(maxWidth: .infinity)
         .onAppear {
             languageSelection = localization.selectedLanguage
+            gridSize = manager.gridMode.rawValue
+            snapToGrid = manager.snapToGrid
         }
         .onChange(of: localization.selectedLanguage) { newValue in
             guard languageSelection != newValue else { return }

@@ -17,7 +17,6 @@ struct WidgetSettingsMenuView: View {
     @State private var showWeather = false
     @State private var isPinnedTop = false
     @State private var lockPosition = false
-    @State private var snapToGrid = true
 
     init(widget: WidgetInstance,
          onUpdate: @escaping (WidgetInstance) -> Void,
@@ -102,7 +101,7 @@ struct WidgetSettingsMenuView: View {
                     WidgetBehaviorSettingsSection(sizeSelection: sizeSelectionBinding,
                                                   isPinnedTop: pinnedBinding,
                                                   lockPosition: lockedBinding,
-                                                  snapToGrid: $snapToGrid)
+                                                  snapToGrid: snapToGridBinding)
                     WidgetManagementSettingsSection(onAddWidgets: openSidePanel,
                                                     onShowGeneralSettings: openGeneralSettings,
                                                     onDelete: deleteWidget)
@@ -145,6 +144,13 @@ struct WidgetSettingsMenuView: View {
                 workingWidget.isPinned = newValue
                 onUpdate(workingWidget)
             }
+        )
+    }
+
+    private var snapToGridBinding: Binding<Bool> {
+        Binding(
+            get: { manager.snapToGrid },
+            set: { manager.snapToGrid = $0 }
         )
     }
 

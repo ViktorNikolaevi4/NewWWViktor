@@ -102,6 +102,11 @@ struct WidgetHostView: View {
                 }
             }
 #if os(macOS)
+            .gesture(
+                TapGesture(count: 2).onEnded {
+                    togglePanel(for: instance)
+                }
+            )
             .onDisappear {
                 closeSettingsPanel()
             }

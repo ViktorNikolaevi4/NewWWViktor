@@ -159,8 +159,8 @@ struct WidgetHostView: View {
         let panel = createSettingsPanel(for: instance)
         settingsPanel = panel
         settingsPanelWidgetID = instance.id
-        panel.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        panel.orderFrontRegardless()
+        panel.makeKey()
         installPanelMonitors(for: panel)
     }
 
@@ -177,16 +177,17 @@ struct WidgetHostView: View {
         let origin = panelOrigin(for: instance, panelSize: size, spacing: spacing)
         let rect = NSRect(origin: origin, size: size)
 
-        let panel = NSPanel(contentRect: rect,
-                            styleMask: [.titled, .fullSizeContentView],
-                            backing: .buffered,
-                            defer: false)
+        let panel = WidgetSettingsPanel(contentRect: rect,
+                                        styleMask: [.titled, .fullSizeContentView, .nonactivatingPanel],
+                                        backing: .buffered,
+                                        defer: false)
         panel.titleVisibility = .hidden
         panel.titlebarAppearsTransparent = true
         panel.isOpaque = false
         panel.backgroundColor = .clear
+        panel.becomesKeyOnlyIfNeeded = true
         panel.level = .floating
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle, .stationary]
         panel.animationBehavior = .none
         panel.isReleasedWhenClosed = false
         panel.hidesOnDeactivate = false
@@ -285,6 +286,11 @@ struct WidgetHostView: View {
 }
 
 #if os(macOS)
+private final class WidgetSettingsPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+}
+
 private final class WidgetSettingsPanelCoordinator: NSObject, ObservableObject, NSWindowDelegate {
     let objectWillChange = PassthroughSubject<Void, Never>()
     var onClose: (() -> Void)?

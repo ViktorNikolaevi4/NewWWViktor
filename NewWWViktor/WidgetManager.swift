@@ -2,6 +2,17 @@ import AppKit
 import SwiftUI
 import Combine
 
+private extension NSWindow.Level {
+    // Keep widgets above desktop icons (so clicks aren’t captured by Finder) but below normal windows.
+    static let desktopAboveIcons = NSWindow.Level(Int(CGWindowLevelForKey(.desktopIconWindow)) + 1)
+}
+
+// Panel that doesn’t activate the app when interacting, so Show Desktop не отменяется от кликов/перетаскиваний.
+private final class WidgetPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+}
+
 final class WidgetManager: ObservableObject {
     @Published var widgets: [WidgetInstance] = [] {
         didSet { persist() }
@@ -88,8 +99,8 @@ final class WidgetManager: ObservableObject {
             window.setFrame(newFrame,
                             display: true,
                             animate: shouldAnimate)
-            // Use .normal when not pinned. If you want behind-all-windows, consider .desktopIcon.
-            window.level = updatedInstance.isPinned ? .floating : .normal
+            // Keep pinned widgets above windows, and unpinned ones in the desktop layer so they survive "Show Desktop".
+            window.level = updatedInstance.isPinned ? .floating : .desktopAboveIcons
             window.isMovableByWindowBackground = !updatedInstance.isPositionLocked
         }
     }
@@ -107,24 +118,27 @@ final class WidgetManager: ObservableObject {
             content = AnyView(baseView)
         }
 
-        let window = NSWindow(
+        let window = WidgetPanel(
             contentRect: NSRect(x: instance.x,
                                 y: instance.y,
                                 width: instance.width,
                                 height: instance.height),
-            styleMask: [.borderless],
+            styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
+        window.isFloatingPanel = false
+        window.hidesOnDeactivate = false
+        window.becomesKeyOnlyIfNeeded = true
         window.isOpaque = false
         window.backgroundColor = .clear
-        // Use .normal when not pinned. If you want behind-all-windows, consider .desktopIcon.
-        window.level = instance.isPinned ? .floating : .normal
+        // Keep pinned widgets above windows, and unpinned ones in the desktop layer so they survive "Show Desktop".
+        window.level = instance.isPinned ? .floating : .desktopAboveIcons
         window.hasShadow = false
         window.ignoresMouseEvents = false
         window.animationBehavior = .none
         window.isReleasedWhenClosed = false
-        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         window.isMovableByWindowBackground = !instance.isPositionLocked
         window.contentView = NSHostingView(rootView: content)
         window.orderFrontRegardless()

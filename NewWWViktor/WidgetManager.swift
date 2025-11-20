@@ -13,8 +13,8 @@ enum WidgetGridMode: Int, Codable {
 
     var spacing: CGFloat {
         switch self {
-        case .macOS: return 18 // close to native widget spacing
-        case .widgetWall: return 12
+        case .macOS: return 24 // немного больше воздуха между виджетами
+        case .widgetWall: return 16
         }
     }
 }
@@ -56,6 +56,7 @@ final class WidgetManager: ObservableObject {
     private let hideWidgetsKey = "miniww.widgets.hidden"
     private let snapToGridKey = "miniww.widgets.snap"
     private let gridModeKey = "miniww.widgets.gridmode"
+    private let safeInset: CGFloat = 12 // не позволяем виджетам уходить за границы visibleFrame
 
     init(localizationManager: LocalizationManager? = nil) {
         let hidden = UserDefaults.standard.object(forKey: hideWidgetsKey) as? Bool ?? false
@@ -109,11 +110,12 @@ final class WidgetManager: ObservableObject {
 
             let frame = window.frame
             let snappedOrigin = snap(origin: frame.origin, spacing: gridMode.spacing)
-            if snappedOrigin != frame.origin {
-                let newFrame = NSRect(origin: snappedOrigin, size: frame.size)
+            let clampedOrigin = clamp(origin: snappedOrigin, size: frame.size, screen: window.screen)
+            if clampedOrigin != frame.origin {
+                let newFrame = NSRect(origin: clampedOrigin, size: frame.size)
                 window.setFrame(newFrame, display: true, animate: false)
-                instance.x = snappedOrigin.x
-                instance.y = snappedOrigin.y
+                instance.x = clampedOrigin.x
+                instance.y = clampedOrigin.y
                 widgets[idx] = instance
             }
         }
@@ -130,6 +132,18 @@ final class WidgetManager: ObservableObject {
             }
         }
         return CGPoint(x: snapValue(origin.x), y: snapValue(origin.y))
+    }
+
+    private func clamp(origin: CGPoint, size: CGSize, screen: NSScreen?) -> CGPoint {
+        let visible = screen?.visibleFrame ?? NSScreen.main?.visibleFrame ?? NSRect(origin: .zero, size: size)
+        let insetFrame = visible.insetBy(dx: safeInset, dy: safeInset)
+        let minX = insetFrame.minX
+        let minY = insetFrame.minY
+        let maxX = insetFrame.maxX - size.width
+        let maxY = insetFrame.maxY - size.height
+        let clampedX = max(minX, min(origin.x, maxX))
+        let clampedY = max(minY, min(origin.y, maxY))
+        return CGPoint(x: clampedX, y: clampedY)
     }
 
     func removeAllWidgets() {

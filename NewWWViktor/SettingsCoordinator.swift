@@ -45,6 +45,7 @@ final class SettingsCoordinator: ObservableObject {
     private var hasPositionedWindow = false
     var appIconController: AppIconController?
     var localizationManager: LocalizationManager?
+    var widgetManager: WidgetManager?
 
     func show(_ category: SettingsCategory) {
         selectedCategory = category
@@ -70,11 +71,16 @@ final class SettingsCoordinator: ObservableObject {
             assertionFailure("LocalizationManager must be provided before showing settings.")
             return
         }
+        guard let widgetManager = widgetManager else {
+            assertionFailure("WidgetManager must be provided before showing settings.")
+            return
+        }
 
         let content = SettingsWindowContent()
             .environmentObject(self)
             .environmentObject(iconController)
             .environmentObject(localizationManager)
+            .environmentObject(widgetManager)
 
         let hosting = NSHostingController(rootView: content)
 

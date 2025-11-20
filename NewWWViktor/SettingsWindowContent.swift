@@ -117,9 +117,9 @@ struct SettingsWindowContent: View {
 private struct GeneralSettingsDetailView: View {
     @EnvironmentObject private var localization: LocalizationManager
     @EnvironmentObject private var appIconController: AppIconController
+    @EnvironmentObject private var manager: WidgetManager
     @StateObject private var launchAtLoginManager = LaunchAtLoginManager()
     @State private var languageSelection: LocalizationManager.Language = .english
-    @State private var hideWidgets = false
     @State private var pinWidgets = true
     @State private var gridSize = 0
     @State private var snapToGrid = true
@@ -159,8 +159,13 @@ private struct GeneralSettingsDetailView: View {
 
                     languageSection
 
-                    toggleSection(title: localization.text(.hideWidgets),
-                                  isOn: $hideWidgets)
+                    toggleSection(
+                        title: localization.text(.hideWidgets),
+                        isOn: Binding(
+                            get: { manager.areWidgetsHidden },
+                            set: { manager.areWidgetsHidden = $0 }
+                        )
+                    )
 
                     toggleSection(title: localization.text(.pinWidgets),
                                   isOn: $pinWidgets)

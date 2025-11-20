@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AppearanceSettingsDetailView: View {
+    @EnvironmentObject private var localization: LocalizationManager
     @State private var selectedTheme: ThemeOption = .system
     @State private var lightModePreview = true
     @State private var darkModePreview = true
@@ -16,73 +17,73 @@ struct AppearanceSettingsDetailView: View {
 
             ScrollView {
                 VStack(spacing: 22) {
-                    section(title: "Color Theme") {
+                    section(title: localization.text(.appearanceColorThemeSection)) {
                         VStack(alignment: .leading, spacing: 14) {
                             Picker("", selection: $selectedTheme) {
                                 ForEach(ThemeOption.allCases) { option in
-                                    Text(option.rawValue).tag(option)
+                                    Text(localization.text(option.localizationKey)).tag(option)
                                 }
                             }
                             .pickerStyle(.segmented)
 
-                            modeToggleRow(title: "Light Mode",
-                                          description: "Use the light palette",
+                            modeToggleRow(title: localization.text(.appearanceLightModeTitle),
+                                          description: localization.text(.appearanceLightModeDescription),
                                           isOn: $lightModePreview)
 
-                            modeToggleRow(title: "Dark Mode",
-                                          description: "Enabled",
+                            modeToggleRow(title: localization.text(.appearanceDarkModeTitle),
+                                          description: localization.text(.appearanceDarkModeDescription),
                                           isOn: $darkModePreview)
                         }
                     }
 
-                    section(title: "Colors") {
+                    section(title: localization.text(.appearanceColorsSection)) {
                         VStack(spacing: 12) {
-                            colorPickerRow(title: "Primary Color",
+                            colorPickerRow(title: localization.text(.appearancePrimaryColor),
                                            selection: $primaryColor)
-                            colorPickerRow(title: "Secondary Color",
+                            colorPickerRow(title: localization.text(.appearanceSecondaryColor),
                                            selection: $secondaryColor)
                         }
                     }
 
-                    section(title: "Background") {
+                    section(title: localization.text(.appearanceBackgroundSection)) {
                         VStack(alignment: .leading, spacing: 16) {
                             Picker("", selection: $backgroundStyle) {
                                 ForEach(BackgroundStyle.allCases) { style in
-                                    Label(style.label, systemImage: style.systemImage)
+                                    Label(localization.text(style.localizationKey), systemImage: style.systemImage)
                                         .labelStyle(.iconOnly)
                                         .tag(style)
                                 }
                             }
                             .pickerStyle(.segmented)
 
-                            Picker("Image Source", selection: $imageSource) {
+                            Picker(localization.text(.appearanceImageSourceLabel), selection: $imageSource) {
                                 ForEach(ImageSource.allCases) { source in
-                                    Text(source.rawValue).tag(source)
+                                    Text(localization.text(source.localizationKey)).tag(source)
                                 }
                             }
                             .frame(width: 220)
 
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("Photo")
+                                    Text(localization.text(.appearancePhotoTitle))
                                         .font(.headline.weight(.semibold))
-                                    Text("Choose an image for the widget")
+                                    Text(localization.text(.appearancePhotoSubtitle))
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
                                 Spacer()
-                                Button("Browse") {}
+                                Button(localization.text(.appearanceBrowseButton)) {}
                                     .buttonStyle(.borderedProminent)
                                     .tint(.orange)
                             }
 
-                            Toggle("Blur background", isOn: $blurBackground)
+                            Toggle(localization.text(.appearanceBlurBackground), isOn: $blurBackground)
                                 .toggleStyle(SwitchToggleStyle(tint: .orange))
                         }
                     }
 
-                    section(title: "Reset appearance") {
-                        Button("Reset appearance") {}
+                    section(title: localization.text(.appearanceResetSection)) {
+                        Button(localization.text(.appearanceResetButton)) {}
                             .frame(maxWidth: .infinity)
                             .buttonStyle(.bordered)
                     }
@@ -97,9 +98,9 @@ struct AppearanceSettingsDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Appearance")
+            Text(localization.text(.categoryAppearance))
                 .font(.title3.weight(.semibold))
-            Text("Customize how miniWW looks.")
+            Text(localization.text(.appearanceSubtitle))
                 .font(.footnote)
                 .foregroundColor(.secondary)
         }
@@ -145,7 +146,7 @@ struct AppearanceSettingsDetailView: View {
             Spacer()
             Picker("", selection: selection) {
                 ForEach(ColorAccent.allCases) { accent in
-                    Text(accent.rawValue).tag(accent)
+                    Text(localization.text(accent.localizationKey)).tag(accent)
                 }
             }
             .frame(width: 180)
@@ -154,18 +155,18 @@ struct AppearanceSettingsDetailView: View {
 }
 
 enum ThemeOption: String, CaseIterable, Identifiable {
-    case system = "System"
-    case dark = "Dark"
-    case light = "Light"
+    case system = "system"
+    case dark = "dark"
+    case light = "light"
 
     var id: String { rawValue }
 }
 
 enum ColorAccent: String, CaseIterable, Identifiable {
-    case system = "System"
-    case custom = "Custom"
-    case orange = "Orange"
-    case purple = "Purple"
+    case system = "system"
+    case custom = "custom"
+    case orange = "orange"
+    case purple = "purple"
 
     var id: String { rawValue }
 }
@@ -177,14 +178,6 @@ enum BackgroundStyle: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var label: String {
-        switch self {
-        case .solid: return "Color"
-        case .gradient: return "Gradient"
-        case .photo: return "Photo"
-        }
-    }
-
     var systemImage: String {
         switch self {
         case .solid: return "square.fill"
@@ -195,9 +188,50 @@ enum BackgroundStyle: String, CaseIterable, Identifiable {
 }
 
 enum ImageSource: String, CaseIterable, Identifiable {
-    case photos = "Photos"
-    case files = "Files"
-    case widgets = "Widgets"
+    case photos = "photos"
+    case files = "files"
+    case widgets = "widgets"
 
     var id: String { rawValue }
+}
+
+private extension ThemeOption {
+    var localizationKey: LocalizationKey {
+        switch self {
+        case .system: return .appearanceThemeSystem
+        case .dark: return .appearanceThemeDark
+        case .light: return .appearanceThemeLight
+        }
+    }
+}
+
+private extension ColorAccent {
+    var localizationKey: LocalizationKey {
+        switch self {
+        case .system: return .appearanceAccentSystem
+        case .custom: return .appearanceAccentCustom
+        case .orange: return .appearanceAccentOrange
+        case .purple: return .appearanceAccentPurple
+        }
+    }
+}
+
+private extension BackgroundStyle {
+    var localizationKey: LocalizationKey {
+        switch self {
+        case .solid: return .appearanceBackgroundSolid
+        case .gradient: return .appearanceBackgroundGradient
+        case .photo: return .appearanceBackgroundPhoto
+        }
+    }
+}
+
+private extension ImageSource {
+    var localizationKey: LocalizationKey {
+        switch self {
+        case .photos: return .appearanceImageSourcePhotos
+        case .files: return .appearanceImageSourceFiles
+        case .widgets: return .appearanceImageSourceWidgets
+        }
+    }
 }

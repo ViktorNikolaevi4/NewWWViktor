@@ -46,6 +46,52 @@ enum LocalizationKey: String {
     case widgetCategoryLabel
     case widgetClockDetailTitle
     case widgetClockDetailDescription
+    case appearanceSubtitle
+    case appearanceColorThemeSection
+    case appearanceThemeSystem
+    case appearanceThemeDark
+    case appearanceThemeLight
+    case appearanceLightModeTitle
+    case appearanceLightModeDescription
+    case appearanceDarkModeTitle
+    case appearanceDarkModeDescription
+    case appearanceColorsSection
+    case appearancePrimaryColor
+    case appearanceSecondaryColor
+    case appearanceBackgroundSection
+    case appearanceAccentSystem
+    case appearanceAccentCustom
+    case appearanceAccentOrange
+    case appearanceAccentPurple
+    case appearanceBackgroundSolid
+    case appearanceBackgroundGradient
+    case appearanceBackgroundPhoto
+    case appearanceImageSourceLabel
+    case appearanceImageSourcePhotos
+    case appearanceImageSourceFiles
+    case appearanceImageSourceWidgets
+    case appearancePhotoTitle
+    case appearancePhotoSubtitle
+    case appearanceBrowseButton
+    case appearanceBlurBackground
+    case appearanceResetSection
+    case appearanceResetButton
+    case backupsSubtitle
+    case backupsManualTitle
+    case backupsCreateTitle
+    case backupsCreateDescription
+    case backupsSaveNowButton
+    case supportSubtitle
+    case supportCalloutTitle
+    case supportCalloutBody
+    case supportRowQuestionTitle
+    case supportRowQuestionAction
+    case supportRowNeedHelpTitle
+    case supportRowNeedHelpAction
+    case supportRowTourTitle
+    case supportRowTourAction
+    case supportRowIdeaTitle
+    case supportRowIdeaAction
 }
 
 final class LocalizationManager: ObservableObject {

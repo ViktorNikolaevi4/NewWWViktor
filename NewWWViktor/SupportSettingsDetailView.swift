@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SupportSettingsDetailView: View {
+    @EnvironmentObject private var localization: LocalizationManager
+
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             header
@@ -20,9 +22,9 @@ struct SupportSettingsDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Support")
+            Text(localization.text(.categorySupport))
                 .font(.title3.weight(.semibold))
-            Text("Questions, ideas, or feedback? Reach out anytime!")
+            Text(localization.text(.supportSubtitle))
                 .font(.footnote)
                 .foregroundColor(.secondary)
         }
@@ -30,9 +32,9 @@ struct SupportSettingsDetailView: View {
 
     private var callout: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Need help?")
+            Text(localization.text(.supportCalloutTitle))
                 .font(.headline.weight(.semibold))
-            Text("We can help with setup, imports, or brainstorming new widgets.")
+            Text(localization.text(.supportCalloutBody))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -45,10 +47,14 @@ struct SupportSettingsDetailView: View {
 
     private var supportList: some View {
         VStack(spacing: 16) {
-            supportRow(title: "Have a question?", actionTitle: "Visit FAQ")
-            supportRow(title: "Need assistance?", actionTitle: "Contact us")
-            supportRow(title: "Rewatch the welcome tour", actionTitle: "Open")
-            supportRow(title: "Have an idea for a widget?", actionTitle: "Share it")
+            supportRow(title: localization.text(.supportRowQuestionTitle),
+                       actionTitle: localization.text(.supportRowQuestionAction))
+            supportRow(title: localization.text(.supportRowNeedHelpTitle),
+                       actionTitle: localization.text(.supportRowNeedHelpAction))
+            supportRow(title: localization.text(.supportRowTourTitle),
+                       actionTitle: localization.text(.supportRowTourAction))
+            supportRow(title: localization.text(.supportRowIdeaTitle),
+                       actionTitle: localization.text(.supportRowIdeaAction))
         }
         .padding()
         .background(

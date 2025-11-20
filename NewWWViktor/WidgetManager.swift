@@ -7,14 +7,23 @@ final class WidgetManager: ObservableObject {
         didSet { persist() }
     }
     @Published var isPanelFullscreen: Bool = false
+    @Published var areWidgetsHidden: Bool {
+        didSet {
+            UserDefaults.standard.set(areWidgetsHidden, forKey: hideWidgetsKey)
+            updateWidgetVisibility()
+        }
+    }
     weak var panelController: SidePanelWindowController?
     weak var settingsCoordinator: SettingsCoordinator?
     weak var localizationManager: LocalizationManager?
 
     private var windows: [UUID: NSWindow] = [:]
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
+    private let hideWidgetsKey = "miniww.widgets.hidden"
 
     init(localizationManager: LocalizationManager? = nil) {
+        let hidden = UserDefaults.standard.object(forKey: hideWidgetsKey) as? Bool ?? false
+        _areWidgetsHidden = Published(initialValue: hidden)
         self.localizationManager = localizationManager
         load()
         widgets.forEach { attachWindow(for: $0) }
@@ -119,6 +128,7 @@ final class WidgetManager: ObservableObject {
         window.isMovableByWindowBackground = !instance.isPositionLocked
         window.contentView = NSHostingView(rootView: content)
         window.orderFrontRegardless()
+        applyVisibility(to: window)
 
         windows[instance.id] = window
 
@@ -152,6 +162,19 @@ final class WidgetManager: ObservableObject {
             let saved = try? JSONDecoder().decode([WidgetInstance].self, from: data)
         else { return }
         self.widgets = saved
+    }
+
+    private func updateWidgetVisibility() {
+        windows.values.forEach { applyVisibility(to: $0) }
+    }
+
+    private func applyVisibility(to window: NSWindow) {
+        window.ignoresMouseEvents = areWidgetsHidden
+        if areWidgetsHidden {
+            window.orderOut(nil)
+        } else {
+            window.orderFrontRegardless()
+        }
     }
 
     // MARK: - Side panel helpers

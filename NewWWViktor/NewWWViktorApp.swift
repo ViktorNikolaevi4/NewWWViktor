@@ -30,6 +30,7 @@ struct MiniWWApp: App {
         manager.settingsCoordinator = settingsCoordinator
         settingsCoordinator.appIconController = iconController
         settingsCoordinator.localizationManager = localizationManager
+        settingsCoordinator.widgetManager = manager
         self.statusItemController = StatusItemController(panelController: controller,
                                                          appIconController: iconController)
         appDelegate.configure(manager: manager, panelController: controller)

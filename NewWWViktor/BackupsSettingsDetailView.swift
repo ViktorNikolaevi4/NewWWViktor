@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct BackupsSettingsDetailView: View {
+    @EnvironmentObject private var localization: LocalizationManager
+
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             header
@@ -19,9 +21,9 @@ struct BackupsSettingsDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Backups")
+            Text(localization.text(.categoryBackups))
                 .font(.title3.weight(.semibold))
-            Text("Keep your miniWW configuration stored safely.")
+            Text(localization.text(.backupsSubtitle))
                 .font(.footnote)
                 .foregroundColor(.secondary)
         }
@@ -29,19 +31,19 @@ struct BackupsSettingsDetailView: View {
 
     private var backupSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Manual backup")
+            Text(localization.text(.backupsManualTitle))
                 .font(.headline.weight(.semibold))
 
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Create a backup")
+                    Text(localization.text(.backupsCreateTitle))
                         .font(.body.weight(.semibold))
-                    Text("Save the current widgets and their layout.")
+                    Text(localization.text(.backupsCreateDescription))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 Spacer()
-                Button("Save Now") {}
+                Button(localization.text(.backupsSaveNowButton)) {}
                     .buttonStyle(.borderedProminent)
                     .tint(.orange)
             }

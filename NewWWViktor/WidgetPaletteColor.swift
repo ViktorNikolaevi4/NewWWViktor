@@ -31,20 +31,20 @@ enum WidgetPaletteColor {
     private static func adjust(_ color: NSColor, intensity: Double) -> NSColor {
         guard let rgb = color.usingColorSpace(.sRGB) else { return color }
         let clamp = CGFloat(intensity.clamped(to: 0...1))
-        let r = rgb.redComponent * clamp + (1 - clamp)
-        let g = rgb.greenComponent * clamp + (1 - clamp)
-        let b = rgb.blueComponent * clamp + (1 - clamp)
-        return NSColor(srgbRed: r, green: g, blue: b, alpha: rgb.alphaComponent)
+        return NSColor(srgbRed: rgb.redComponent,
+                       green: rgb.greenComponent,
+                       blue: rgb.blueComponent,
+                       alpha: clamp)
     }
     #else
     private static func adjust(_ color: UIColor, intensity: Double) -> UIColor {
         guard let rgb = color.cgColor.converted(to: CGColorSpaceCreateDeviceRGB(), intent: .defaultIntent, options: nil),
               let components = rgb.components else { return color }
         let clamp = CGFloat(intensity.clamped(to: 0...1))
-        let r = components[0] * clamp + (1 - clamp)
-        let g = components[1] * clamp + (1 - clamp)
-        let b = components[2] * clamp + (1 - clamp)
-        return UIColor(red: r, green: g, blue: b, alpha: components.count > 3 ? components[3] : 1)
+        let r = components[0]
+        let g = components[1]
+        let b = components[2]
+        return UIColor(red: r, green: g, blue: b, alpha: clamp)
     }
     #endif
 }

@@ -83,7 +83,7 @@ struct WidgetHostView: View {
                            alignment: .topLeading)
                     .background(
                         RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-                            .fill(.regularMaterial)
+                            .fill(widgetBackgroundFill)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
@@ -133,6 +133,32 @@ struct WidgetHostView: View {
         switch instance.type {
         case .clock:
             ClockWidgetView(widget: instance)
+        }
+    }
+
+    private var widgetBackgroundFill: AnyShapeStyle {
+        switch manager.globalBackgroundStyle {
+        case .palette:
+            let color = WidgetPaletteColor.color(
+                named: manager.globalBackgroundColorName,
+                intensity: manager.globalBackgroundIntensity,
+                fallback: Color.white.opacity(0.14)
+            )
+            return AnyShapeStyle(color.opacity(0.96))
+        case .solid:
+            return AnyShapeStyle(Color.white.opacity(0.12))
+        case .gradient:
+            let gradient = LinearGradient(
+                colors: [
+                    Color.white.opacity(0.18),
+                    Color.black.opacity(0.12)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            return AnyShapeStyle(gradient)
+        case .photo:
+            return AnyShapeStyle(.regularMaterial)
         }
     }
 

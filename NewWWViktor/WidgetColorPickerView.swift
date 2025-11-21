@@ -165,12 +165,12 @@ struct WidgetColorPickerView: View {
 
     private var intensitySection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Brightness")
+            Text("Opacity")
                 .font(.caption.weight(.semibold))
                 .foregroundColor(.white.opacity(0.7))
 
             Slider(value: $intensity, in: 0...1.0) {
-                Text("Brightness")
+                Text("Opacity")
             }
             .accentColor(.white)
             .onChange(of: intensity) { _, _ in

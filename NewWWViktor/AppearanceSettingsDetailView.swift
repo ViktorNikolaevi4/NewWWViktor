@@ -15,12 +15,20 @@ struct AppearanceSettingsDetailView: View {
     @State private var secondaryColorName: String?
     @State private var secondaryIntensity: Double = 1.0
     @State private var activeColorRole: WidgetColorRole?
+    @State private var backgroundColorName: String?
+    @State private var backgroundIntensity: Double = 1.0
+    @State private var isBackgroundPickerPresented = false
+    @State private var didAppear = false
 
     private let primaryColorKey = "appearance.primaryColorName"
     private let primaryIntensityKey = "appearance.primaryIntensity"
     private let secondaryColorKey = "appearance.secondaryColorName"
     private let secondaryIntensityKey = "appearance.secondaryIntensity"
+    private let backgroundStyleKey = "appearance.backgroundStyle"
+    private let backgroundColorKey = "appearance.backgroundColorName"
+    private let backgroundIntensityKey = "appearance.backgroundColorIntensity"
     private let appearanceColorDidChange = Notification.Name("appearance.colors.changed")
+    private let appearanceBackgroundDidChange = Notification.Name("appearance.background.changed")
 
     var body: some View {
         ZStack {
@@ -66,25 +74,29 @@ struct AppearanceSettingsDetailView: View {
                                 }
                                 .pickerStyle(.segmented)
 
-                                Picker(localization.text(.appearanceImageSourceLabel), selection: $imageSource) {
-                                    ForEach(ImageSource.allCases) { source in
-                                        Text(localization.text(source.localizationKey)).tag(source)
+                                if backgroundStyle == .palette {
+                                    backgroundPaletteButton
+                                } else {
+                                    Picker(localization.text(.appearanceImageSourceLabel), selection: $imageSource) {
+                                        ForEach(ImageSource.allCases) { source in
+                                            Text(localization.text(source.localizationKey)).tag(source)
+                                        }
                                     }
-                                }
-                                .frame(width: 220)
+                                    .frame(width: 220)
 
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(localization.text(.appearancePhotoTitle))
-                                            .font(.headline.weight(.semibold))
-                                        Text(localization.text(.appearancePhotoSubtitle))
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(localization.text(.appearancePhotoTitle))
+                                                .font(.headline.weight(.semibold))
+                                            Text(localization.text(.appearancePhotoSubtitle))
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        Spacer()
+                                        Button(localization.text(.appearanceBrowseButton)) {}
+                                            .buttonStyle(.borderedProminent)
+                                            .tint(.orange)
                                     }
-                                    Spacer()
-                                    Button(localization.text(.appearanceBrowseButton)) {}
-                                        .buttonStyle(.borderedProminent)
-                                        .tint(.orange)
                                 }
 
                                 Toggle(localization.text(.appearanceBlurBackground), isOn: $blurBackground)
@@ -106,10 +118,23 @@ struct AppearanceSettingsDetailView: View {
             .frame(maxWidth: .infinity)
             .onAppear {
                 loadColors()
+                loadBackgroundSettings()
+                didAppear = true
+            }
+            .onChange(of: backgroundStyle) { _, newValue in
+                guard didAppear else { return }
+                if newValue != .palette {
+                    isBackgroundPickerPresented = false
+                }
+                persistBackgroundSettings()
             }
 
             if let role = activeColorRole {
                 colorPickerOverlay(for: role)
+            }
+
+            if isBackgroundPickerPresented && backgroundStyle == .palette {
+                backgroundColorPickerOverlay
             }
         }
     }
@@ -177,6 +202,25 @@ struct AppearanceSettingsDetailView: View {
         .buttonStyle(.plain)
     }
 
+    private var backgroundPaletteButton: some View {
+        Button {
+            isBackgroundPickerPresented = true
+        } label: {
+            HStack(spacing: 12) {
+                Text(localization.text(.appearanceBackgroundPalette))
+                    .font(.headline.weight(.semibold))
+                Spacer()
+                ColorChip(colorName: backgroundColorName, intensity: backgroundIntensity)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity)
+            .background(Color.white.opacity(0.04))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
     private func colorPickerOverlay(for role: WidgetColorRole) -> some View {
         WidgetColorPickerView(title: role.title,
                               isPresented: Binding(
@@ -186,6 +230,16 @@ struct AppearanceSettingsDetailView: View {
                               selection: selectionBinding(for: role),
                               intensity: intensityBinding(for: role)) {
             persistColors()
+        }
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+
+    private var backgroundColorPickerOverlay: some View {
+        WidgetColorPickerView(title: localization.text(.appearanceBackgroundSection),
+                              isPresented: $isBackgroundPickerPresented,
+                              selection: $backgroundColorName,
+                              intensity: $backgroundIntensity) {
+            persistBackgroundSettings()
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
@@ -247,6 +301,24 @@ struct AppearanceSettingsDetailView: View {
         secondaryColorName = defaults.string(forKey: secondaryColorKey)
         primaryIntensity = defaults.object(forKey: primaryIntensityKey) as? Double ?? 1.0
         secondaryIntensity = defaults.object(forKey: secondaryIntensityKey) as? Double ?? 1.0
+    }
+
+    private func persistBackgroundSettings() {
+        let defaults = UserDefaults.standard
+        defaults.set(backgroundStyle.rawValue, forKey: backgroundStyleKey)
+        defaults.set(backgroundColorName, forKey: backgroundColorKey)
+        defaults.set(backgroundIntensity, forKey: backgroundIntensityKey)
+        NotificationCenter.default.post(name: appearanceBackgroundDidChange, object: nil)
+    }
+
+    private func loadBackgroundSettings() {
+        let defaults = UserDefaults.standard
+        if let stored = defaults.string(forKey: backgroundStyleKey),
+           let style = BackgroundStyle(rawValue: stored) {
+            backgroundStyle = style
+        }
+        backgroundColorName = defaults.string(forKey: backgroundColorKey)
+        backgroundIntensity = defaults.object(forKey: backgroundIntensityKey) as? Double ?? 1.0
     }
 }
 

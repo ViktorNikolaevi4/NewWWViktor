@@ -46,6 +46,9 @@ final class WidgetManager: ObservableObject {
             UserDefaults.standard.set(gridMode.rawValue, forKey: gridModeKey)
         }
     }
+    @Published private(set) var globalBackgroundStyle: BackgroundStyle = .photo
+    @Published private(set) var globalBackgroundColorName: String?
+    @Published private(set) var globalBackgroundIntensity: Double = 1.0
     @Published private(set) var globalColorsVersion: Int = 0
     weak var panelController: SidePanelWindowController?
     weak var settingsCoordinator: SettingsCoordinator?
@@ -64,10 +67,14 @@ final class WidgetManager: ObservableObject {
     private let primaryIntensityKey = "appearance.primaryIntensity"
     private let secondaryColorKey = "appearance.secondaryColorName"
     private let secondaryIntensityKey = "appearance.secondaryIntensity"
+    private let backgroundStyleKey = "appearance.backgroundStyle"
+    private let backgroundColorKey = "appearance.backgroundColorName"
+    private let backgroundIntensityKey = "appearance.backgroundColorIntensity"
     private(set) var globalPrimaryColorName: String?
     private(set) var globalPrimaryIntensity: Double = 1.0
     private(set) var globalSecondaryColorName: String?
     private(set) var globalSecondaryIntensity: Double = 1.0
+    private var appearanceObservers: [NSObjectProtocol] = []
 
     init(localizationManager: LocalizationManager? = nil) {
         let hidden = UserDefaults.standard.object(forKey: hideWidgetsKey) as? Bool ?? false
@@ -79,6 +86,7 @@ final class WidgetManager: ObservableObject {
         _gridMode = Published(initialValue: gridStored)
         self.localizationManager = localizationManager
         loadGlobalColors()
+        loadGlobalBackground()
         load()
         widgets.forEach { attachWindow(for: $0) }
 
@@ -86,15 +94,7 @@ final class WidgetManager: ObservableObject {
             self?.snapAllWidgetsToGrid()
         }
 
-        appearanceObserver = NotificationCenter.default.addObserver(
-            forName: Notification.Name("appearance.colors.changed"),
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            guard let self else { return }
-            self.loadGlobalColors()
-            self.globalColorsVersion &+= 1
-        }
+        installAppearanceObservers()
     }
 
     deinit {
@@ -102,9 +102,7 @@ final class WidgetManager: ObservableObject {
         if let monitor = mouseUpMonitor {
             NSEvent.removeMonitor(monitor)
         }
-        if let observer = appearanceObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
+        appearanceObservers.forEach(NotificationCenter.default.removeObserver)
     }
 
     func addWidget(type: WidgetType, size: WidgetSizeOption = .medium) {
@@ -135,6 +133,35 @@ final class WidgetManager: ObservableObject {
         globalPrimaryIntensity = defaults.object(forKey: primaryIntensityKey) as? Double ?? 1.0
         globalSecondaryIntensity = defaults.object(forKey: secondaryIntensityKey) as? Double ?? 1.0
         globalColorsVersion &+= 1
+    }
+
+    private func loadGlobalBackground() {
+        let defaults = UserDefaults.standard
+        let storedStyle = defaults.string(forKey: backgroundStyleKey) ?? BackgroundStyle.photo.rawValue
+        globalBackgroundStyle = BackgroundStyle(rawValue: storedStyle) ?? .photo
+        globalBackgroundColorName = defaults.string(forKey: backgroundColorKey)
+        globalBackgroundIntensity = defaults.object(forKey: backgroundIntensityKey) as? Double ?? 1.0
+        globalColorsVersion &+= 1
+    }
+
+    private func installAppearanceObservers() {
+        let colorObserver = NotificationCenter.default.addObserver(
+            forName: Notification.Name("appearance.colors.changed"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.loadGlobalColors()
+        }
+
+        let backgroundObserver = NotificationCenter.default.addObserver(
+            forName: Notification.Name("appearance.background.changed"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.loadGlobalBackground()
+        }
+
+        appearanceObservers = [colorObserver, backgroundObserver]
     }
 
     private func snapAllWidgetsToGrid() {

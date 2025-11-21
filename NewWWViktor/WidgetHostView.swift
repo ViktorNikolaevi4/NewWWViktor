@@ -148,18 +148,57 @@ struct WidgetHostView: View {
         case .solid:
             return AnyShapeStyle(Color.white.opacity(0.12))
         case .gradient:
-            let gradient = LinearGradient(
-                colors: [
-                    Color.white.opacity(0.18),
-                    Color.black.opacity(0.12)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            return AnyShapeStyle(gradient)
+            return gradientBackgroundStyle()
         case .photo:
             return AnyShapeStyle(.regularMaterial)
         }
+    }
+
+    private func gradientBackgroundStyle() -> AnyShapeStyle {
+        let color1 = WidgetPaletteColor.color(
+            named: manager.globalGradientColor1Name,
+            intensity: manager.globalGradientColor1Opacity,
+            fallback: Color.white.opacity(0.2)
+        )
+        let color2 = WidgetPaletteColor.color(
+            named: manager.globalGradientColor2Name,
+            intensity: manager.globalGradientColor2Opacity,
+            fallback: Color.black.opacity(0.35)
+        )
+
+        let pos1 = max(0, min(1, manager.globalGradientColor1Position))
+        let pos2 = max(0, min(1, manager.globalGradientColor2Position))
+        let stops = Gradient(stops: [
+            .init(color: color1, location: CGFloat(pos1)),
+            .init(color: color2, location: CGFloat(pos2))
+        ])
+
+        switch manager.globalGradientType {
+        case .linear:
+            let points = anglePoints(degrees: manager.globalGradientAngle)
+            return AnyShapeStyle(LinearGradient(gradient: stops,
+                                                startPoint: points.start,
+                                                endPoint: points.end))
+        case .radial:
+            return AnyShapeStyle(
+                RadialGradient(gradient: stops,
+                               center: .center,
+                               startRadius: 0,
+                               endRadius: 400)
+            )
+        case .angular:
+            return AnyShapeStyle(AngularGradient(gradient: stops, center: .center))
+        }
+    }
+
+    private func anglePoints(degrees: Double) -> (start: UnitPoint, end: UnitPoint) {
+        let radians = degrees * .pi / 180
+        let dx = cos(radians)
+        let dy = sin(radians)
+        // map vector to unit space
+        let start = UnitPoint(x: 0.5 - dx / 2, y: 0.5 - dy / 2)
+        let end = UnitPoint(x: 0.5 + dx / 2, y: 0.5 + dy / 2)
+        return (start, end)
     }
 
 #if os(macOS)

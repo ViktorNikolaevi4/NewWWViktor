@@ -46,6 +46,14 @@ final class WidgetManager: ObservableObject {
             UserDefaults.standard.set(gridMode.rawValue, forKey: gridModeKey)
         }
     }
+    @Published private(set) var globalGradientColor1Name: String?
+    @Published private(set) var globalGradientColor2Name: String?
+    @Published private(set) var globalGradientColor1Opacity: Double = 1.0
+    @Published private(set) var globalGradientColor2Opacity: Double = 1.0
+    @Published private(set) var globalGradientColor1Position: Double = 0.0
+    @Published private(set) var globalGradientColor2Position: Double = 1.0
+    @Published private(set) var globalGradientType: BackgroundGradientType = .linear
+    @Published private(set) var globalGradientAngle: Double = 0.0
     @Published private(set) var globalBackgroundStyle: BackgroundStyle = .photo
     @Published private(set) var globalBackgroundColorName: String?
     @Published private(set) var globalBackgroundIntensity: Double = 1.0
@@ -70,6 +78,14 @@ final class WidgetManager: ObservableObject {
     private let backgroundStyleKey = "appearance.backgroundStyle"
     private let backgroundColorKey = "appearance.backgroundColorName"
     private let backgroundIntensityKey = "appearance.backgroundColorIntensity"
+    private let gradientColor1Key = "appearance.gradient.color1"
+    private let gradientColor2Key = "appearance.gradient.color2"
+    private let gradientColor1OpacityKey = "appearance.gradient.color1.opacity"
+    private let gradientColor2OpacityKey = "appearance.gradient.color2.opacity"
+    private let gradientColor1PositionKey = "appearance.gradient.color1.position"
+    private let gradientColor2PositionKey = "appearance.gradient.color2.position"
+    private let gradientTypeKey = "appearance.gradient.type"
+    private let gradientAngleKey = "appearance.gradient.angle"
     private(set) var globalPrimaryColorName: String?
     private(set) var globalPrimaryIntensity: Double = 1.0
     private(set) var globalSecondaryColorName: String?
@@ -141,6 +157,17 @@ final class WidgetManager: ObservableObject {
         globalBackgroundStyle = BackgroundStyle(rawValue: storedStyle) ?? .photo
         globalBackgroundColorName = defaults.string(forKey: backgroundColorKey)
         globalBackgroundIntensity = defaults.object(forKey: backgroundIntensityKey) as? Double ?? 1.0
+        globalGradientColor1Name = defaults.string(forKey: gradientColor1Key)
+        globalGradientColor2Name = defaults.string(forKey: gradientColor2Key)
+        globalGradientColor1Opacity = defaults.object(forKey: gradientColor1OpacityKey) as? Double ?? 1.0
+        globalGradientColor2Opacity = defaults.object(forKey: gradientColor2OpacityKey) as? Double ?? 1.0
+        globalGradientColor1Position = defaults.object(forKey: gradientColor1PositionKey) as? Double ?? 0.0
+        globalGradientColor2Position = defaults.object(forKey: gradientColor2PositionKey) as? Double ?? 1.0
+        if let storedType = defaults.string(forKey: gradientTypeKey),
+           let type = BackgroundGradientType(rawValue: storedType) {
+            globalGradientType = type
+        }
+        globalGradientAngle = defaults.object(forKey: gradientAngleKey) as? Double ?? 0.0
         globalColorsVersion &+= 1
     }
 

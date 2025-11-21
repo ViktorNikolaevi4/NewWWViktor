@@ -19,6 +19,16 @@ struct AppearanceSettingsDetailView: View {
     @State private var backgroundIntensity: Double = 1.0
     @State private var isBackgroundPickerPresented = false
     @State private var didAppear = false
+    @State private var gradientColor1Name: String?
+    @State private var gradientColor2Name: String?
+    @State private var gradientColor1Opacity: Double = 1.0
+    @State private var gradientColor2Opacity: Double = 1.0
+    @State private var gradientColor1Position: Double = 0.0
+    @State private var gradientColor2Position: Double = 1.0
+    @State private var gradientType: BackgroundGradientType = .linear
+    @State private var gradientAngle: Double = 0.0
+    @State private var isGradientPicker1Presented = false
+    @State private var isGradientPicker2Presented = false
 
     private let primaryColorKey = "appearance.primaryColorName"
     private let primaryIntensityKey = "appearance.primaryIntensity"
@@ -27,6 +37,14 @@ struct AppearanceSettingsDetailView: View {
     private let backgroundStyleKey = "appearance.backgroundStyle"
     private let backgroundColorKey = "appearance.backgroundColorName"
     private let backgroundIntensityKey = "appearance.backgroundColorIntensity"
+    private let gradientColor1Key = "appearance.gradient.color1"
+    private let gradientColor2Key = "appearance.gradient.color2"
+    private let gradientColor1OpacityKey = "appearance.gradient.color1.opacity"
+    private let gradientColor2OpacityKey = "appearance.gradient.color2.opacity"
+    private let gradientColor1PositionKey = "appearance.gradient.color1.position"
+    private let gradientColor2PositionKey = "appearance.gradient.color2.position"
+    private let gradientTypeKey = "appearance.gradient.type"
+    private let gradientAngleKey = "appearance.gradient.angle"
     private let appearanceColorDidChange = Notification.Name("appearance.colors.changed")
     private let appearanceBackgroundDidChange = Notification.Name("appearance.background.changed")
 
@@ -76,7 +94,7 @@ struct AppearanceSettingsDetailView: View {
 
                                 if backgroundStyle == .palette {
                                     backgroundPaletteButton
-                                } else {
+                                } else if backgroundStyle == .photo {
                                     Picker(localization.text(.appearanceImageSourceLabel), selection: $imageSource) {
                                         ForEach(ImageSource.allCases) { source in
                                             Text(localization.text(source.localizationKey)).tag(source)
@@ -97,6 +115,8 @@ struct AppearanceSettingsDetailView: View {
                                             .buttonStyle(.borderedProminent)
                                             .tint(.orange)
                                     }
+                                } else if backgroundStyle == .gradient {
+                                    gradientControls
                                 }
 
                                 Toggle(localization.text(.appearanceBlurBackground), isOn: $blurBackground)
@@ -128,6 +148,14 @@ struct AppearanceSettingsDetailView: View {
                 }
                 persistBackgroundSettings()
             }
+            .onChange(of: gradientColor1Name) { _, _ in persistGradientSettings() }
+            .onChange(of: gradientColor2Name) { _, _ in persistGradientSettings() }
+            .onChange(of: gradientColor1Opacity) { _, _ in persistGradientSettings() }
+            .onChange(of: gradientColor2Opacity) { _, _ in persistGradientSettings() }
+            .onChange(of: gradientColor1Position) { _, _ in persistGradientSettings() }
+            .onChange(of: gradientColor2Position) { _, _ in persistGradientSettings() }
+            .onChange(of: gradientType) { _, _ in persistGradientSettings() }
+            .onChange(of: gradientAngle) { _, _ in persistGradientSettings() }
 
             if let role = activeColorRole {
                 colorPickerOverlay(for: role)
@@ -135,6 +163,20 @@ struct AppearanceSettingsDetailView: View {
 
             if isBackgroundPickerPresented && backgroundStyle == .palette {
                 backgroundColorPickerOverlay
+            }
+
+            if isGradientPicker1Presented && backgroundStyle == .gradient {
+                gradientColorPickerOverlay(title: "Фон — цвет №1",
+                                           selection: $gradientColor1Name,
+                                           intensity: $gradientColor1Opacity,
+                                           isPresented: $isGradientPicker1Presented)
+            }
+
+            if isGradientPicker2Presented && backgroundStyle == .gradient {
+                gradientColorPickerOverlay(title: "Фон — цвет №2",
+                                           selection: $gradientColor2Name,
+                                           intensity: $gradientColor2Opacity,
+                                           isPresented: $isGradientPicker2Presented)
             }
         }
     }
@@ -221,6 +263,98 @@ struct AppearanceSettingsDetailView: View {
         .buttonStyle(.plain)
     }
 
+    private var gradientControls: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            gradientColorRow(title: "Цвет №1",
+                             colorName: gradientColor1Name,
+                             opacity: gradientColor1Opacity,
+                             position: gradientColor1Position,
+                             onPick: { isGradientPicker1Presented = true },
+                             onOpacityChange: { gradientColor1Opacity = $0 },
+                             onPositionChange: { gradientColor1Position = $0 })
+
+            gradientColorRow(title: "Цвет №2",
+                             colorName: gradientColor2Name,
+                             opacity: gradientColor2Opacity,
+                             position: gradientColor2Position,
+                             onPick: { isGradientPicker2Presented = true },
+                             onOpacityChange: { gradientColor2Opacity = $0 },
+                             onPositionChange: { gradientColor2Position = $0 })
+
+            if gradientColor2Name != nil {
+                VStack(alignment: .leading, spacing: 10) {
+                    Picker("Тип", selection: $gradientType) {
+                        ForEach(BackgroundGradientType.allCases) { type in
+                            Text(type.localizedTitle).tag(type)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    HStack {
+                        Text("Угол")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Text("\(Int(gradientAngle))°")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                    }
+                    Slider(value: $gradientAngle, in: 0...360, step: 1)
+                }
+                .padding(.top, 4)
+            }
+        }
+    }
+
+    private func gradientColorRow(title: String,
+                                  colorName: String?,
+                                  opacity: Double,
+                                  position: Double,
+                                  onPick: @escaping () -> Void,
+                                  onOpacityChange: @escaping (Double) -> Void,
+                                  onPositionChange: @escaping (Double) -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Button {
+                onPick()
+            } label: {
+                HStack(spacing: 12) {
+                    Text(title)
+                        .font(.headline.weight(.semibold))
+                    Spacer()
+                    ColorChip(colorName: colorName, intensity: opacity)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+                .background(Color.white.opacity(0.04))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            .buttonStyle(.plain)
+
+            if colorName != nil {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Прозрачность")
+                        .font(.subheadline.weight(.semibold))
+                    Slider(value: Binding(
+                        get: { opacity },
+                        set: { onOpacityChange($0) }
+                    ), in: 0...1)
+                    HStack {
+                        Text("Позиция")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Text("\(Int(position * 100)) %")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                    }
+                    Slider(value: Binding(
+                        get: { position },
+                        set: { onPositionChange($0) }
+                    ), in: 0...1)
+                }
+                .padding(.horizontal, 4)
+            }
+        }
+    }
+
     private func colorPickerOverlay(for role: WidgetColorRole) -> some View {
         WidgetColorPickerView(title: role.title,
                               isPresented: Binding(
@@ -240,6 +374,19 @@ struct AppearanceSettingsDetailView: View {
                               selection: $backgroundColorName,
                               intensity: $backgroundIntensity) {
             persistBackgroundSettings()
+        }
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+
+    private func gradientColorPickerOverlay(title: String,
+                                            selection: Binding<String?>,
+                                            intensity: Binding<Double>,
+                                            isPresented: Binding<Bool>) -> some View {
+        WidgetColorPickerView(title: title,
+                              isPresented: isPresented,
+                              selection: selection,
+                              intensity: intensity) {
+            persistGradientSettings()
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
@@ -319,6 +466,30 @@ struct AppearanceSettingsDetailView: View {
         }
         backgroundColorName = defaults.string(forKey: backgroundColorKey)
         backgroundIntensity = defaults.object(forKey: backgroundIntensityKey) as? Double ?? 1.0
+        gradientColor1Name = defaults.string(forKey: gradientColor1Key)
+        gradientColor2Name = defaults.string(forKey: gradientColor2Key)
+        gradientColor1Opacity = defaults.object(forKey: gradientColor1OpacityKey) as? Double ?? 1.0
+        gradientColor2Opacity = defaults.object(forKey: gradientColor2OpacityKey) as? Double ?? 1.0
+        gradientColor1Position = defaults.object(forKey: gradientColor1PositionKey) as? Double ?? 0.0
+        gradientColor2Position = defaults.object(forKey: gradientColor2PositionKey) as? Double ?? 1.0
+        if let storedType = defaults.string(forKey: gradientTypeKey),
+           let loadedType = BackgroundGradientType(rawValue: storedType) {
+            gradientType = loadedType
+        }
+        gradientAngle = defaults.object(forKey: gradientAngleKey) as? Double ?? 0.0
+    }
+
+    private func persistGradientSettings() {
+        let defaults = UserDefaults.standard
+        defaults.set(gradientColor1Name, forKey: gradientColor1Key)
+        defaults.set(gradientColor2Name, forKey: gradientColor2Key)
+        defaults.set(gradientColor1Opacity, forKey: gradientColor1OpacityKey)
+        defaults.set(gradientColor2Opacity, forKey: gradientColor2OpacityKey)
+        defaults.set(gradientColor1Position, forKey: gradientColor1PositionKey)
+        defaults.set(gradientColor2Position, forKey: gradientColor2PositionKey)
+        defaults.set(gradientType.rawValue, forKey: gradientTypeKey)
+        defaults.set(gradientAngle, forKey: gradientAngleKey)
+        NotificationCenter.default.post(name: appearanceBackgroundDidChange, object: nil)
     }
 }
 
@@ -393,6 +564,22 @@ private extension BackgroundStyle {
         case .palette: return .appearanceBackgroundPalette
         case .gradient: return .appearanceBackgroundGradient
         case .photo: return .appearanceBackgroundPhoto
+        }
+    }
+}
+
+enum BackgroundGradientType: String, CaseIterable, Identifiable {
+    case linear
+    case radial
+    case angular
+
+    var id: String { rawValue }
+
+    var localizedTitle: String {
+        switch self {
+        case .linear: return "Линейный"
+        case .radial: return "Радиальный"
+        case .angular: return "Круговой"
         }
     }
 }

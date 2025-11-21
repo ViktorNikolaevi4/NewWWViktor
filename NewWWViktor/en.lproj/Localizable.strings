@@ -71,7 +71,6 @@
 "appearanceImageSourceLabel" = "Image Source";
 "appearanceImageSourcePhotos" = "Photos";
 "appearanceImageSourceFiles" = "Files";
-"appearanceImageSourceWidgets" = "Widgets";
 "appearancePhotoTitle" = "Photo";
 "appearancePhotoSubtitle" = "Choose an image for the widget";
 "appearanceBrowseButton" = "Browse";

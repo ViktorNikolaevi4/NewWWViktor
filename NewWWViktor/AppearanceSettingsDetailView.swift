@@ -1,4 +1,8 @@
 import SwiftUI
+#if os(macOS)
+import AppKit
+import UniformTypeIdentifiers
+#endif
 
 struct AppearanceSettingsDetailView: View {
     @EnvironmentObject private var localization: LocalizationManager
@@ -8,7 +12,6 @@ struct AppearanceSettingsDetailView: View {
     @State private var primaryColor: ColorAccent = .system
     @State private var secondaryColor: ColorAccent = .system
     @State private var backgroundStyle: BackgroundStyle = .photo
-    @State private var imageSource: ImageSource = .photos
     @State private var blurBackground = true
     @State private var primaryColorName: String?
     @State private var primaryIntensity: Double = 1.0
@@ -29,6 +32,7 @@ struct AppearanceSettingsDetailView: View {
     @State private var gradientAngle: Double = 0.0
     @State private var isGradientPicker1Presented = false
     @State private var isGradientPicker2Presented = false
+    @State private var backgroundImageURL: URL?
 
     private let primaryColorKey = "appearance.primaryColorName"
     private let primaryIntensityKey = "appearance.primaryIntensity"
@@ -47,6 +51,8 @@ struct AppearanceSettingsDetailView: View {
     private let gradientAngleKey = "appearance.gradient.angle"
     private let appearanceColorDidChange = Notification.Name("appearance.colors.changed")
     private let appearanceBackgroundDidChange = Notification.Name("appearance.background.changed")
+    private let backgroundImageBookmarkKey = "appearance.backgroundImageBookmark"
+    private let backgroundImagePathKey = "appearance.backgroundImagePath"
 
     var body: some View {
         ZStack {
@@ -95,26 +101,7 @@ struct AppearanceSettingsDetailView: View {
                                 if backgroundStyle == .palette {
                                     backgroundPaletteButton
                                 } else if backgroundStyle == .photo {
-                                    Picker(localization.text(.appearanceImageSourceLabel), selection: $imageSource) {
-                                        ForEach(ImageSource.allCases) { source in
-                                            Text(localization.text(source.localizationKey)).tag(source)
-                                        }
-                                    }
-                                    .frame(width: 220)
-
-                                    HStack {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(localization.text(.appearancePhotoTitle))
-                                                .font(.headline.weight(.semibold))
-                                            Text(localization.text(.appearancePhotoSubtitle))
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        Spacer()
-                                        Button(localization.text(.appearanceBrowseButton)) {}
-                                            .buttonStyle(.borderedProminent)
-                                            .tint(.orange)
-                                    }
+                                    photoPickerRow
                                 } else if backgroundStyle == .gradient {
                                     gradientControls
                                 }
@@ -378,6 +365,33 @@ struct AppearanceSettingsDetailView: View {
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
+    private var photoPickerRow: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(localization.text(.appearancePhotoTitle))
+                        .font(.headline.weight(.semibold))
+                    if let url = backgroundImageURL {
+                        Text(url.lastPathComponent)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    } else {
+                        Text(localization.text(.appearancePhotoSubtitle))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                Spacer()
+                Button(localization.text(.appearanceBrowseButton)) {
+                    pickBackgroundPhoto()
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+            }
+        }
+    }
+
     private func gradientColorPickerOverlay(title: String,
                                             selection: Binding<String?>,
                                             intensity: Binding<Double>,
@@ -466,6 +480,7 @@ struct AppearanceSettingsDetailView: View {
         }
         backgroundColorName = defaults.string(forKey: backgroundColorKey)
         backgroundIntensity = defaults.object(forKey: backgroundIntensityKey) as? Double ?? 1.0
+        loadBackgroundImage()
         gradientColor1Name = defaults.string(forKey: gradientColor1Key)
         gradientColor2Name = defaults.string(forKey: gradientColor2Key)
         gradientColor1Opacity = defaults.object(forKey: gradientColor1OpacityKey) as? Double ?? 1.0
@@ -490,6 +505,90 @@ struct AppearanceSettingsDetailView: View {
         defaults.set(gradientType.rawValue, forKey: gradientTypeKey)
         defaults.set(gradientAngle, forKey: gradientAngleKey)
         NotificationCenter.default.post(name: appearanceBackgroundDidChange, object: nil)
+    }
+
+    private func pickBackgroundPhoto() {
+        #if os(macOS)
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.image]
+        panel.prompt = localization.text(.appearanceBrowseButton)
+        if panel.runModal() == .OK, let url = panel.url {
+            let copied = copyToAppSupport(url: url)
+            backgroundImageURL = copied ?? url
+            saveBackgroundImageBookmark(url)
+            if let copied {
+                UserDefaults.standard.set(copied.path, forKey: backgroundImagePathKey)
+            }
+            NotificationCenter.default.post(name: appearanceBackgroundDidChange, object: nil)
+        }
+        #endif
+    }
+
+    private func saveBackgroundImageBookmark(_ url: URL) {
+        #if os(macOS)
+        do {
+            let data = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+            UserDefaults.standard.set(data, forKey: backgroundImageBookmarkKey)
+        } catch {
+            print("Failed to save background image bookmark: \(error)")
+        }
+        #endif
+    }
+
+    private func loadBackgroundImage() {
+        #if os(macOS)
+        let defaults = UserDefaults.standard
+        if let storedPath = defaults.string(forKey: backgroundImagePathKey) {
+            let url = URL(fileURLWithPath: storedPath)
+            if FileManager.default.fileExists(atPath: url.path) {
+                backgroundImageURL = url
+                return
+            }
+        }
+        guard let data = defaults.data(forKey: backgroundImageBookmarkKey) else { return }
+        var stale = false
+        if let url = try? URL(resolvingBookmarkData: data,
+                              options: [.withSecurityScope],
+                              relativeTo: nil,
+                              bookmarkDataIsStale: &stale) {
+            backgroundImageURL = url
+            if stale, let refreshed = try? url.bookmarkData(options: .withSecurityScope,
+                                                            includingResourceValuesForKeys: nil,
+                                                            relativeTo: nil) {
+                defaults.set(refreshed, forKey: backgroundImageBookmarkKey)
+            }
+        }
+        #endif
+    }
+
+    private func copyToAppSupport(url: URL) -> URL? {
+        #if os(macOS)
+        do {
+            let fm = FileManager.default
+            let base = try fm.url(for: .applicationSupportDirectory,
+                                  in: .userDomainMask,
+                                  appropriateFor: nil,
+                                  create: true)
+            let dir = base.appendingPathComponent("NewWWViktorBackgrounds", isDirectory: true)
+            if !fm.fileExists(atPath: dir.path) {
+                try fm.createDirectory(at: dir, withIntermediateDirectories: true)
+            }
+            let dest = dir.appendingPathComponent(url.lastPathComponent)
+            if fm.fileExists(atPath: dest.path) {
+                try fm.removeItem(at: dest)
+            }
+            try fm.copyItem(at: url, to: dest)
+            return dest
+        } catch {
+            print("Failed to copy background image: \(error)")
+            return nil
+        }
+        #else
+        return nil
+        #endif
     }
 }
 
@@ -526,14 +625,6 @@ enum BackgroundStyle: String, CaseIterable, Identifiable {
         case .photo: return "photo"
         }
     }
-}
-
-enum ImageSource: String, CaseIterable, Identifiable {
-    case photos = "photos"
-    case files = "files"
-    case widgets = "widgets"
-
-    var id: String { rawValue }
 }
 
 private extension ThemeOption {
@@ -580,16 +671,6 @@ enum BackgroundGradientType: String, CaseIterable, Identifiable {
         case .linear: return "Линейный"
         case .radial: return "Радиальный"
         case .angular: return "Круговой"
-        }
-    }
-}
-
-private extension ImageSource {
-    var localizationKey: LocalizationKey {
-        switch self {
-        case .photos: return .appearanceImageSourcePhotos
-        case .files: return .appearanceImageSourceFiles
-        case .widgets: return .appearanceImageSourceWidgets
         }
     }
 }

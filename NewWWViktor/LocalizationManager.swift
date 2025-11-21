@@ -70,7 +70,6 @@ enum LocalizationKey: String {
     case appearanceImageSourceLabel
     case appearanceImageSourcePhotos
     case appearanceImageSourceFiles
-    case appearanceImageSourceWidgets
     case appearancePhotoTitle
     case appearancePhotoSubtitle
     case appearanceBrowseButton

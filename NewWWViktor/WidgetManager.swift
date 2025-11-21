@@ -57,6 +57,9 @@ final class WidgetManager: ObservableObject {
     @Published private(set) var globalBackgroundStyle: BackgroundStyle = .photo
     @Published private(set) var globalBackgroundColorName: String?
     @Published private(set) var globalBackgroundIntensity: Double = 1.0
+    #if os(macOS)
+    @Published private(set) var globalBackgroundImage: NSImage?
+    #endif
     @Published private(set) var globalColorsVersion: Int = 0
     weak var panelController: SidePanelWindowController?
     weak var settingsCoordinator: SettingsCoordinator?
@@ -86,6 +89,8 @@ final class WidgetManager: ObservableObject {
     private let gradientColor2PositionKey = "appearance.gradient.color2.position"
     private let gradientTypeKey = "appearance.gradient.type"
     private let gradientAngleKey = "appearance.gradient.angle"
+    private let backgroundImageBookmarkKey = "appearance.backgroundImageBookmark"
+    private let backgroundImagePathKey = "appearance.backgroundImagePath"
     private(set) var globalPrimaryColorName: String?
     private(set) var globalPrimaryIntensity: Double = 1.0
     private(set) var globalSecondaryColorName: String?
@@ -168,8 +173,52 @@ final class WidgetManager: ObservableObject {
             globalGradientType = type
         }
         globalGradientAngle = defaults.object(forKey: gradientAngleKey) as? Double ?? 0.0
+        #if os(macOS)
+        loadGlobalBackgroundImage()
+        #endif
         globalColorsVersion &+= 1
     }
+
+    #if os(macOS)
+    private func loadGlobalBackgroundImage() {
+        let defaults = UserDefaults.standard
+        if let storedPath = defaults.string(forKey: backgroundImagePathKey) {
+            let url = URL(fileURLWithPath: storedPath)
+            if let data = try? Data(contentsOf: url) {
+                globalBackgroundImage = NSImage(data: data)
+                return
+            }
+        }
+
+        guard let data = defaults.data(forKey: backgroundImageBookmarkKey) else {
+            globalBackgroundImage = nil
+            return
+        }
+
+        var stale = false
+        if let url = try? URL(resolvingBookmarkData: data,
+                              options: [.withSecurityScope],
+                              relativeTo: nil,
+                              bookmarkDataIsStale: &stale) {
+            let accessed = url.startAccessingSecurityScopedResource()
+            if let imageData = try? Data(contentsOf: url) {
+                globalBackgroundImage = NSImage(data: imageData)
+            } else {
+                globalBackgroundImage = nil
+            }
+            if stale, let refreshed = try? url.bookmarkData(options: .withSecurityScope,
+                                                            includingResourceValuesForKeys: nil,
+                                                            relativeTo: nil) {
+                defaults.set(refreshed, forKey: backgroundImageBookmarkKey)
+            }
+            if accessed {
+                url.stopAccessingSecurityScopedResource()
+            }
+        } else {
+            globalBackgroundImage = nil
+        }
+    }
+    #endif
 
     private func installAppearanceObservers() {
         let colorObserver = NotificationCenter.default.addObserver(

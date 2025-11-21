@@ -81,10 +81,7 @@ struct WidgetHostView: View {
                     .frame(maxWidth: .infinity,
                            maxHeight: .infinity,
                            alignment: .topLeading)
-                    .background(
-                        RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-                            .fill(widgetBackgroundFill)
-                    )
+                    .background(widgetBackground)
                     .overlay(
                         RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
                             .strokeBorder(Color.white.opacity(0.10))
@@ -102,6 +99,7 @@ struct WidgetHostView: View {
                 }
             }
 #if os(macOS)
+            .id(manager.globalColorsVersion) // force refresh when appearance changes
             .gesture(
                 TapGesture(count: 2).onEnded {
                     togglePanel(for: instance)
@@ -119,9 +117,12 @@ struct WidgetHostView: View {
             .onChange(of: instance.x) { _, _ in
                 repositionPanelIfNeeded(for: instance)
             }
-            .onChange(of: instance.y) { _, _ in
-                repositionPanelIfNeeded(for: instance)
-            }
+                    .onChange(of: instance.y) { _, _ in
+                        repositionPanelIfNeeded(for: instance)
+                    }
+                    .onReceive(manager.$globalColorsVersion) { _ in
+                        // Trigger view refresh when appearance changes (e.g., background image/palette)
+                    }
 #endif
         } else {
             EmptyView()
@@ -133,6 +134,20 @@ struct WidgetHostView: View {
         switch instance.type {
         case .clock:
             ClockWidgetView(widget: instance)
+        }
+    }
+
+    private var widgetBackground: some View {
+        ZStack {
+            if manager.globalBackgroundStyle == .photo, let image = manager.globalBackgroundImage {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .clipped()
+            } else {
+                RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                    .fill(widgetBackgroundFill)
+            }
         }
     }
 

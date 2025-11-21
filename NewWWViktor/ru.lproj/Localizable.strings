@@ -71,7 +71,6 @@
 "appearanceImageSourceLabel" = "Источник изображения";
 "appearanceImageSourcePhotos" = "Фото";
 "appearanceImageSourceFiles" = "Файлы";
-"appearanceImageSourceWidgets" = "Виджеты";
 "appearancePhotoTitle" = "Фото";
 "appearancePhotoSubtitle" = "Выберите изображение для виджета";
 "appearanceBrowseButton" = "Выбрать";

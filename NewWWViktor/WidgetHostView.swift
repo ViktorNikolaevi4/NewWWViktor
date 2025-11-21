@@ -168,10 +168,15 @@ struct WidgetHostView: View {
 
         let pos1 = max(0, min(1, manager.globalGradientColor1Position))
         let pos2 = max(0, min(1, manager.globalGradientColor2Position))
-        let stops = Gradient(stops: [
-            .init(color: color1, location: CGFloat(pos1)),
-            .init(color: color2, location: CGFloat(pos2))
-        ])
+        let orderedStops = [
+            (color: color1, location: pos1),
+            (color: color2, location: pos2)
+        ]
+        .sorted { $0.location < $1.location }
+
+        let stops = Gradient(stops: orderedStops.map {
+            .init(color: $0.color, location: CGFloat($0.location))
+        })
 
         switch manager.globalGradientType {
         case .linear:

@@ -13,7 +13,6 @@ struct SettingsPopoverView: View {
         SettingsMenuItem(id: "general", titleKey: .categoryGeneral, systemImage: "slider.horizontal.3"),
         SettingsMenuItem(id: "appearance", titleKey: .categoryAppearance, systemImage: "paintbrush"),
         SettingsMenuItem(id: "plan", titleKey: .categoryPlan, systemImage: "calendar"),
-        SettingsMenuItem(id: "screens", titleKey: .categoryScreens, systemImage: "macwindow"),
         SettingsMenuItem(id: "backups", titleKey: .categoryBackups, systemImage: "externaldrive"),
         SettingsMenuItem(id: "support", titleKey: .categorySupport, systemImage: "lifepreserver"),
         SettingsMenuItem(id: "about", titleKey: .categoryAbout, systemImage: "info.circle")

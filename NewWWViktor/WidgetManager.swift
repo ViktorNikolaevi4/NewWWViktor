@@ -96,7 +96,10 @@ final class WidgetManager: ObservableObject {
     private(set) var globalPrimaryIntensity: Double = 1.0
     private(set) var globalSecondaryColorName: String?
     private(set) var globalSecondaryIntensity: Double = 1.0
+    @Published var sharedDate: Date = Date()
+    @Published var locationProvider: LocationProvider = LocationProvider()
     private var appearanceObservers: [NSObjectProtocol] = []
+    private var timerCancellable: AnyCancellable?
 
     init(localizationManager: LocalizationManager? = nil) {
         let hidden = UserDefaults.standard.object(forKey: hideWidgetsKey) as? Bool ?? false
@@ -117,6 +120,7 @@ final class WidgetManager: ObservableObject {
         }
 
         installAppearanceObservers()
+        startSharedTimer()
 
         let resetObserver = NotificationCenter.default.addObserver(
             forName: Notification.Name("widgets.reset.appearance"),
@@ -134,6 +138,9 @@ final class WidgetManager: ObservableObject {
             NSEvent.removeMonitor(monitor)
         }
         appearanceObservers.forEach(NotificationCenter.default.removeObserver)
+        if let cancellable = timerCancellable {
+            cancellable.cancel()
+        }
     }
 
     func addWidget(type: WidgetType, size: WidgetSizeOption = .medium) {
@@ -264,6 +271,13 @@ final class WidgetManager: ObservableObject {
         }
 
         appearanceObservers = [colorObserver, backgroundObserver]
+    }
+
+    private func startSharedTimer() {
+        let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+        timerCancellable = timer.sink { [weak self] output in
+            self?.sharedDate = output
+        }
     }
 
     private func snapAllWidgetsToGrid() {

@@ -6,8 +6,6 @@ struct ClockWidgetView: View {
     @EnvironmentObject private var manager: WidgetManager
     @EnvironmentObject private var localization: LocalizationManager
     @State private var date = Date()
-    @StateObject private var locationProvider = LocationProvider()
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -35,15 +33,16 @@ struct ClockWidgetView: View {
         }
         .padding(contentPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .onReceive(timer) { output in
-            date = output
+        .onChange(of: manager.sharedDate) { _, newDate in
+            date = newDate
         }
         .onAppear {
-            locationProvider.updatePreferredLocale(interfaceLocale)
-            locationProvider.requestLocationIfNeeded()
+            date = manager.sharedDate
+            manager.locationProvider.updatePreferredLocale(interfaceLocale)
+            manager.locationProvider.requestLocationIfNeeded()
         }
         .onChange(of: localization.selectedLanguage) { _, _ in
-            locationProvider.updatePreferredLocale(interfaceLocale)
+            manager.locationProvider.updatePreferredLocale(interfaceLocale)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(formattedTime(date, in: effectiveTimeZone)), \(formattedDate(date, in: effectiveTimeZone)), \(locationLabel)")
@@ -100,7 +99,7 @@ struct ClockWidgetView: View {
     private var locationLabel: String {
         switch widget.location.mode {
         case .current:
-            return locationProvider.cityName ?? fallbackCityName()
+            return manager.locationProvider.cityName ?? fallbackCityName()
         case .custom:
             if let city = widget.location.city {
                 if let region = widget.location.region, !region.isEmpty {
@@ -115,14 +114,14 @@ struct ClockWidgetView: View {
     private var effectiveTimeZone: TimeZone {
         switch widget.location.mode {
         case .current:
-            return locationProvider.currentTimeZone ?? .current
+            return manager.locationProvider.currentTimeZone ?? .current
         case .custom:
             return widget.location.timeZone
         }
     }
 
     private func fallbackCityName() -> String {
-        let tz = TimeZone.current.identifier
+        let tz = effectiveTimeZone.identifier
         if let raw = tz.split(separator: "/").last {
             return String(raw).replacingOccurrences(of: "_", with: " ")
         }

@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct SupportSettingsDetailView: View {
     @EnvironmentObject private var localization: LocalizationManager
@@ -50,7 +51,9 @@ struct SupportSettingsDetailView: View {
             supportRow(title: localization.text(.supportRowQuestionTitle),
                        actionTitle: localization.text(.supportRowQuestionAction))
             supportRow(title: localization.text(.supportRowNeedHelpTitle),
-                       actionTitle: localization.text(.supportRowNeedHelpAction))
+                       actionTitle: localization.text(.supportRowNeedHelpAction)) {
+                sendSupportEmail()
+            }
             supportRow(title: localization.text(.supportRowTourTitle),
                        actionTitle: localization.text(.supportRowTourAction))
             supportRow(title: localization.text(.supportRowIdeaTitle),
@@ -67,14 +70,29 @@ struct SupportSettingsDetailView: View {
         )
     }
 
-    private func supportRow(title: String, actionTitle: String) -> some View {
+    private func supportRow(title: String, actionTitle: String, action: @escaping () -> Void = {}) -> some View {
         HStack {
             Text(title)
                 .font(.body.weight(.semibold))
             Spacer()
-            Button(actionTitle) {}
+            Button(actionTitle) {
+                action()
+            }
                 .buttonStyle(.borderedProminent)
                 .tint(.orange)
         }
+    }
+
+    private func sendSupportEmail() {
+        let recipient = "v87v87@icloud.com"
+        let subject = "WidgetWall Support"
+        let body = ""
+
+        let allowed = CharacterSet.urlQueryAllowed
+        let subjectEncoded = subject.addingPercentEncoding(withAllowedCharacters: allowed) ?? subject
+        let bodyEncoded = body.addingPercentEncoding(withAllowedCharacters: allowed) ?? body
+
+        guard let url = URL(string: "mailto:\(recipient)?subject=\(subjectEncoded)&body=\(bodyEncoded)") else { return }
+        NSWorkspace.shared.open(url)
     }
 }

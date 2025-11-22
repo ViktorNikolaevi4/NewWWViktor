@@ -7,7 +7,6 @@ enum SettingsCategory: CaseIterable, Identifiable {
     case appearance
     case plan
     case backups
-    case screens
     case support
     case about
 
@@ -19,7 +18,6 @@ enum SettingsCategory: CaseIterable, Identifiable {
         case .appearance: return "paintbrush"
         case .plan: return "calendar"
         case .backups: return "externaldrive"
-        case .screens: return "macwindow"
         case .support: return "lifepreserver"
         case .about: return "info.circle"
         }
@@ -31,7 +29,6 @@ enum SettingsCategory: CaseIterable, Identifiable {
         case .appearance: return .categoryAppearance
         case .plan: return .categoryPlan
         case .backups: return .categoryBackups
-        case .screens: return .categoryScreens
         case .support: return .categorySupport
         case .about: return .categoryAbout
         }

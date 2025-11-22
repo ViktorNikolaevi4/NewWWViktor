@@ -106,7 +106,6 @@ private enum SettingsCategoryID: String {
     case general
     case appearance
     case plan
-    case screens
     case backups
     case support
     case about
@@ -116,7 +115,6 @@ private enum SettingsCategoryID: String {
         case .general: return .general
         case .appearance: return .appearance
         case .plan: return .plan
-        case .screens: return .screens
         case .backups: return .backups
         case .support: return .support
         case .about: return .about

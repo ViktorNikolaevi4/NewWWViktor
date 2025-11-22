@@ -396,20 +396,22 @@ private struct WidgetBackgroundPickerSheet: View {
         VStack(alignment: .leading, spacing: 16) {
             header
 
-            Toggle("Использовать глобальный фон", isOn: $isUsingGlobalBackground)
-                .toggleStyle(SwitchToggleStyle(tint: .orange))
-                .onChange(of: isUsingGlobalBackground) { _, newValue in
-                    if newValue {
-                        // Reset to global
-                        backgroundStyle = .photo
-                        backgroundColorName = nil
-                        backgroundImageURL = nil
-                        gradientColor1Name = nil
-                        gradientColor2Name = nil
+            if isGlobalContext {
+                Toggle("Использовать глобальный фон", isOn: $isUsingGlobalBackground)
+                    .toggleStyle(SwitchToggleStyle(tint: .orange))
+                    .onChange(of: isUsingGlobalBackground) { _, newValue in
+                        if newValue {
+                            // Reset to global
+                            backgroundStyle = .photo
+                            backgroundColorName = nil
+                            backgroundImageURL = nil
+                            gradientColor1Name = nil
+                            gradientColor2Name = nil
+                        }
+                        onApply()
                     }
-                    onApply()
-                }
-                .padding(.bottom, 4)
+                    .padding(.bottom, 4)
+            }
 
             Picker("", selection: $backgroundStyle) {
                 ForEach(BackgroundStyle.allCases) { style in
@@ -419,13 +421,13 @@ private struct WidgetBackgroundPickerSheet: View {
                 }
             }
             .pickerStyle(.segmented)
-            .disabled(isUsingGlobalBackground)
+            .disabled(isGlobalContext ? isUsingGlobalBackground : false)
 
-            if backgroundStyle == .palette && !isUsingGlobalBackground {
+            if backgroundStyle == .palette && !(isGlobalContext ? isUsingGlobalBackground : false) {
                 backgroundPaletteButton
-            } else if backgroundStyle == .gradient && !isUsingGlobalBackground {
+            } else if backgroundStyle == .gradient && !(isGlobalContext ? isUsingGlobalBackground : false) {
                 gradientControls
-            } else if backgroundStyle == .photo && !isUsingGlobalBackground {
+            } else if backgroundStyle == .photo && !(isGlobalContext ? isUsingGlobalBackground : false) {
                 photoControls
             }
 

@@ -17,6 +17,18 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var mainColorIntensity: Double
     var secondaryColorName: String?
     var secondaryColorIntensity: Double
+    var backgroundStyle: BackgroundStyle?
+    var backgroundColorName: String?
+    var backgroundIntensity: Double
+    var backgroundImagePath: String?
+    var gradientColor1Name: String?
+    var gradientColor2Name: String?
+    var gradientColor1Opacity: Double
+    var gradientColor2Opacity: Double
+    var gradientColor1Position: Double
+    var gradientColor2Position: Double
+    var gradientType: BackgroundGradientType?
+    var gradientAngle: Double?
     var sizeOption: WidgetSizeOption
 
     init(type: WidgetType,
@@ -38,12 +50,24 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.mainColorIntensity = 1.0
         self.secondaryColorName = nil
         self.secondaryColorIntensity = 1.0
+        self.backgroundStyle = nil
+        self.backgroundColorName = nil
+        self.backgroundIntensity = 1.0
+        self.backgroundImagePath = nil
+        self.gradientColor1Name = nil
+        self.gradientColor2Name = nil
+        self.gradientColor1Opacity = 1.0
+        self.gradientColor2Opacity = 1.0
+        self.gradientColor1Position = 0.0
+        self.gradientColor2Position = 1.0
+        self.gradientType = nil
+        self.gradientAngle = nil
         self.sizeOption = .medium
         applySizeOption(.medium)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, sizeOption
+        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, sizeOption
     }
 
     init(from decoder: Decoder) throws {
@@ -64,6 +88,18 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         mainColorIntensity = try container.decodeIfPresent(Double.self, forKey: .mainColorIntensity) ?? 1.0
         secondaryColorName = try container.decodeIfPresent(String.self, forKey: .secondaryColorName)
         secondaryColorIntensity = try container.decodeIfPresent(Double.self, forKey: .secondaryColorIntensity) ?? 1.0
+        backgroundStyle = try container.decodeIfPresent(BackgroundStyle.self, forKey: .backgroundStyle)
+        backgroundColorName = try container.decodeIfPresent(String.self, forKey: .backgroundColorName)
+        backgroundIntensity = try container.decodeIfPresent(Double.self, forKey: .backgroundIntensity) ?? 1.0
+        backgroundImagePath = try container.decodeIfPresent(String.self, forKey: .backgroundImagePath)
+        gradientColor1Name = try container.decodeIfPresent(String.self, forKey: .gradientColor1Name)
+        gradientColor2Name = try container.decodeIfPresent(String.self, forKey: .gradientColor2Name)
+        gradientColor1Opacity = try container.decodeIfPresent(Double.self, forKey: .gradientColor1Opacity) ?? 1.0
+        gradientColor2Opacity = try container.decodeIfPresent(Double.self, forKey: .gradientColor2Opacity) ?? 1.0
+        gradientColor1Position = try container.decodeIfPresent(Double.self, forKey: .gradientColor1Position) ?? 0.0
+        gradientColor2Position = try container.decodeIfPresent(Double.self, forKey: .gradientColor2Position) ?? 1.0
+        gradientType = try container.decodeIfPresent(BackgroundGradientType.self, forKey: .gradientType)
+        gradientAngle = try container.decodeIfPresent(Double.self, forKey: .gradientAngle)
         sizeOption = try container.decodeIfPresent(WidgetSizeOption.self, forKey: .sizeOption) ?? .medium
         applySizeOption(sizeOption)
     }
@@ -86,6 +122,18 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(mainColorIntensity, forKey: .mainColorIntensity)
         try container.encodeIfPresent(secondaryColorName, forKey: .secondaryColorName)
         try container.encode(secondaryColorIntensity, forKey: .secondaryColorIntensity)
+        try container.encodeIfPresent(backgroundStyle, forKey: .backgroundStyle)
+        try container.encodeIfPresent(backgroundColorName, forKey: .backgroundColorName)
+        try container.encode(backgroundIntensity, forKey: .backgroundIntensity)
+        try container.encodeIfPresent(backgroundImagePath, forKey: .backgroundImagePath)
+        try container.encodeIfPresent(gradientColor1Name, forKey: .gradientColor1Name)
+        try container.encodeIfPresent(gradientColor2Name, forKey: .gradientColor2Name)
+        try container.encode(gradientColor1Opacity, forKey: .gradientColor1Opacity)
+        try container.encode(gradientColor2Opacity, forKey: .gradientColor2Opacity)
+        try container.encode(gradientColor1Position, forKey: .gradientColor1Position)
+        try container.encode(gradientColor2Position, forKey: .gradientColor2Position)
+        try container.encodeIfPresent(gradientType, forKey: .gradientType)
+        try container.encodeIfPresent(gradientAngle, forKey: .gradientAngle)
         try container.encode(sizeOption, forKey: .sizeOption)
     }
 

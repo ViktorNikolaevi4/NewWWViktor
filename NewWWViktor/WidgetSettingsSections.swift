@@ -46,6 +46,7 @@ enum WidgetColorRole {
 struct WidgetAppearanceSettingsSection: View {
     @Binding var widget: WidgetInstance
     let onColorPicker: (WidgetColorRole) -> Void
+    let onBackgroundPicker: () -> Void
 
     var body: some View {
         WidgetSettingsGroup(title: "Colors") {
@@ -61,8 +62,9 @@ struct WidgetAppearanceSettingsSection: View {
                 ColorChip(colorName: widget.secondaryColorName,
                           intensity: widget.secondaryColorIntensity)
             }
-            WidgetSettingsRow(title: "Background") {
-                ValuePill(text: "Global", icon: "circle.lefthalf.filled")
+            WidgetSettingsRowButton(title: "Background", action: onBackgroundPicker) {
+                let isGlobal = widget.backgroundStyle == nil
+                ValuePill(text: isGlobal ? "Global" : "Custom", icon: isGlobal ? "circle.lefthalf.filled" : "paintpalette")
             }
         }
     }

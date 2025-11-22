@@ -91,6 +91,7 @@ struct WidgetHostView: View {
                     )
                     .shadow(color: .clear, radius: 0)
             }
+            .id(manager.globalColorsVersion) // refresh on any appearance change
             .padding(EdgeInsets(top: 2, leading: 2, bottom: 2, trailing: 2))
             .contentShape(Rectangle())
             .onHover { hovering in
@@ -99,7 +100,6 @@ struct WidgetHostView: View {
                 }
             }
 #if os(macOS)
-            .id(manager.globalColorsVersion) // force refresh when appearance changes
             .gesture(
                 TapGesture(count: 2).onEnded {
                     togglePanel(for: instance)
@@ -139,7 +139,7 @@ struct WidgetHostView: View {
 
     private var widgetBackground: some View {
         ZStack {
-            if manager.globalBackgroundStyle == .photo, let image = manager.globalBackgroundImage {
+            if resolvedBackgroundStyle == .photo, let image = resolvedBackgroundImage {
                 Image(nsImage: image)
                     .resizable()
                     .scaledToFill()
@@ -152,11 +152,11 @@ struct WidgetHostView: View {
     }
 
     private var widgetBackgroundFill: AnyShapeStyle {
-        switch manager.globalBackgroundStyle {
+        switch resolvedBackgroundStyle {
         case .palette:
             let color = WidgetPaletteColor.color(
-                named: manager.globalBackgroundColorName,
-                intensity: manager.globalBackgroundIntensity,
+                named: resolvedBackgroundColorName,
+                intensity: resolvedBackgroundIntensity,
                 fallback: Color.white.opacity(0.14)
             )
             return AnyShapeStyle(color.opacity(0.96))
@@ -171,18 +171,18 @@ struct WidgetHostView: View {
 
     private func gradientBackgroundStyle() -> AnyShapeStyle {
         let color1 = WidgetPaletteColor.color(
-            named: manager.globalGradientColor1Name,
-            intensity: manager.globalGradientColor1Opacity,
+            named: resolvedGradientColor1Name,
+            intensity: resolvedGradientColor1Opacity,
             fallback: Color.white.opacity(0.2)
         )
         let color2 = WidgetPaletteColor.color(
-            named: manager.globalGradientColor2Name,
-            intensity: manager.globalGradientColor2Opacity,
+            named: resolvedGradientColor2Name,
+            intensity: resolvedGradientColor2Opacity,
             fallback: Color.black.opacity(0.35)
         )
 
-        let pos1 = max(0, min(1, manager.globalGradientColor1Position))
-        let pos2 = max(0, min(1, manager.globalGradientColor2Position))
+        let pos1 = max(0, min(1, resolvedGradientColor1Position))
+        let pos2 = max(0, min(1, resolvedGradientColor2Position))
         let orderedStops = [
             (color: color1, location: pos1),
             (color: color2, location: pos2)
@@ -193,9 +193,9 @@ struct WidgetHostView: View {
             .init(color: $0.color, location: CGFloat($0.location))
         })
 
-        switch manager.globalGradientType {
+        switch resolvedGradientType {
         case .linear:
-            let points = anglePoints(degrees: manager.globalGradientAngle)
+            let points = anglePoints(degrees: resolvedGradientAngle)
             return AnyShapeStyle(LinearGradient(gradient: stops,
                                                 startPoint: points.start,
                                                 endPoint: points.end))
@@ -219,6 +219,67 @@ struct WidgetHostView: View {
         let start = UnitPoint(x: 0.5 - dx / 2, y: 0.5 - dy / 2)
         let end = UnitPoint(x: 0.5 + dx / 2, y: 0.5 + dy / 2)
         return (start, end)
+    }
+
+    // MARK: - Resolved appearance (widget override > global)
+
+    private var resolvedBackgroundStyle: BackgroundStyle {
+        if let style = manager.widgets.first(where: { $0.id == instanceID })?.backgroundStyle {
+            return style
+        }
+        return manager.globalBackgroundStyle
+    }
+
+    private var resolvedBackgroundColorName: String? {
+        if let style = manager.widgets.first(where: { $0.id == instanceID })?.backgroundStyle,
+           style == .palette {
+            return manager.widgets.first(where: { $0.id == instanceID })?.backgroundColorName ?? manager.globalBackgroundColorName
+        }
+        return manager.globalBackgroundColorName
+    }
+
+    private var resolvedBackgroundIntensity: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.backgroundIntensity ?? manager.globalBackgroundIntensity
+    }
+
+    private var resolvedBackgroundImage: NSImage? {
+        if let path = manager.widgets.first(where: { $0.id == instanceID })?.backgroundImagePath,
+           let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
+            return NSImage(data: data)
+        }
+        return manager.globalBackgroundImage
+    }
+
+    private var resolvedGradientColor1Name: String? {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor1Name ?? manager.globalGradientColor1Name
+    }
+
+    private var resolvedGradientColor2Name: String? {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor2Name ?? manager.globalGradientColor2Name
+    }
+
+    private var resolvedGradientColor1Opacity: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor1Opacity ?? manager.globalGradientColor1Opacity
+    }
+
+    private var resolvedGradientColor2Opacity: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor2Opacity ?? manager.globalGradientColor2Opacity
+    }
+
+    private var resolvedGradientColor1Position: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor1Position ?? manager.globalGradientColor1Position
+    }
+
+    private var resolvedGradientColor2Position: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor2Position ?? manager.globalGradientColor2Position
+    }
+
+    private var resolvedGradientType: BackgroundGradientType {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientType ?? manager.globalGradientType
+    }
+
+    private var resolvedGradientAngle: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientAngle ?? manager.globalGradientAngle
     }
 
 #if os(macOS)

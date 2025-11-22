@@ -154,6 +154,9 @@ final class WidgetManager: ObservableObject {
         globalPrimaryIntensity = defaults.object(forKey: primaryIntensityKey) as? Double ?? 1.0
         globalSecondaryIntensity = defaults.object(forKey: secondaryIntensityKey) as? Double ?? 1.0
         globalColorsVersion &+= 1
+        #if os(macOS)
+        refreshWidgetWindows()
+        #endif
     }
 
     private func loadGlobalBackground() {
@@ -175,6 +178,7 @@ final class WidgetManager: ObservableObject {
         globalGradientAngle = defaults.object(forKey: gradientAngleKey) as? Double ?? 0.0
         #if os(macOS)
         loadGlobalBackgroundImage()
+        refreshWidgetWindows()
         #endif
         globalColorsVersion &+= 1
     }
@@ -216,6 +220,18 @@ final class WidgetManager: ObservableObject {
             }
         } else {
             globalBackgroundImage = nil
+        }
+    }
+
+    private func refreshWidgetWindows() {
+        DispatchQueue.main.async {
+            for window in self.windows.values {
+                if let view = window.contentView {
+                    view.needsDisplay = true
+                    view.layoutSubtreeIfNeeded()
+                }
+                window.displayIfNeeded()
+            }
         }
     }
     #endif
@@ -402,6 +418,8 @@ final class WidgetManager: ObservableObject {
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         window.isMovableByWindowBackground = !instance.isPositionLocked
         window.contentView = NSHostingView(rootView: content)
+        window.contentView?.wantsLayer = true  // Уже true для NSHostingView, но на всякий случай
+        window.contentView?.layerContentsRedrawPolicy = .onSetNeedsDisplay
         window.orderFrontRegardless()
         applyVisibility(to: window)
 

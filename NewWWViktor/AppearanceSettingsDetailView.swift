@@ -609,7 +609,7 @@ enum ColorAccent: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-enum BackgroundStyle: String, CaseIterable, Identifiable {
+enum BackgroundStyle: String, CaseIterable, Identifiable, Codable {
     case solid
     case palette
     case gradient
@@ -659,7 +659,7 @@ private extension BackgroundStyle {
     }
 }
 
-enum BackgroundGradientType: String, CaseIterable, Identifiable {
+enum BackgroundGradientType: String, CaseIterable, Identifiable, Codable {
     case linear
     case radial
     case angular

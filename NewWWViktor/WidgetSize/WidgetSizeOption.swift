@@ -9,18 +9,18 @@ enum WidgetSizeOption: String, CaseIterable, Identifiable, Codable {
     var title: String {
         switch self {
         case .small:
-            return "Small"
+            return LocalizationManager.shared.text(.widgetSizeSmall)
         case .medium:
-            return "Medium"
+            return LocalizationManager.shared.text(.widgetSizeMedium)
         }
     }
 
     var subtitle: String {
         switch self {
         case .small:
-            return "Compact"
+            return LocalizationManager.shared.text(.widgetSizeSmallSubtitle)
         case .medium:
-            return "More content"
+            return LocalizationManager.shared.text(.widgetSizeMediumSubtitle)
         }
     }
 

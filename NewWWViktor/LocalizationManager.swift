@@ -92,6 +92,29 @@ enum LocalizationKey: String {
     case supportRowTourAction
     case supportRowIdeaTitle
     case supportRowIdeaAction
+    case widgetLocationSection
+    case widgetNameLabel
+    case widgetPlaceholderDash
+    case widgetShowDate
+    case widgetShowLocation
+    case widgetShowWeather
+    case widgetTimeLabel
+    case widgetColorsSection
+    case widgetBackgroundGlobal
+    case widgetBackgroundCustom
+    case widgetBehaviorSection
+    case widgetSizeLabel
+    case widgetPinToTop
+    case widgetLockPosition
+    case widgetSnapToGrid
+    case widgetActionsSection
+    case widgetAddWidgets
+    case widgetGeneralSettings
+    case widgetDelete
+    case widgetSizeSmall
+    case widgetSizeMedium
+    case widgetSizeSmallSubtitle
+    case widgetSizeMediumSubtitle
 }
 
 final class LocalizationManager: ObservableObject {
@@ -124,6 +147,7 @@ final class LocalizationManager: ObservableObject {
     private var bundle: Bundle
     private let storage: UserDefaults
     private static let storageKey = "miniww.localization.language"
+    static let shared = LocalizationManager()
 
     init(storage: UserDefaults = .standard) {
         self.storage = storage

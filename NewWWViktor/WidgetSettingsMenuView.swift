@@ -8,6 +8,7 @@ import UIKit
 
 struct WidgetSettingsMenuView: View {
     @EnvironmentObject private var manager: WidgetManager
+    @EnvironmentObject private var localization: LocalizationManager
     let widget: WidgetInstance
     let onUpdate: (WidgetInstance) -> Void
     let onDeleteCallback: ((UUID) -> Void)?
@@ -198,12 +199,12 @@ struct WidgetSettingsMenuView: View {
 
             ScrollView {
                 VStack(spacing: 12) {
-                    WidgetGeneralSettingsSection(widget: $workingWidget,
-                                                 isLocationPickerPresented: $showLocationPicker,
-                                                 showWeather: $showWeather)
-                    WidgetAppearanceSettingsSection(widget: $workingWidget,
-                                                    onColorPicker: { activeColorRole = $0 },
-                                                    onBackgroundPicker: { showBackgroundPicker = true })
+            WidgetGeneralSettingsSection(widget: $workingWidget,
+                                         isLocationPickerPresented: $showLocationPicker,
+                                         showWeather: $showWeather)
+                WidgetAppearanceSettingsSection(widget: $workingWidget,
+                                                onColorPicker: { activeColorRole = $0 },
+                                                onBackgroundPicker: { showBackgroundPicker = true })
                     WidgetBehaviorSettingsSection(sizeSelection: sizeSelectionBinding,
                                                   isPinnedTop: pinnedBinding,
                                                   lockPosition: lockedBinding,
@@ -728,6 +729,7 @@ private struct WidgetBackgroundPickerSheet: View {
 }
 
 private struct WidgetLocationPickerView: View {
+    @EnvironmentObject private var localization: LocalizationManager
     @Binding var isPresented: Bool
     @Binding var selection: WidgetLocation
     let onSelect: (WidgetLocation) -> Void
@@ -805,7 +807,7 @@ private struct WidgetLocationPickerView: View {
 
             Spacer()
 
-            Text("Location")
+            Text(localization.text(.widgetLocationSection))
                 .font(.headline.weight(.semibold))
                 .foregroundColor(.white)
 

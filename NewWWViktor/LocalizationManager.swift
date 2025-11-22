@@ -92,6 +92,7 @@ enum LocalizationKey: String {
     case supportRowTourAction
     case supportRowIdeaTitle
     case supportRowIdeaAction
+    case backupsRestoreButton
     case widgetLocationSection
     case widgetNameLabel
     case widgetPlaceholderDash

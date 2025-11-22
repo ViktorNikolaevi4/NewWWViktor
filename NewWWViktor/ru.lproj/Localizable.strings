@@ -93,6 +93,7 @@
 "supportRowTourAction" = "Открыть";
 "supportRowIdeaTitle" = "Есть идея виджета?";
 "supportRowIdeaAction" = "Поделиться";
+"backupsRestoreButton" = "Восстановить";
 "widgetLocationSection" = "Локация";
 "widgetNameLabel" = "Название";
 "widgetPlaceholderDash" = "—";

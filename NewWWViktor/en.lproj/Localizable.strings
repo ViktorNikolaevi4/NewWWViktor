@@ -93,6 +93,7 @@
 "supportRowTourAction" = "Open";
 "supportRowIdeaTitle" = "Have an idea for a widget?";
 "supportRowIdeaAction" = "Share it";
+"backupsRestoreButton" = "Restore";
 "widgetLocationSection" = "Location";
 "widgetNameLabel" = "Name";
 "widgetPlaceholderDash" = "—";

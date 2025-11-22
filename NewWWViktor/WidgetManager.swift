@@ -91,6 +91,7 @@ final class WidgetManager: ObservableObject {
     private let gradientAngleKey = "appearance.gradient.angle"
     private let backgroundImageBookmarkKey = "appearance.backgroundImageBookmark"
     private let backgroundImagePathKey = "appearance.backgroundImagePath"
+    private let backupsDirectoryName = "NewWWViktorBackups"
     private(set) var globalPrimaryColorName: String?
     private(set) var globalPrimaryIntensity: Double = 1.0
     private(set) var globalSecondaryColorName: String?
@@ -382,6 +383,129 @@ final class WidgetManager: ObservableObject {
             return w
         }
         refreshWidgetWindows()
+    }
+
+    // MARK: - Backups (export/import)
+
+    struct AppearanceSnapshot: Codable {
+        var primaryColorName: String?
+        var primaryIntensity: Double
+        var secondaryColorName: String?
+        var secondaryIntensity: Double
+        var backgroundStyle: String?
+        var backgroundColorName: String?
+        var backgroundIntensity: Double
+        var backgroundImageData: Data?
+        var gradientColor1Name: String?
+        var gradientColor2Name: String?
+        var gradientColor1Opacity: Double
+        var gradientColor2Opacity: Double
+        var gradientColor1Position: Double
+        var gradientColor2Position: Double
+        var gradientType: String?
+        var gradientAngle: Double
+    }
+
+    struct BackupSnapshot: Codable {
+        var widgets: [WidgetInstance]
+        var appearance: AppearanceSnapshot
+        var createdAt: Date
+    }
+
+    func exportSnapshot() -> BackupSnapshot {
+        let defaults = UserDefaults.standard
+        let appearance = AppearanceSnapshot(
+            primaryColorName: defaults.string(forKey: primaryColorKey),
+            primaryIntensity: defaults.object(forKey: primaryIntensityKey) as? Double ?? 1.0,
+            secondaryColorName: defaults.string(forKey: secondaryColorKey),
+            secondaryIntensity: defaults.object(forKey: secondaryIntensityKey) as? Double ?? 1.0,
+            backgroundStyle: defaults.string(forKey: backgroundStyleKey),
+            backgroundColorName: defaults.string(forKey: backgroundColorKey),
+            backgroundIntensity: defaults.object(forKey: backgroundIntensityKey) as? Double ?? 1.0,
+            backgroundImageData: loadBackgroundImageData(),
+            gradientColor1Name: defaults.string(forKey: gradientColor1Key),
+            gradientColor2Name: defaults.string(forKey: gradientColor2Key),
+            gradientColor1Opacity: defaults.object(forKey: gradientColor1OpacityKey) as? Double ?? 1.0,
+            gradientColor2Opacity: defaults.object(forKey: gradientColor2OpacityKey) as? Double ?? 1.0,
+            gradientColor1Position: defaults.object(forKey: gradientColor1PositionKey) as? Double ?? 0.0,
+            gradientColor2Position: defaults.object(forKey: gradientColor2PositionKey) as? Double ?? 1.0,
+            gradientType: defaults.string(forKey: gradientTypeKey),
+            gradientAngle: defaults.object(forKey: gradientAngleKey) as? Double ?? 0.0
+        )
+        return BackupSnapshot(widgets: widgets, appearance: appearance, createdAt: Date())
+    }
+
+    func applySnapshot(_ snapshot: BackupSnapshot) {
+        windows.values.forEach { $0.close() }
+        windows.removeAll()
+        windowCloseObservers.removeAll()
+
+        widgets = snapshot.widgets
+        widgets.forEach { attachWindow(for: $0) }
+        persist()
+
+        let defaults = UserDefaults.standard
+        defaults.set(snapshot.appearance.primaryColorName, forKey: primaryColorKey)
+        defaults.set(snapshot.appearance.primaryIntensity, forKey: primaryIntensityKey)
+        defaults.set(snapshot.appearance.secondaryColorName, forKey: secondaryColorKey)
+        defaults.set(snapshot.appearance.secondaryIntensity, forKey: secondaryIntensityKey)
+        if let style = snapshot.appearance.backgroundStyle {
+            defaults.set(style, forKey: backgroundStyleKey)
+        }
+        defaults.set(snapshot.appearance.backgroundColorName, forKey: backgroundColorKey)
+        defaults.set(snapshot.appearance.backgroundIntensity, forKey: backgroundIntensityKey)
+        defaults.set(snapshot.appearance.gradientColor1Name, forKey: gradientColor1Key)
+        defaults.set(snapshot.appearance.gradientColor2Name, forKey: gradientColor2Key)
+        defaults.set(snapshot.appearance.gradientColor1Opacity, forKey: gradientColor1OpacityKey)
+        defaults.set(snapshot.appearance.gradientColor2Opacity, forKey: gradientColor2OpacityKey)
+        defaults.set(snapshot.appearance.gradientColor1Position, forKey: gradientColor1PositionKey)
+        defaults.set(snapshot.appearance.gradientColor2Position, forKey: gradientColor2PositionKey)
+        if let type = snapshot.appearance.gradientType {
+            defaults.set(type, forKey: gradientTypeKey)
+        }
+        defaults.set(snapshot.appearance.gradientAngle, forKey: gradientAngleKey)
+
+        if let imageData = snapshot.appearance.backgroundImageData {
+            saveRestoredBackgroundImage(data: imageData)
+        }
+
+        NotificationCenter.default.post(name: Notification.Name("appearance.colors.changed"), object: nil)
+        NotificationCenter.default.post(name: Notification.Name("appearance.background.changed"), object: nil)
+        refreshWidgetWindows()
+    }
+
+    private func loadBackgroundImageData() -> Data? {
+        let defaults = UserDefaults.standard
+        if let path = defaults.string(forKey: backgroundImagePathKey) {
+            let url = URL(fileURLWithPath: path)
+            return try? Data(contentsOf: url)
+        }
+        return nil
+    }
+
+    private func saveRestoredBackgroundImage(data: Data) {
+        let dir = backupsDirectory()
+        let filename = "restored-background-\(UUID().uuidString).png"
+        let url = dir.appendingPathComponent(filename)
+        do {
+            try data.write(to: url)
+            UserDefaults.standard.set(url.path, forKey: backgroundImagePathKey)
+        } catch {
+            print("Failed to write restored background image: \(error)")
+        }
+    }
+
+    func backupsDirectory() -> URL {
+        let fm = FileManager.default
+        let base = try? fm.url(for: .applicationSupportDirectory,
+                               in: .userDomainMask,
+                               appropriateFor: nil,
+                               create: true)
+        let dir = base?.appendingPathComponent(backupsDirectoryName, isDirectory: true)
+        if let dir = dir, !fm.fileExists(atPath: dir.path) {
+            try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        return dir ?? URL(fileURLWithPath: NSTemporaryDirectory())
     }
 
     func window(for id: UUID) -> NSWindow? {

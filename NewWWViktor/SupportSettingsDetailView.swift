@@ -52,12 +52,14 @@ struct SupportSettingsDetailView: View {
                        actionTitle: localization.text(.supportRowQuestionAction))
             supportRow(title: localization.text(.supportRowNeedHelpTitle),
                        actionTitle: localization.text(.supportRowNeedHelpAction)) {
-                sendSupportEmail()
+                sendEmail(subjectKey: .supportEmailSubject)
             }
             supportRow(title: localization.text(.supportRowTourTitle),
                        actionTitle: localization.text(.supportRowTourAction))
             supportRow(title: localization.text(.supportRowIdeaTitle),
-                       actionTitle: localization.text(.supportRowIdeaAction))
+                       actionTitle: localization.text(.supportRowIdeaAction)) {
+                sendEmail(subjectKey: .supportIdeaEmailSubject)
+            }
         }
         .padding()
         .background(
@@ -83,9 +85,9 @@ struct SupportSettingsDetailView: View {
         }
     }
 
-    private func sendSupportEmail() {
+    private func sendEmail(subjectKey: LocalizationKey) {
         let recipient = "v87v87@icloud.com"
-        let subject = localization.text(.supportEmailSubject)
+        let subject = localization.text(subjectKey)
         let body = ""
 
         let allowed = CharacterSet.urlQueryAllowed

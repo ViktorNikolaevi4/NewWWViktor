@@ -93,6 +93,7 @@
 "supportRowIdeaTitle" = "Have an idea for a widget?";
 "supportRowIdeaAction" = "Share it";
 "supportEmailSubject" = "WidgetWall Support";
+"supportIdeaEmailSubject" = "WidgetWall Idea";
 "backupsRestoreButton" = "Restore";
 "widgetLocationSection" = "Location";
 "widgetNameLabel" = "Name";

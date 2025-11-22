@@ -93,6 +93,7 @@ enum LocalizationKey: String {
     case supportRowIdeaTitle
     case supportRowIdeaAction
     case supportEmailSubject
+    case supportIdeaEmailSubject
     case backupsRestoreButton
     case widgetLocationSection
     case widgetNameLabel

@@ -93,6 +93,7 @@
 "supportRowIdeaTitle" = "Есть идея виджета?";
 "supportRowIdeaAction" = "Поделиться";
 "supportEmailSubject" = "Поддержка WidgetWall";
+"supportIdeaEmailSubject" = "Идея для WidgetWall";
 "backupsRestoreButton" = "Восстановить";
 "widgetLocationSection" = "Локация";
 "widgetNameLabel" = "Название";

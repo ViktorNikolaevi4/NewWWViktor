@@ -92,6 +92,7 @@
 "supportRowTourAction" = "Open";
 "supportRowIdeaTitle" = "Have an idea for a widget?";
 "supportRowIdeaAction" = "Share it";
+"supportEmailSubject" = "WidgetWall Support";
 "backupsRestoreButton" = "Restore";
 "widgetLocationSection" = "Location";
 "widgetNameLabel" = "Name";

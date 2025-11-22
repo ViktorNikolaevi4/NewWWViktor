@@ -85,7 +85,7 @@ struct SupportSettingsDetailView: View {
 
     private func sendSupportEmail() {
         let recipient = "v87v87@icloud.com"
-        let subject = "WidgetWall Support"
+        let subject = localization.text(.supportEmailSubject)
         let body = ""
 
         let allowed = CharacterSet.urlQueryAllowed

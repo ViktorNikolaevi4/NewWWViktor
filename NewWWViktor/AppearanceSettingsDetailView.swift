@@ -33,6 +33,7 @@ struct AppearanceSettingsDetailView: View {
     @State private var isGradientPicker1Presented = false
     @State private var isGradientPicker2Presented = false
     @State private var backgroundImageURL: URL?
+    @State private var showResetConfirm = false
 
     private let primaryColorKey = "appearance.primaryColorName"
     private let primaryIntensityKey = "appearance.primaryIntensity"
@@ -112,9 +113,11 @@ struct AppearanceSettingsDetailView: View {
                         }
 
                         section(title: localization.text(.appearanceResetSection)) {
-                            Button(localization.text(.appearanceResetButton)) {}
-                                .frame(maxWidth: .infinity)
-                                .buttonStyle(.bordered)
+                            Button(localization.text(.appearanceResetButton)) {
+                                showResetConfirm = true
+                            }
+                            .frame(maxWidth: .infinity)
+                            .buttonStyle(.bordered)
                         }
                     }
                     .padding(.horizontal, 6)
@@ -143,6 +146,17 @@ struct AppearanceSettingsDetailView: View {
             .onChange(of: gradientColor2Position) { _, _ in persistGradientSettings() }
             .onChange(of: gradientType) { _, _ in persistGradientSettings() }
             .onChange(of: gradientAngle) { _, _ in persistGradientSettings() }
+            .alert("Сброс оформления", isPresented: $showResetConfirm) {
+                Button("Сбросить глобальные", role: .destructive) {
+                    resetGlobalAppearance()
+                }
+                Button("Сбросить глобальные и виджет настройки", role: .destructive) {
+                    resetAllAppearance()
+                }
+                Button("Отменить", role: .cancel) {}
+            } message: {
+                Text("Вернуть внешний вид к настройкам по умолчанию. Действие нельзя отменить.")
+            }
 
             if let role = activeColorRole {
                 colorPickerOverlay(for: role)
@@ -589,6 +603,36 @@ struct AppearanceSettingsDetailView: View {
         #else
         return nil
         #endif
+    }
+
+    private func resetGlobalAppearance() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: primaryColorKey)
+        defaults.removeObject(forKey: primaryIntensityKey)
+        defaults.removeObject(forKey: secondaryColorKey)
+        defaults.removeObject(forKey: secondaryIntensityKey)
+        defaults.removeObject(forKey: backgroundStyleKey)
+        defaults.removeObject(forKey: backgroundColorKey)
+        defaults.removeObject(forKey: backgroundIntensityKey)
+        defaults.removeObject(forKey: backgroundImageBookmarkKey)
+        defaults.removeObject(forKey: backgroundImagePathKey)
+        defaults.removeObject(forKey: gradientColor1Key)
+        defaults.removeObject(forKey: gradientColor2Key)
+        defaults.removeObject(forKey: gradientColor1OpacityKey)
+        defaults.removeObject(forKey: gradientColor2OpacityKey)
+        defaults.removeObject(forKey: gradientColor1PositionKey)
+        defaults.removeObject(forKey: gradientColor2PositionKey)
+        defaults.removeObject(forKey: gradientTypeKey)
+        defaults.removeObject(forKey: gradientAngleKey)
+        NotificationCenter.default.post(name: appearanceColorDidChange, object: nil)
+        NotificationCenter.default.post(name: appearanceBackgroundDidChange, object: nil)
+        loadColors()
+        loadBackgroundSettings()
+    }
+
+    private func resetAllAppearance() {
+        resetGlobalAppearance()
+        NotificationCenter.default.post(name: Notification.Name("widgets.reset.appearance"), object: nil)
     }
 }
 

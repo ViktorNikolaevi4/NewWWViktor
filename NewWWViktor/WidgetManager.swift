@@ -116,6 +116,15 @@ final class WidgetManager: ObservableObject {
         }
 
         installAppearanceObservers()
+
+        let resetObserver = NotificationCenter.default.addObserver(
+            forName: Notification.Name("widgets.reset.appearance"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.resetAllWidgetAppearances()
+        }
+        appearanceObservers.append(resetObserver)
     }
 
     deinit {
@@ -349,6 +358,30 @@ final class WidgetManager: ObservableObject {
             }
         }
         widgets.removeAll()
+    }
+
+    func resetAllWidgetAppearances() {
+        widgets = widgets.map { widget in
+            var w = widget
+            w.mainColorName = nil
+            w.mainColorIntensity = 1.0
+            w.secondaryColorName = nil
+            w.secondaryColorIntensity = 1.0
+            w.backgroundStyle = nil
+            w.backgroundColorName = nil
+            w.backgroundIntensity = 1.0
+            w.backgroundImagePath = nil
+            w.gradientColor1Name = nil
+            w.gradientColor2Name = nil
+            w.gradientColor1Opacity = 1.0
+            w.gradientColor2Opacity = 1.0
+            w.gradientColor1Position = 0.0
+            w.gradientColor2Position = 1.0
+            w.gradientType = nil
+            w.gradientAngle = nil
+            return w
+        }
+        refreshWidgetWindows()
     }
 
     func window(for id: UUID) -> NSWindow? {

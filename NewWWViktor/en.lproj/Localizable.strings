@@ -19,7 +19,7 @@
 "aboutWelcomeTitle" = "Welcome!";
 "aboutWelcomeBody" = "We are a small team of friends with years of experience crafting thoughtful apps. Thanks for using WidgetWall!";
 "aboutCopyrightFormat" = "Copyright © %d Amico Apps";
-"generalSubtitle" = "Control how miniWW behaves and tune your workspace.";
+"generalSubtitle" = "Control how MyWidgets behaves and tune your workspace.";
 "launchAtLogin" = "Launch at login (recommended)";
 "appIconSectionTitle" = "App icon";
 "appIconMenuOnly" = "Show in menu bar";
@@ -35,7 +35,7 @@
 "pinWidgets" = "Pin widgets to desktop";
 "gridSize" = "Grid size";
 "gridOptionMacOS" = "macOS";
-"gridOptionWidgetWall" = "WidgetWall";
+"gridOptionWidgetWall" = "MyWidgets";
 "snapToGrid" = "Snap to grid";
 "focusOnHover" = "Focus on hover";
 "scrollBarsTitle" = "Show system scroll bars";
@@ -53,7 +53,7 @@
 "widgetCategoryLabel" = "Widget";
 "widgetClockDetailTitle" = "Clock";
 "widgetClockDetailDescription" = "Track local time for yourself, friends, and even rivals all in one widget.";
-"appearanceSubtitle" = "Customize how miniWW looks.";
+"appearanceSubtitle" = "Customize how MyWidgets looks.";
 "appearanceColorThemeSection" = "Color Theme";
 "appearanceThemeSystem" = "System";
 "appearanceThemeDark" = "Dark";
@@ -83,7 +83,7 @@
 "appearanceBlurBackground" = "Blur background";
 "appearanceResetSection" = "Reset appearance";
 "appearanceResetButton" = "Reset appearance";
-"backupsSubtitle" = "Keep your miniWW configuration stored safely.";
+"backupsSubtitle" = "Keep your MyWidgets configuration stored safely.";
 "backupsManualTitle" = "Manual backup";
 "backupsCreateTitle" = "Create a backup";
 "backupsCreateDescription" = "Save the current widgets and their layout.";

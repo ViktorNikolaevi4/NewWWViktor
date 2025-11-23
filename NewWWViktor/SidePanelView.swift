@@ -50,7 +50,7 @@ struct SidePanelView: View {
                     Image(systemName: "power")
                 }
                 .buttonStyle(.plain)
-                .help("Quit miniWW")
+                .help("Quit MyWidgets")
             }
 
             // Widget preview list (WidgetWall style)

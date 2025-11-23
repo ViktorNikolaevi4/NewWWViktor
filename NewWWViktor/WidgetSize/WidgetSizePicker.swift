@@ -4,7 +4,7 @@ struct WidgetSizePicker: View {
     @Binding var selection: WidgetSizeOption
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 0) {
             ForEach(WidgetSizeOption.allCases) { option in
                 Button {
                     selection = option
@@ -21,10 +21,10 @@ struct WidgetSizePicker: View {
             .renderingMode(.template)
             .resizable()
             .scaledToFit()
-            .frame(width: 50, height: 32)
+            .frame(width: 40, height: 26)
             .foregroundColor(isSelected ? .white : .white.opacity(0.55))
-            .padding(.vertical, 6)
-            .padding(.horizontal, 10)
+            .padding(.vertical, 0)
+            .padding(.horizontal, 0)
             .contentShape(Rectangle())
     }
 }

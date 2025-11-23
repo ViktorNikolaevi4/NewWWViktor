@@ -125,8 +125,6 @@ private struct GeneralSettingsDetailView: View {
     @State private var pinWidgets = true
     @State private var gridSize = 0
     @State private var snapToGrid = true
-    @State private var focusOnHover = true
-    @State private var scrollBarsAutomatic = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -172,7 +170,7 @@ private struct GeneralSettingsDetailView: View {
                     toggleSection(title: localization.text(.pinWidgets),
                                   isOn: $pinWidgets)
 
-                    section(title: localization.text(.gridSize)) {
+                    section(title: localization.text(.gridSize), inline: true) {
                         Picker("", selection: Binding(
                             get: { manager.gridMode.rawValue },
                             set: { newValue in
@@ -186,7 +184,7 @@ private struct GeneralSettingsDetailView: View {
                             Text(localization.text(.gridOptionWidgetWall)).tag(1)
                         }
                         .pickerStyle(.segmented)
-                        .frame(width: 260)
+                        .frame(width: 180)
                     }
 
                     toggleSection(title: localization.text(.snapToGrid),
@@ -195,25 +193,13 @@ private struct GeneralSettingsDetailView: View {
                                     set: { manager.snapToGrid = $0 }
                                   ))
 
-                    toggleSection(title: localization.text(.focusOnHover),
-                                  isOn: $focusOnHover)
-
-                    section(title: localization.text(.scrollBarsTitle)) {
-                        Picker("", selection: $scrollBarsAutomatic) {
-                            Text(localization.text(.scrollBarsAutomatic)).tag(true)
-                            Text(localization.text(.scrollBarsAlways)).tag(false)
-                        }
-                        .pickerStyle(.menu)
-                        .frame(width: 200)
-                    }
-
-                    section(title: localization.text(.notificationsTitle)) {
+                    section(title: localization.text(.notificationsTitle), inline: true) {
                         Button(localization.text(.notificationsButton)) {}
                             .buttonStyle(.borderedProminent)
                             .tint(.orange)
                     }
 
-                    section(title: localization.text(.resetTitle)) {
+                    section(title: localization.text(.resetTitle), inline: true) {
                         Button(localization.text(.resetButton)) {}
                             .buttonStyle(.bordered)
                     }
@@ -246,22 +232,27 @@ private struct GeneralSettingsDetailView: View {
     }
 
     private var languageSection: some View {
-        section(title: localization.text(.languageSectionTitle)) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(localization.text(.languageDescription))
-                    .foregroundColor(.secondary)
-                Picker("", selection: $languageSelection) {
-                    Text(localization.text(.languageEnglishOption))
-                        .tag(LocalizationManager.Language.english)
-                    Text(localization.text(.languageRussianOption))
-                        .tag(LocalizationManager.Language.russian)
-                }
-                .pickerStyle(.segmented)
-                .frame(width: 260)
+        section(title: localization.text(.languageSectionTitle), inline: true) {
+            Picker(selection: $languageSelection) {
+                Text(localization.text(.languageEnglishOption))
+                    .tag(LocalizationManager.Language.english)
+                Text(localization.text(.languageRussianOption))
+                    .tag(LocalizationManager.Language.russian)
+            } label: {
+                ValuePill(text: selectedLanguageTitle, icon: "globe")
             }
+            .pickerStyle(.menu)
+            .frame(width: 200, alignment: .leading)
         }
         .onChange(of: languageSelection) { newValue in
             localization.setLanguage(newValue)
+        }
+    }
+
+    private var selectedLanguageTitle: String {
+        switch languageSelection {
+        case .english: return localization.text(.languageEnglishOption)
+        case .russian: return localization.text(.languageRussianOption)
         }
     }
 

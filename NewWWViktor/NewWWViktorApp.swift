@@ -39,7 +39,7 @@ struct MiniWWApp: App {
     var body: some Scene {
         Settings {
             VStack(alignment: .leading, spacing: 8) {
-                Text("miniWW is controlled from the floating side panel.")
+                Text("MyWidgets is controlled from the floating side panel.")
                 Text("Use the menu bar icon to toggle it.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)

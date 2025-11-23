@@ -19,7 +19,7 @@
 "aboutWelcomeTitle" = "Привет!";
 "aboutWelcomeBody" = "Мы небольшая команда друзей с многолетним опытом, увлеченная созданием лучших приложений. Спасибо, что используете WidgetWall!";
 "aboutCopyrightFormat" = "Copyright © %d Amico Apps";
-"generalSubtitle" = "Управляйте поведением miniWW и настройте рабочее пространство.";
+"generalSubtitle" = "Управляйте поведением MyWidgets и настройте рабочее пространство.";
 "launchAtLogin" = "Открывать при входе в систему (рекомендуется)";
 "appIconSectionTitle" = "Иконка приложения";
 "appIconMenuOnly" = "Показывать в строке меню";
@@ -35,7 +35,7 @@
 "pinWidgets" = "Закрепить виджеты на рабочем столе";
 "gridSize" = "Размер сетки";
 "gridOptionMacOS" = "macOS";
-"gridOptionWidgetWall" = "WidgetWall";
+"gridOptionWidgetWall" = "MyWidgets";
 "snapToGrid" = "Привязать к сетке";
 "focusOnHover" = "Фокус при наведении";
 "scrollBarsTitle" = "Показать системные полосы прокрутки";
@@ -53,7 +53,7 @@
 "widgetCategoryLabel" = "Виджет";
 "widgetClockDetailTitle" = "Часы";
 "widgetClockDetailDescription" = "Следите за временем у себя, друзей и даже соперников в одном виджете.";
-"appearanceSubtitle" = "Настройте внешний вид miniWW.";
+"appearanceSubtitle" = "Настройте внешний вид MyWidgets.";
 "appearanceColorThemeSection" = "Цветовая тема";
 "appearanceThemeSystem" = "Система";
 "appearanceThemeDark" = "Тёмная";
@@ -83,7 +83,7 @@
 "appearanceBlurBackground" = "Размыть фон";
 "appearanceResetSection" = "Сбросить оформление";
 "appearanceResetButton" = "Сбросить оформление";
-"backupsSubtitle" = "Храните конфигурацию miniWW в безопасности.";
+"backupsSubtitle" = "Храните конфигурацию MyWidgets в безопасности.";
 "backupsManualTitle" = "Ручное резервирование";
 "backupsCreateTitle" = "Создать резервную копию";
 "backupsCreateDescription" = "Сохраните текущие виджеты и их расположение.";

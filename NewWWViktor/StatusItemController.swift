@@ -36,7 +36,7 @@ final class StatusItemController {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = item.button {
             button.image = NSImage(systemSymbolName: "square.grid.3x3",
-                                   accessibilityDescription: "miniWW")
+                                   accessibilityDescription: "MyWidgets")
             button.action = #selector(togglePanel)
             button.target = self
         }

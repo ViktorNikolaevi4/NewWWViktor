@@ -11,6 +11,13 @@ enum LocalizationKey: String {
     case categoryScreens
     case categorySupport
     case categoryAbout
+    case aboutSubtitle
+    case aboutVersionFormat
+    case aboutTermsOfUse
+    case aboutPrivacyPolicy
+    case aboutWelcomeTitle
+    case aboutWelcomeBody
+    case aboutCopyrightFormat
 
     case generalSubtitle
     case launchAtLogin

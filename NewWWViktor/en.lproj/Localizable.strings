@@ -12,6 +12,13 @@
 "categoryBackups" = "Backups";
 "categorySupport" = "Support";
 "categoryAbout" = "About";
+"aboutSubtitle" = "Version, policies, and a short hello from the team.";
+"aboutVersionFormat" = "Version %@";
+"aboutTermsOfUse" = "Terms of Use";
+"aboutPrivacyPolicy" = "Privacy Policy";
+"aboutWelcomeTitle" = "Welcome!";
+"aboutWelcomeBody" = "We are a small team of friends with years of experience crafting thoughtful apps. Thanks for using WidgetWall!";
+"aboutCopyrightFormat" = "Copyright © %d Amico Apps";
 "generalSubtitle" = "Control how miniWW behaves and tune your workspace.";
 "launchAtLogin" = "Launch at login (recommended)";
 "appIconSectionTitle" = "App icon";

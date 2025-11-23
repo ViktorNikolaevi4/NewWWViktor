@@ -12,6 +12,13 @@
 "categoryBackups" = "Резервные копии";
 "categorySupport" = "Поддержка";
 "categoryAbout" = "О нас";
+"aboutSubtitle" = "Версия, условия использования, политика и короткое приветствие.";
+"aboutVersionFormat" = "Версия %@";
+"aboutTermsOfUse" = "Условия использования";
+"aboutPrivacyPolicy" = "Политика конфиденциальности";
+"aboutWelcomeTitle" = "Привет!";
+"aboutWelcomeBody" = "Мы небольшая команда друзей с многолетним опытом, увлеченная созданием лучших приложений. Спасибо, что используете WidgetWall!";
+"aboutCopyrightFormat" = "Copyright © %d Amico Apps";
 "generalSubtitle" = "Управляйте поведением miniWW и настройте рабочее пространство.";
 "launchAtLogin" = "Открывать при входе в систему (рекомендуется)";
 "appIconSectionTitle" = "Иконка приложения";

@@ -96,6 +96,8 @@ struct SettingsWindowContent: View {
             BackupsSettingsDetailView()
         case .support:
             SupportSettingsDetailView()
+        case .about:
+            AboutSettingsDetailView()
         default:
             placeholderDetail(for: settings.selectedCategory)
         }
@@ -317,4 +319,126 @@ private struct GeneralSettingsDetailView: View {
         )
     }
 
+}
+
+struct AboutSettingsDetailView: View {
+    @EnvironmentObject private var localization: LocalizationManager
+    private let termsURL = URL(string: "https://amicoapps.com/terms")
+    private let privacyURL = URL(string: "https://amicoapps.com/privacy")
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            header
+
+            ScrollView {
+                VStack(spacing: 18) {
+                    infoCard
+                    welcomeCard
+                }
+                .padding(.horizontal, 6)
+                .padding(.bottom, 12)
+            }
+        }
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity)
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(localization.text(.categoryAbout))
+                .font(.title3.weight(.semibold))
+            Text(localization.text(.aboutSubtitle))
+                .font(.footnote)
+                .foregroundColor(.secondary)
+        }
+    }
+
+    private var infoCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color.orange.opacity(0.16))
+                    .frame(width: 42, height: 42)
+                    .overlay(
+                        Image(systemName: "rectangle.grid.2x2.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.orange)
+                    )
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("WidgetWall")
+                        .font(.headline.weight(.semibold))
+                    Text(versionText)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Text(copyrightText)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            Divider()
+
+            if let termsURL, let privacyURL {
+                HStack(spacing: 12) {
+                    Link(localization.text(.aboutTermsOfUse), destination: termsURL)
+                        .font(.footnote.weight(.semibold))
+
+                    Text("•")
+                        .foregroundColor(.secondary)
+
+                    Link(localization.text(.aboutPrivacyPolicy), destination: privacyURL)
+                        .font(.footnote.weight(.semibold))
+                }
+                .foregroundColor(.orange)
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.04))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(Color.white.opacity(0.05))
+                )
+        )
+    }
+
+    private var welcomeCard: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Circle()
+                .fill(Color.orange.opacity(0.16))
+                .frame(width: 46, height: 46)
+                .overlay(
+                    Image(systemName: "sparkles")
+                        .foregroundColor(.orange)
+                        .font(.system(size: 18, weight: .semibold))
+                )
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(localization.text(.aboutWelcomeTitle))
+                    .font(.headline.weight(.semibold))
+                Text(localization.text(.aboutWelcomeBody))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.orange.opacity(0.12))
+        )
+    }
+
+    private var versionText: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+        return String(format: localization.text(.aboutVersionFormat), version)
+    }
+
+    private var copyrightText: String {
+        let year = Calendar.current.component(.year, from: Date())
+        return String(format: localization.text(.aboutCopyrightFormat), year)
+    }
 }

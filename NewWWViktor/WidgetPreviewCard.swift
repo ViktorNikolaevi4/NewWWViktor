@@ -6,6 +6,7 @@ struct WidgetPreviewCard: View {
     let onAdd: (WidgetSizeOption) -> Void
 
     @EnvironmentObject private var localization: LocalizationManager
+    @EnvironmentObject private var manager: WidgetManager
     @State private var isHovered = false
     @State private var isPressed = false
     @State private var previewSizeOption: WidgetSizeOption = .medium
@@ -74,17 +75,35 @@ struct WidgetPreviewCard: View {
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.top, 4)
         .animation(.spring(response: 0.3, dampingFraction: 0.85), value: previewSizeOption)
+        .id(manager.globalColorsVersion) // refresh preview when global appearance changes
     }
 
     private var roundedPreviewBackground: some View {
-        RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-            .fill(LinearGradient(colors: [Color(hex: 0x3b3f4b), Color(hex: 0x2a2d36)],
-                                 startPoint: .topLeading,
-                                 endPoint: .bottomTrailing))
-            .overlay(
+        ZStack {
+            if manager.globalBackgroundStyle == .photo {
+                #if os(macOS)
+                if let image = manager.globalBackgroundImage {
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .clipped()
+                } else {
+                    RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                        .fill(.regularMaterial)
+                }
+                #else
                 RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.25))
-            )
+                    .fill(.regularMaterial)
+                #endif
+            } else {
+                RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                    .fill(previewBackgroundFill)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                            .stroke(Color.white.opacity(0.25))
+                    )
+            }
+        }
     }
 
     private var addButton: some View {
@@ -199,6 +218,76 @@ struct WidgetPreviewCard: View {
         let heightScale = maxHeight / size.height
         let scale = min(widthScale, heightScale)
         return CGSize(width: size.width * scale, height: size.height * scale)
+    }
+
+    private var previewBackgroundFill: AnyShapeStyle {
+        switch manager.globalBackgroundStyle {
+        case .palette:
+            let color = WidgetPaletteColor.color(
+                named: manager.globalBackgroundColorName,
+                intensity: manager.globalBackgroundIntensity,
+                fallback: Color.white.opacity(0.14)
+            )
+            return AnyShapeStyle(color.opacity(0.96))
+        case .solid:
+            return AnyShapeStyle(Color.white.opacity(0.12))
+        case .gradient:
+            return gradientBackgroundStyle()
+        case .photo:
+            return AnyShapeStyle(.regularMaterial)
+        }
+    }
+
+    private func gradientBackgroundStyle() -> AnyShapeStyle {
+        let color1 = WidgetPaletteColor.color(
+            named: manager.globalGradientColor1Name,
+            intensity: manager.globalGradientColor1Opacity,
+            fallback: Color.white.opacity(0.2)
+        )
+        let color2 = WidgetPaletteColor.color(
+            named: manager.globalGradientColor2Name,
+            intensity: manager.globalGradientColor2Opacity,
+            fallback: Color.black.opacity(0.35)
+        )
+
+        let pos1 = max(0, min(1, manager.globalGradientColor1Position))
+        let pos2 = max(0, min(1, manager.globalGradientColor2Position))
+        let orderedStops = [
+            (color: color1, location: pos1),
+            (color: color2, location: pos2)
+        ]
+        .sorted { $0.location < $1.location }
+
+        let stops = Gradient(stops: orderedStops.map {
+            .init(color: $0.color, location: CGFloat($0.location))
+        })
+
+        switch manager.globalGradientType {
+        case .linear:
+            let points = anglePoints(degrees: manager.globalGradientAngle)
+            return AnyShapeStyle(LinearGradient(gradient: stops,
+                                                startPoint: points.start,
+                                                endPoint: points.end))
+        case .radial:
+            return AnyShapeStyle(
+                RadialGradient(gradient: stops,
+                               center: .center,
+                               startRadius: 0,
+                               endRadius: 400)
+            )
+        case .angular:
+            return AnyShapeStyle(AngularGradient(gradient: stops, center: .center))
+        }
+    }
+
+    private func anglePoints(degrees: Double) -> (start: UnitPoint, end: UnitPoint) {
+        // Convert angle into start/end points for a linear gradient.
+        let radians = degrees * .pi / 180
+        let x = cos(radians)
+        let y = sin(radians)
+        let start = UnitPoint(x: (1 - x) / 2, y: (1 - y) / 2)
+        let end = UnitPoint(x: (1 + x) / 2, y: (1 + y) / 2)
+        return (start, end)
     }
 }
 

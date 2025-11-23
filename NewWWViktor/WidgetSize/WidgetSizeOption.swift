@@ -32,4 +32,13 @@ enum WidgetSizeOption: String, CaseIterable, Identifiable, Codable {
             return CGSize(width: 360, height: 190)
         }
     }
+
+    var iconAssetName: String {
+        switch self {
+        case .small:
+            return "widget size s"
+        case .medium:
+            return "widget size m"
+        }
+    }
 }

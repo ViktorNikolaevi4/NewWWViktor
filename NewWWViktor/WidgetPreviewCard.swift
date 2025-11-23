@@ -292,14 +292,6 @@ struct WidgetPreviewCard: View {
 }
 
 private extension WidgetSizeOption {
-    var iconAssetName: String {
-        switch self {
-        case .small:
-            return "widget size s"
-        case .medium:
-            return "widget size m"
-        }
-    }
 }
 
 private extension Color {

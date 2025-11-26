@@ -101,8 +101,17 @@ struct WidgetColorPickerView: View {
 
             Spacer()
 
-            Spacer()
-                .frame(width: 60)
+            Button {
+                isPresented = false
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .bold))
+                    .frame(width: 26, height: 26)
+                    .background(Color.white.opacity(0.14))
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.white.opacity(0.9))
         }
     }
 

@@ -6,9 +6,6 @@ import UniformTypeIdentifiers
 
 struct AppearanceSettingsDetailView: View {
     @EnvironmentObject private var localization: LocalizationManager
-    @State private var selectedTheme: ThemeOption = .system
-    @State private var lightModePreview = true
-    @State private var darkModePreview = true
     @State private var primaryColor: ColorAccent = .system
     @State private var secondaryColor: ColorAccent = .system
     @State private var backgroundStyle: BackgroundStyle = .photo
@@ -62,25 +59,6 @@ struct AppearanceSettingsDetailView: View {
 
                 ScrollView {
                     VStack(spacing: 22) {
-                        section(title: localization.text(.appearanceColorThemeSection)) {
-                            VStack(alignment: .leading, spacing: 14) {
-                                Picker("", selection: $selectedTheme) {
-                                    ForEach(ThemeOption.allCases) { option in
-                                        Text(localization.text(option.localizationKey)).tag(option)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-
-                                modeToggleRow(title: localization.text(.appearanceLightModeTitle),
-                                              description: localization.text(.appearanceLightModeDescription),
-                                              isOn: $lightModePreview)
-
-                                modeToggleRow(title: localization.text(.appearanceDarkModeTitle),
-                                              description: localization.text(.appearanceDarkModeDescription),
-                                              isOn: $darkModePreview)
-                            }
-                        }
-
                         section(title: localization.text(.appearanceColorsSection)) {
                             VStack(spacing: 12) {
                                 colorButtonRow(title: localization.text(.appearancePrimaryColor), role: .main)
@@ -94,17 +72,23 @@ struct AppearanceSettingsDetailView: View {
                                     ForEach(BackgroundStyle.allCases) { style in
                                         Label(localization.text(style.localizationKey), systemImage: style.systemImage)
                                             .labelStyle(.iconOnly)
-                                            .tag(style)
+                                        .tag(style)
                                     }
                                 }
                                 .pickerStyle(.segmented)
 
-                                if backgroundStyle == .palette {
+                                ZStack(alignment: .topLeading) {
                                     backgroundPaletteButton
-                                } else if backgroundStyle == .photo {
+                                        .opacity(backgroundStyle == .palette ? 1 : 0)
+                                        .allowsHitTesting(backgroundStyle == .palette)
+
                                     photoPickerRow
-                                } else if backgroundStyle == .gradient {
+                                        .opacity(backgroundStyle == .photo ? 1 : 0)
+                                        .allowsHitTesting(backgroundStyle == .photo)
+
                                     gradientControls
+                                        .opacity(backgroundStyle == .gradient ? 1 : 0)
+                                        .allowsHitTesting(backgroundStyle == .gradient)
                                 }
 
                                 Toggle(localization.text(.appearanceBlurBackground), isOn: $blurBackground)
@@ -207,22 +191,6 @@ struct AppearanceSettingsDetailView: View {
                         .stroke(Color.white.opacity(0.05))
                 )
         )
-    }
-
-    private func modeToggleRow(title: String, description: String, isOn: Binding<Bool>) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.headline.weight(.semibold))
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            Spacer()
-            Toggle("", isOn: isOn)
-                .labelsHidden()
-                .toggleStyle(SwitchToggleStyle(tint: .orange))
-        }
     }
 
     private func colorButtonRow(title: String, role: WidgetColorRole) -> some View {
@@ -636,14 +604,6 @@ struct AppearanceSettingsDetailView: View {
     }
 }
 
-enum ThemeOption: String, CaseIterable, Identifiable {
-    case system = "system"
-    case dark = "dark"
-    case light = "light"
-
-    var id: String { rawValue }
-}
-
 enum ColorAccent: String, CaseIterable, Identifiable {
     case system = "system"
     case custom = "custom"
@@ -667,16 +627,6 @@ enum BackgroundStyle: String, CaseIterable, Identifiable, Codable {
         case .palette: return "paintpalette"
         case .gradient: return "square.split.2x1"
         case .photo: return "photo"
-        }
-    }
-}
-
-private extension ThemeOption {
-    var localizationKey: LocalizationKey {
-        switch self {
-        case .system: return .appearanceThemeSystem
-        case .dark: return .appearanceThemeDark
-        case .light: return .appearanceThemeLight
         }
     }
 }

@@ -224,16 +224,18 @@ struct WidgetHostView: View {
     // MARK: - Resolved appearance (widget override > global)
 
     private var resolvedBackgroundStyle: BackgroundStyle {
-        if let style = manager.widgets.first(where: { $0.id == instanceID })?.backgroundStyle {
-            return style
+        if let widget = manager.widgets.first(where: { $0.id == instanceID }),
+           let style = widget.backgroundStyle {
+            return adjustedBackgroundStyle(style, colorName: widget.backgroundColorName ?? manager.globalBackgroundColorName)
         }
-        return manager.globalBackgroundStyle
+        return adjustedBackgroundStyle(manager.globalBackgroundStyle, colorName: manager.globalBackgroundColorName)
     }
 
     private var resolvedBackgroundColorName: String? {
-        if let style = manager.widgets.first(where: { $0.id == instanceID })?.backgroundStyle,
+        if let widget = manager.widgets.first(where: { $0.id == instanceID }),
+           let style = widget.backgroundStyle,
            style == .palette {
-            return manager.widgets.first(where: { $0.id == instanceID })?.backgroundColorName ?? manager.globalBackgroundColorName
+            return widget.backgroundColorName ?? manager.globalBackgroundColorName
         }
         return manager.globalBackgroundColorName
     }
@@ -280,6 +282,13 @@ struct WidgetHostView: View {
 
     private var resolvedGradientAngle: Double {
         manager.widgets.first(where: { $0.id == instanceID })?.gradientAngle ?? manager.globalGradientAngle
+    }
+
+    private func adjustedBackgroundStyle(_ style: BackgroundStyle, colorName: String?) -> BackgroundStyle {
+        if style == .palette, (colorName?.isEmpty ?? true) {
+            return .photo // keep the same dark base until a palette color is chosen
+        }
+        return style
     }
 
 #if os(macOS)

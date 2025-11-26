@@ -221,7 +221,7 @@ struct WidgetPreviewCard: View {
     }
 
     private var previewBackgroundFill: AnyShapeStyle {
-        switch manager.globalBackgroundStyle {
+        switch effectiveBackgroundStyle {
         case .palette:
             let color = WidgetPaletteColor.color(
                 named: manager.globalBackgroundColorName,
@@ -236,6 +236,14 @@ struct WidgetPreviewCard: View {
         case .photo:
             return AnyShapeStyle(.regularMaterial)
         }
+    }
+
+    private var effectiveBackgroundStyle: BackgroundStyle {
+        if manager.globalBackgroundStyle == .palette,
+           (manager.globalBackgroundColorName?.isEmpty ?? true) {
+            return .photo // keep preview background unchanged until a palette color is selected
+        }
+        return manager.globalBackgroundStyle
     }
 
     private func gradientBackgroundStyle() -> AnyShapeStyle {

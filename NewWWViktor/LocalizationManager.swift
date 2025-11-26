@@ -54,14 +54,6 @@ enum LocalizationKey: String {
     case widgetClockDetailTitle
     case widgetClockDetailDescription
     case appearanceSubtitle
-    case appearanceColorThemeSection
-    case appearanceThemeSystem
-    case appearanceThemeDark
-    case appearanceThemeLight
-    case appearanceLightModeTitle
-    case appearanceLightModeDescription
-    case appearanceDarkModeTitle
-    case appearanceDarkModeDescription
     case appearanceColorsSection
     case appearancePrimaryColor
     case appearanceSecondaryColor

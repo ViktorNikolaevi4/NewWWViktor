@@ -54,14 +54,6 @@
 "widgetClockDetailTitle" = "Часы";
 "widgetClockDetailDescription" = "Следите за временем у себя, друзей и даже соперников в одном виджете.";
 "appearanceSubtitle" = "Настройте внешний вид MyWidgets.";
-"appearanceColorThemeSection" = "Цветовая тема";
-"appearanceThemeSystem" = "Система";
-"appearanceThemeDark" = "Тёмная";
-"appearanceThemeLight" = "Светлая";
-"appearanceLightModeTitle" = "Светлая тема";
-"appearanceLightModeDescription" = "Использовать светлую палитру";
-"appearanceDarkModeTitle" = "Тёмная тема";
-"appearanceDarkModeDescription" = "Включено";
 "appearanceColorsSection" = "Цвета";
 "appearancePrimaryColor" = "Основной цвет";
 "appearanceSecondaryColor" = "Дополнительный цвет";

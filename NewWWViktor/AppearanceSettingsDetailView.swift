@@ -6,10 +6,11 @@ import UniformTypeIdentifiers
 
 struct AppearanceSettingsDetailView: View {
     @EnvironmentObject private var localization: LocalizationManager
+    @EnvironmentObject private var manager: WidgetManager
     @State private var primaryColor: ColorAccent = .system
     @State private var secondaryColor: ColorAccent = .system
     @State private var backgroundStyle: BackgroundStyle = .photo
-    @State private var blurBackground = true
+    @State private var blurBackground = false
     @State private var primaryColorName: String?
     @State private var primaryIntensity: Double = 1.0
     @State private var secondaryColorName: String?
@@ -47,6 +48,7 @@ struct AppearanceSettingsDetailView: View {
     private let gradientColor2PositionKey = "appearance.gradient.color2.position"
     private let gradientTypeKey = "appearance.gradient.type"
     private let gradientAngleKey = "appearance.gradient.angle"
+    private let backgroundHideKey = "appearance.background.hide"
     private let appearanceColorDidChange = Notification.Name("appearance.colors.changed")
     private let appearanceBackgroundDidChange = Notification.Name("appearance.background.changed")
     private let backgroundImageBookmarkKey = "appearance.backgroundImageBookmark"
@@ -114,6 +116,7 @@ struct AppearanceSettingsDetailView: View {
                 loadColors()
                 loadBackgroundSettings()
                 didAppear = true
+                blurBackground = manager.globalBackgroundHidden
             }
             .onChange(of: backgroundStyle) { _, newValue in
                 guard didAppear else { return }
@@ -121,6 +124,10 @@ struct AppearanceSettingsDetailView: View {
                     isBackgroundPickerPresented = false
                 }
                 persistBackgroundSettings()
+            }
+            .onChange(of: blurBackground) { _, newValue in
+                guard didAppear else { return }
+                manager.setGlobalBackgroundHidden(newValue)
             }
             .onChange(of: gradientColor1Name) { _, _ in persistGradientSettings() }
             .onChange(of: gradientColor2Name) { _, _ in persistGradientSettings() }
@@ -462,6 +469,7 @@ struct AppearanceSettingsDetailView: View {
         }
         backgroundColorName = defaults.string(forKey: backgroundColorKey)
         backgroundIntensity = defaults.object(forKey: backgroundIntensityKey) as? Double ?? 1.0
+        blurBackground = manager.globalBackgroundHidden
         loadBackgroundImage()
         gradientColor1Name = defaults.string(forKey: gradientColor1Key)
         gradientColor2Name = defaults.string(forKey: gradientColor2Key)
@@ -592,6 +600,8 @@ struct AppearanceSettingsDetailView: View {
         defaults.removeObject(forKey: gradientColor2PositionKey)
         defaults.removeObject(forKey: gradientTypeKey)
         defaults.removeObject(forKey: gradientAngleKey)
+        defaults.removeObject(forKey: backgroundHideKey)
+        manager.setGlobalBackgroundHidden(false)
         NotificationCenter.default.post(name: appearanceColorDidChange, object: nil)
         NotificationCenter.default.post(name: appearanceBackgroundDidChange, object: nil)
         loadColors()

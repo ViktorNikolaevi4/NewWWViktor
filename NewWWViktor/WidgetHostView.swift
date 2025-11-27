@@ -85,7 +85,7 @@ struct WidgetHostView: View {
                     .background(widgetBackground)
                     .overlay(
                         RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.10))
+                            .strokeBorder(Color.white.opacity(backgroundStrokeOpacity))
                     )
                     .clipShape(
                         RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
@@ -146,7 +146,11 @@ struct WidgetHostView: View {
     }
 
     private var widgetBackground: some View {
-        ZStack {
+        if resolvedBackgroundHidden {
+            return AnyView(Color.clear)
+        }
+
+        return AnyView(ZStack {
             if resolvedBackgroundStyle == .photo, let image = resolvedBackgroundImage {
                 Image(nsImage: image)
                     .resizable()
@@ -156,7 +160,7 @@ struct WidgetHostView: View {
                 RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
                     .fill(widgetBackgroundFill)
             }
-        }
+        })
     }
 
     private var widgetBackgroundFill: AnyShapeStyle {
@@ -227,6 +231,14 @@ struct WidgetHostView: View {
         let start = UnitPoint(x: 0.5 - dx / 2, y: 0.5 - dy / 2)
         let end = UnitPoint(x: 0.5 + dx / 2, y: 0.5 + dy / 2)
         return (start, end)
+    }
+
+    private var backgroundStrokeOpacity: Double {
+        resolvedBackgroundHidden ? 0 : 0.10
+    }
+
+    private var resolvedBackgroundHidden: Bool {
+        manager.widgets.first(where: { $0.id == instanceID })?.isBackgroundHidden ?? manager.globalBackgroundHidden
     }
 
     // MARK: - Resolved appearance (widget override > global)

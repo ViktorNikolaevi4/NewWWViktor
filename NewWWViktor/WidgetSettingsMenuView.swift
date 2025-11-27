@@ -186,6 +186,9 @@ struct WidgetSettingsMenuView: View {
         .onChange(of: workingWidget.prefersTwelveHour) { _, _ in
             onUpdate(workingWidget)
         }
+        .onChange(of: workingWidget.isBackgroundHidden) { _, _ in
+            onUpdate(workingWidget)
+        }
     }
 
     private func apply(location: WidgetLocation) {

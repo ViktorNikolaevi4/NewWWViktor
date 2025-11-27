@@ -29,6 +29,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var gradientColor2Position: Double
     var gradientType: BackgroundGradientType?
     var gradientAngle: Double?
+    var isBackgroundHidden: Bool
     var sizeOption: WidgetSizeOption
 
     init(type: WidgetType,
@@ -62,12 +63,13 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.gradientColor2Position = 1.0
         self.gradientType = nil
         self.gradientAngle = nil
+        self.isBackgroundHidden = false
         self.sizeOption = .medium
         applySizeOption(.medium)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, sizeOption
+        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption
     }
 
     init(from decoder: Decoder) throws {
@@ -100,6 +102,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         gradientColor2Position = try container.decodeIfPresent(Double.self, forKey: .gradientColor2Position) ?? 1.0
         gradientType = try container.decodeIfPresent(BackgroundGradientType.self, forKey: .gradientType)
         gradientAngle = try container.decodeIfPresent(Double.self, forKey: .gradientAngle)
+        isBackgroundHidden = try container.decodeIfPresent(Bool.self, forKey: .isBackgroundHidden) ?? false
         sizeOption = try container.decodeIfPresent(WidgetSizeOption.self, forKey: .sizeOption) ?? .medium
         applySizeOption(sizeOption)
     }
@@ -134,6 +137,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(gradientColor2Position, forKey: .gradientColor2Position)
         try container.encodeIfPresent(gradientType, forKey: .gradientType)
         try container.encodeIfPresent(gradientAngle, forKey: .gradientAngle)
+        try container.encode(isBackgroundHidden, forKey: .isBackgroundHidden)
         try container.encode(sizeOption, forKey: .sizeOption)
     }
 

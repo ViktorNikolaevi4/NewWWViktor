@@ -64,6 +64,7 @@ final class WidgetManager: ObservableObject {
     weak var panelController: SidePanelWindowController?
     weak var settingsCoordinator: SettingsCoordinator?
     weak var localizationManager: LocalizationManager?
+    @Published private(set) var globalBackgroundHidden: Bool = false
 
     private var windows: [UUID: NSWindow] = [:]
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
@@ -89,6 +90,7 @@ final class WidgetManager: ObservableObject {
     private let gradientColor2PositionKey = "appearance.gradient.color2.position"
     private let gradientTypeKey = "appearance.gradient.type"
     private let gradientAngleKey = "appearance.gradient.angle"
+    private let backgroundHideKey = "appearance.background.hide"
     private let backgroundImageBookmarkKey = "appearance.backgroundImageBookmark"
     private let backgroundImagePathKey = "appearance.backgroundImagePath"
     private let backupsDirectoryName = "NewWWViktorBackups"
@@ -182,6 +184,7 @@ final class WidgetManager: ObservableObject {
         globalBackgroundStyle = BackgroundStyle(rawValue: storedStyle) ?? .photo
         globalBackgroundColorName = defaults.string(forKey: backgroundColorKey)
         globalBackgroundIntensity = defaults.object(forKey: backgroundIntensityKey) as? Double ?? 1.0
+        globalBackgroundHidden = defaults.object(forKey: backgroundHideKey) as? Bool ?? false
         globalGradientColor1Name = defaults.string(forKey: gradientColor1Key)
         globalGradientColor2Name = defaults.string(forKey: gradientColor2Key)
         globalGradientColor1Opacity = defaults.object(forKey: gradientColor1OpacityKey) as? Double ?? 1.0
@@ -618,6 +621,12 @@ final class WidgetManager: ObservableObject {
     private func persist() {
         guard let data = try? JSONEncoder().encode(widgets) else { return }
         UserDefaults.standard.set(data, forKey: storageKey)
+    }
+
+    func setGlobalBackgroundHidden(_ hidden: Bool) {
+        globalBackgroundHidden = hidden
+        UserDefaults.standard.set(hidden, forKey: backgroundHideKey)
+        refreshWidgetWindows()
     }
 
     private func load() {

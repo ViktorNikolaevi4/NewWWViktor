@@ -69,6 +69,7 @@ struct WidgetAppearanceSettingsSection: View {
                 ValuePill(text: isGlobal ? localization.text(.widgetBackgroundGlobal) : localization.text(.widgetBackgroundCustom),
                           icon: isGlobal ? "circle.lefthalf.filled" : "paintpalette")
             }
+            ToggleRow(title: localization.text(.appearanceBlurBackground), isOn: $widget.isBackgroundHidden)
         }
     }
 }

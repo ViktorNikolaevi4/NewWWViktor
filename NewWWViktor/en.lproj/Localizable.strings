@@ -13,11 +13,11 @@
 "categorySupport" = "Support";
 "categoryAbout" = "About";
 "planSubtitle" = "Unlock premium widgets and discover more apps.";
-"planPremiumTitle" = "Welcome to WidgetWall!";
+"planPremiumTitle" = "Welcome to MyWigjets!";
 "planPremiumBody" = "Upgrade to Premium to get full access to all exclusive widgets.";
 "planPremiumTag" = "Premium";
 "planUpgradeButton" = "Upgrade now";
-"planRestorePrompt" = "Already have WidgetWall Premium?";
+"planRestorePrompt" = "Already have MyWigjets Premium?";
 "planRestoreButton" = "Restore purchase";
 "planBundleTitle" = "More apps from Amico";
 "planBundleBody" = "Explore more apps made by us.";
@@ -27,7 +27,7 @@
 "aboutTermsOfUse" = "Terms of Use";
 "aboutPrivacyPolicy" = "Privacy Policy";
 "aboutWelcomeTitle" = "Welcome!";
-"aboutWelcomeBody" = "We are a small team of friends with years of experience crafting thoughtful apps. Thanks for using WidgetWall!";
+"aboutWelcomeBody" = "We are a small team of friends with years of experience crafting thoughtful apps. Thanks for using MyWigjets!";
 "aboutCopyrightFormat" = "Copyright © %d Amico Apps";
 "generalSubtitle" = "Control how MyWidgets behaves and tune your workspace.";
 "launchAtLogin" = "Launch at login (recommended)";
@@ -101,8 +101,8 @@
 "supportRowTourAction" = "Open";
 "supportRowIdeaTitle" = "Have an idea for a widget?";
 "supportRowIdeaAction" = "Share it";
-"supportEmailSubject" = "WidgetWall Support";
-"supportIdeaEmailSubject" = "WidgetWall Idea";
+"supportEmailSubject" = "MyWigjets Support";
+"supportIdeaEmailSubject" = "MyWigjets Idea";
 "backupsRestoreButton" = "Restore";
 "widgetLocationSection" = "Location";
 "widgetNameLabel" = "Name";

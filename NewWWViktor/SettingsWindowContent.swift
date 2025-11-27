@@ -48,11 +48,11 @@ struct SettingsWindowContent: View {
             HStack(spacing: 8) {
                 Image(systemName: "rectangle.grid.2x2")
                     .foregroundColor(.secondary)
-                Text("WidgetWall")
+                Text("MyWigjets")
                     .font(.footnote)
                     .foregroundColor(.secondary)
                 Spacer()
-                Text("3.14")
+                Text(appVersion)
                     .font(.footnote)
                     .foregroundColor(.secondary)
             }
@@ -359,7 +359,7 @@ struct AboutSettingsDetailView: View {
                     )
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("WidgetWall")
+                    Text("MyWigjets")
                         .font(.headline.weight(.semibold))
                     Text(versionText)
                         .font(.subheadline)
@@ -426,12 +426,16 @@ struct AboutSettingsDetailView: View {
     }
 
     private var versionText: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
-        return String(format: localization.text(.aboutVersionFormat), version)
+        String(format: localization.text(.aboutVersionFormat), appVersion)
     }
 
     private var copyrightText: String {
         let year = Calendar.current.component(.year, from: Date())
         return String(format: localization.text(.aboutCopyrightFormat), year)
     }
+
+}
+
+private var appVersion: String {
+    Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
 }

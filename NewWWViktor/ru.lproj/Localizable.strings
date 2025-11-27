@@ -13,11 +13,11 @@
 "categorySupport" = "Поддержка";
 "categoryAbout" = "О нас";
 "planSubtitle" = "Получите премиум-виджеты и откройте другие наши приложения.";
-"planPremiumTitle" = "Добро пожаловать в WidgetWall!";
+"planPremiumTitle" = "Добро пожаловать в MyWigjets!";
 "planPremiumBody" = "Обновите до Премиум, чтобы получить полный доступ ко всем эксклюзивным виджетам.";
 "planPremiumTag" = "Премиум";
 "planUpgradeButton" = "Обновить сейчас";
-"planRestorePrompt" = "У вас уже есть WidgetWall Премиум?";
+"planRestorePrompt" = "У вас уже есть MyWigjets Премиум?";
 "planRestoreButton" = "Восстановить покупку";
 "planBundleTitle" = "Другие приложения от Amico";
 "planBundleBody" = "Откройте для себя ещё больше наших приложений.";
@@ -27,7 +27,7 @@
 "aboutTermsOfUse" = "Условия использования";
 "aboutPrivacyPolicy" = "Политика конфиденциальности";
 "aboutWelcomeTitle" = "Привет!";
-"aboutWelcomeBody" = "Мы небольшая команда друзей с многолетним опытом, увлеченная созданием лучших приложений. Спасибо, что используете WidgetWall!";
+"aboutWelcomeBody" = "Мы небольшая команда друзей с многолетним опытом, увлеченная созданием лучших приложений. Спасибо, что используете MyWigjets!";
 "aboutCopyrightFormat" = "Copyright © %d Amico Apps";
 "generalSubtitle" = "Управляйте поведением MyWidgets и настройте рабочее пространство.";
 "launchAtLogin" = "Открывать при входе в систему (рекомендуется)";
@@ -101,8 +101,8 @@
 "supportRowTourAction" = "Открыть";
 "supportRowIdeaTitle" = "Есть идея виджета?";
 "supportRowIdeaAction" = "Поделиться";
-"supportEmailSubject" = "Поддержка WidgetWall";
-"supportIdeaEmailSubject" = "Идея для WidgetWall";
+"supportEmailSubject" = "Поддержка MyWigjets";
+"supportIdeaEmailSubject" = "Идея для MyWigjets";
 "backupsRestoreButton" = "Восстановить";
 "widgetLocationSection" = "Локация";
 "widgetNameLabel" = "Название";

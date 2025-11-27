@@ -100,8 +100,6 @@ struct SettingsWindowContent: View {
             SupportSettingsDetailView()
         case .about:
             AboutSettingsDetailView()
-        default:
-            placeholderDetail(for: settings.selectedCategory)
         }
     }
 

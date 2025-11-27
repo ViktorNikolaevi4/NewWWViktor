@@ -2,6 +2,7 @@ import SwiftUI
 import Combine
 #if os(macOS)
 import AppKit
+import QuartzCore
 #endif
 
 struct WidgetHostView: View {
@@ -100,6 +101,13 @@ struct WidgetHostView: View {
                 }
             }
 #if os(macOS)
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    if settingsPanel != nil {
+                        closeSettingsPanel()
+                    }
+                }
+            )
             .gesture(
                 TapGesture(count: 2).onEnded {
                     togglePanel(for: instance)
@@ -305,30 +313,48 @@ struct WidgetHostView: View {
     }
 
     private func togglePanel(for instance: WidgetInstance) {
-        if settingsPanel != nil {
+        let currentID = settingsPanelWidgetID
+        let isOpen = settingsPanel != nil
+
+        if isOpen && currentID == instance.id {
+            // Повторное нажатие по тому же виджету закрывает панель.
             closeSettingsPanel()
-            if settingsPanelWidgetID == instance.id {
-                settingsPanelWidgetID = nil
-                return
-            }
+            return
+        }
+
+        // Закрываем открытую панель другого виджета и открываем новую.
+        if isOpen {
+            closeSettingsPanel()
         }
         showSettings(for: instance)
     }
 
     private func showSettings(for instance: WidgetInstance) {
         let panel = createSettingsPanel(for: instance)
+        preparePanelAppearance(panel)
         settingsPanel = panel
         settingsPanelWidgetID = instance.id
         panel.orderFrontRegardless()
         panel.makeKey()
+        animatePanelAppearance(panel)
         installPanelMonitors(for: panel)
     }
 
-    private func closeSettingsPanel() {
-        settingsPanel?.close()
-        settingsPanel = nil
-        settingsPanelWidgetID = nil
-        removePanelMonitors()
+    private func closeSettingsPanel(animated: Bool = true) {
+        guard let panel = settingsPanel else { return }
+
+        let complete: () -> Void = {
+            panel.close()
+            self.settingsPanel = nil
+            self.settingsPanelWidgetID = nil
+            self.removePanelMonitors()
+        }
+
+        if animated {
+            animatePanelDismiss(panel, completion: complete)
+        } else {
+            complete()
+        }
     }
 
     private func createSettingsPanel(for instance: WidgetInstance) -> NSPanel {
@@ -373,6 +399,7 @@ struct WidgetHostView: View {
 
         let hosting = NSHostingView(rootView: content)
         hosting.frame = NSRect(origin: .zero, size: size)
+        hosting.wantsLayer = true
         panel.contentView = hosting
 
         settingsPanelCoordinator.onClose = { [weak panel] in
@@ -384,6 +411,77 @@ struct WidgetHostView: View {
         }
         panel.delegate = settingsPanelCoordinator
         return panel
+    }
+
+    private func preparePanelAppearance(_ panel: NSPanel) {
+        panel.alphaValue = 0
+        panel.contentView?.layer?.transform = initialPanelTransform
+        panel.contentView?.layer?.opacity = 0
+    }
+
+    private func animatePanelAppearance(_ panel: NSPanel) {
+        let duration: TimeInterval = 0.12
+        let timing = CAMediaTimingFunction(name: .easeInEaseOut)
+
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = duration
+            context.timingFunction = timing
+            panel.animator().alphaValue = 1
+        }
+
+        let transformAnim = CABasicAnimation(keyPath: "transform")
+        transformAnim.fromValue = initialPanelTransform
+        transformAnim.toValue = CATransform3DIdentity
+        transformAnim.duration = duration
+        transformAnim.timingFunction = timing
+
+        let opacityAnim = CABasicAnimation(keyPath: "opacity")
+        opacityAnim.fromValue = 0
+        opacityAnim.toValue = 1
+        opacityAnim.duration = duration
+        opacityAnim.timingFunction = timing
+
+        panel.contentView?.layer?.add(transformAnim, forKey: "transformIn")
+        panel.contentView?.layer?.add(opacityAnim, forKey: "fadeIn")
+        panel.contentView?.layer?.transform = CATransform3DIdentity
+        panel.contentView?.layer?.opacity = 1
+    }
+
+    private func animatePanelDismiss(_ panel: NSPanel, completion: @escaping () -> Void) {
+        let duration: TimeInterval = 0.10
+        let timing = CAMediaTimingFunction(name: .easeInEaseOut)
+
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = duration
+            context.timingFunction = timing
+            panel.animator().alphaValue = 0
+        }
+
+        let transformAnim = CABasicAnimation(keyPath: "transform")
+        transformAnim.fromValue = panel.contentView?.layer?.presentation()?.transform ?? CATransform3DIdentity
+        transformAnim.toValue = initialPanelTransform
+        transformAnim.duration = duration
+        transformAnim.timingFunction = timing
+
+        let opacityAnim = CABasicAnimation(keyPath: "opacity")
+        opacityAnim.fromValue = panel.contentView?.layer?.presentation()?.opacity ?? 1
+        opacityAnim.toValue = 0
+        opacityAnim.duration = duration
+        opacityAnim.timingFunction = timing
+
+        panel.contentView?.layer?.add(transformAnim, forKey: "transformOut")
+        panel.contentView?.layer?.add(opacityAnim, forKey: "fadeOut")
+        panel.contentView?.layer?.transform = initialPanelTransform
+        panel.contentView?.layer?.opacity = 0
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+            completion()
+        }
+    }
+
+    private var initialPanelTransform: CATransform3D {
+        let translate = CATransform3DMakeTranslation(-8, -12, 0)
+        return CATransform3DScale(translate, 0.92, 0.92, 1)
     }
 
     private func panelOrigin(for instance: WidgetInstance,
@@ -418,10 +516,14 @@ struct WidgetHostView: View {
     private func installPanelMonitors(for panel: NSPanel) {
         removePanelMonitors()
 
+        // Игнорируем клики в окно самого виджета: повторное нажатие на троеточие не будет закрывать и сразу открывать панель.
+        let widgetWindowNumber = settingsPanelWidgetID.flatMap { manager.window(for: $0)?.windowNumber }
+
         if let local = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown], handler: { [weak panel] event in
             guard let panel else { return event }
-            if event.window !== panel {
-                panel.close()
+            // Закрываем только если клик вне панели и не по окну виджета (для троеточия и своей области не закрываем).
+            if event.windowNumber != panel.windowNumber && event.windowNumber != widgetWindowNumber {
+                closeSettingsPanel()
             }
             return event
         }) {
@@ -430,8 +532,8 @@ struct WidgetHostView: View {
 
         if let global = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown], handler: { [weak panel] event in
             guard let panel else { return }
-            if event.windowNumber != panel.windowNumber {
-                panel.close()
+            if event.windowNumber != panel.windowNumber && event.windowNumber != widgetWindowNumber {
+                closeSettingsPanel()
             }
         }) {
             settingsPanelMonitors.append(global)

@@ -3,8 +3,8 @@ import SwiftUI
 import Combine
 
 private extension NSWindow.Level {
-    // Keep widgets above desktop icons (so clicks aren’t captured by Finder) but below normal windows.
-    static let desktopAboveIcons = NSWindow.Level(Int(CGWindowLevelForKey(.desktopIconWindow)) + 1)
+    // Максимум в пределах desktop-слоя: выше иконок/других desktop-виджетов, но всё ещё ниже обычных окон приложений.
+    static let desktopWidgetTop = NSWindow.Level(Int(CGWindowLevelForKey(.desktopIconWindow)) + 200)
 }
 
 enum WidgetGridMode: Int, Codable {
@@ -547,8 +547,8 @@ final class WidgetManager: ObservableObject {
             window.setFrame(newFrame,
                             display: true,
                             animate: shouldAnimate)
-            // Keep pinned widgets above windows, and unpinned ones in the desktop layer so they survive "Show Desktop".
-            window.level = updatedInstance.isPinned ? .floating : .desktopAboveIcons
+            // Закрепленные — над окнами, незакрепленные — в верхнем слое рабочего стола (statusBar), чтобы переживали «Показать рабочий стол» и перебивали чужие виджеты.
+            window.level = updatedInstance.isPinned ? .floating : .desktopWidgetTop
             window.isMovableByWindowBackground = !updatedInstance.isPositionLocked
         }
     }
@@ -580,8 +580,8 @@ final class WidgetManager: ObservableObject {
         window.becomesKeyOnlyIfNeeded = true
         window.isOpaque = false
         window.backgroundColor = .clear
-        // Keep pinned widgets above windows, and unpinned ones in the desktop layer so they survive "Show Desktop".
-        window.level = instance.isPinned ? .floating : .desktopAboveIcons
+        // Закрепленные — над окнами, незакрепленные — в верхнем слое рабочего стола (statusBar), чтобы переживали «Показать рабочий стол» и перебивали чужие виджеты.
+        window.level = instance.isPinned ? .floating : .desktopWidgetTop
         window.hasShadow = false
         window.ignoresMouseEvents = false
         window.animationBehavior = .none

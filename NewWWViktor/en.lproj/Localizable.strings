@@ -12,6 +12,16 @@
 "categoryBackups" = "Backups";
 "categorySupport" = "Support";
 "categoryAbout" = "About";
+"planSubtitle" = "Unlock premium widgets and discover more apps.";
+"planPremiumTitle" = "Welcome to WidgetWall!";
+"planPremiumBody" = "Upgrade to Premium to get full access to all exclusive widgets.";
+"planPremiumTag" = "Premium";
+"planUpgradeButton" = "Upgrade now";
+"planRestorePrompt" = "Already have WidgetWall Premium?";
+"planRestoreButton" = "Restore purchase";
+"planBundleTitle" = "More apps from Amico";
+"planBundleBody" = "Explore more apps made by us.";
+"planBundleButton" = "Learn more";
 "aboutSubtitle" = "Version, policies, and a short hello from the team.";
 "aboutVersionFormat" = "Version %@";
 "aboutTermsOfUse" = "Terms of Use";

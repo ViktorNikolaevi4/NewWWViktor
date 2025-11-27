@@ -12,6 +12,16 @@
 "categoryBackups" = "Резервные копии";
 "categorySupport" = "Поддержка";
 "categoryAbout" = "О нас";
+"planSubtitle" = "Получите премиум-виджеты и откройте другие наши приложения.";
+"planPremiumTitle" = "Добро пожаловать в WidgetWall!";
+"planPremiumBody" = "Обновите до Премиум, чтобы получить полный доступ ко всем эксклюзивным виджетам.";
+"planPremiumTag" = "Премиум";
+"planUpgradeButton" = "Обновить сейчас";
+"planRestorePrompt" = "У вас уже есть WidgetWall Премиум?";
+"planRestoreButton" = "Восстановить покупку";
+"planBundleTitle" = "Другие приложения от Amico";
+"planBundleBody" = "Откройте для себя ещё больше наших приложений.";
+"planBundleButton" = "Узнать больше";
 "aboutSubtitle" = "Версия, условия использования, политика и короткое приветствие.";
 "aboutVersionFormat" = "Версия %@";
 "aboutTermsOfUse" = "Условия использования";

@@ -92,6 +92,8 @@ struct SettingsWindowContent: View {
             GeneralSettingsDetailView()
         case .appearance:
             AppearanceSettingsDetailView()
+        case .plan:
+            PlanSettingsDetailView()
         case .backups:
             BackupsSettingsDetailView()
         case .support:

@@ -11,6 +11,16 @@ enum LocalizationKey: String {
     case categoryScreens
     case categorySupport
     case categoryAbout
+    case planSubtitle
+    case planPremiumTitle
+    case planPremiumBody
+    case planPremiumTag
+    case planUpgradeButton
+    case planRestorePrompt
+    case planRestoreButton
+    case planBundleTitle
+    case planBundleBody
+    case planBundleButton
     case aboutSubtitle
     case aboutVersionFormat
     case aboutTermsOfUse

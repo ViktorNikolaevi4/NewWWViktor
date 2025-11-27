@@ -123,7 +123,15 @@
 "widgetAddWidgets" = "Add Widgets";
 "widgetGeneralSettings" = "General Settings";
 "widgetDelete" = "Delete";
+"paletteTitle" = "Palette";
+"paletteSelected" = "Selected";
 "widgetSizeSmall" = "Small";
 "widgetSizeMedium" = "Medium";
 "widgetSizeSmallSubtitle" = "Compact";
 "widgetSizeMediumSubtitle" = "More content";
+"noColorSelected" = "No color selected.\nUse the palette below to pick one.";
+"opacity" = "Opacity";
+"back" = "Back";
+"clear" = "Clear";
+"global" = "Global";
+"locationTitle" = "Location";

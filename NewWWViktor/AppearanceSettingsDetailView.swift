@@ -332,7 +332,7 @@ struct AppearanceSettingsDetailView: View {
     }
 
     private func colorPickerOverlay(for role: WidgetColorRole) -> some View {
-        WidgetColorPickerView(title: role.title,
+        WidgetColorPickerView(title: role.title(using: localization),
                               isPresented: Binding(
                                 get: { activeColorRole != nil },
                                 set: { if !$0 { activeColorRole = nil } }

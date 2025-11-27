@@ -123,6 +123,14 @@ enum LocalizationKey: String {
     case widgetAddWidgets
     case widgetGeneralSettings
     case widgetDelete
+    case paletteTitle
+    case paletteSelected
+    case noColorSelected
+    case opacity
+    case back
+    case clear
+    case global
+    case locationTitle
     case widgetSizeSmall
     case widgetSizeMedium
     case widgetSizeSmallSubtitle

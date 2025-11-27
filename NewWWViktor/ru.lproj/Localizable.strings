@@ -123,7 +123,15 @@
 "widgetAddWidgets" = "Добавить виджеты";
 "widgetGeneralSettings" = "Общие настройки";
 "widgetDelete" = "Удалить";
+"paletteTitle" = "Палитра";
+"paletteSelected" = "Выбрано";
 "widgetSizeSmall" = "Малый";
 "widgetSizeMedium" = "Средний";
 "widgetSizeSmallSubtitle" = "Компактный";
 "widgetSizeMediumSubtitle" = "Больше контента";
+"noColorSelected" = "Цвет не выбран.\nВыберите из палитры ниже.";
+"opacity" = "Непрозрачность";
+"back" = "Назад";
+"clear" = "Очистить";
+"global" = "Глобально";
+"locationTitle" = "Локация";

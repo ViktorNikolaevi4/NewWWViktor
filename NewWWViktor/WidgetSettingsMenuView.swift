@@ -67,7 +67,7 @@ struct WidgetSettingsMenuView: View {
             }
 
             if let colorRole = activeColorRole {
-                WidgetColorPickerView(title: colorRole.title,
+                WidgetColorPickerView(title: colorRole.title(using: localization),
                                       isPresented: Binding(
                                         get: { activeColorRole != nil },
                                         set: { shouldShow in
@@ -313,6 +313,7 @@ struct WidgetSettingsMenuView: View {
 // MARK: - Location Picker
 // Background Picker (global settings reuse)
 private struct WidgetBackgroundPickerSheet: View {
+    @EnvironmentObject private var localization: LocalizationManager
     @Binding var isPresented: Bool
     @Binding var backgroundStyle: BackgroundStyle
     @Binding var backgroundColorName: String?
@@ -445,7 +446,7 @@ private struct WidgetBackgroundPickerSheet: View {
             Button {
                 isPresented = false
             } label: {
-                Label("Back", systemImage: "chevron.left")
+                Label(localization.text(.back), systemImage: "chevron.left")
                     .labelStyle(.titleAndIcon)
             }
             .buttonStyle(.plain)
@@ -464,7 +465,7 @@ private struct WidgetBackgroundPickerSheet: View {
             showPalettePicker = true
         } label: {
             HStack(spacing: 12) {
-                Text("Палитра")
+                Text(localization.text(.paletteTitle))
                     .font(.headline.weight(.semibold))
                 Spacer()
                 ColorChip(colorName: backgroundColorName, intensity: backgroundIntensity)
@@ -898,227 +899,7 @@ private struct LocationOptionRow: View {
 // MARK: - Color Picker
 
 //private struct WidgetColorPickerView: View {
-//    enum Tab: String, CaseIterable {
-//        case palette = "Palette"
-//        case selected = "Selected"
-//    }
-//
-//    @Binding var isPresented: Bool
-//    @Binding var selection: String?
-//    @Binding var intensity: Double
-//    let onChange: () -> Void
-//
-//    @State private var tab: Tab = .palette
-//    @State private var customColorHex: String = "#FFFFFFFF"
-//
-//    private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 5)
-//    private let palette = PaletteColorOption.defaultPalette
-//
-//    var body: some View {
-//        VStack(spacing: 16) {
-//            header
-//
-//            Picker("", selection: $tab) {
-//                ForEach(Tab.allCases, id: \.self) { tab in
-//                    Text(tab.rawValue)
-//                }
-//            }
-//            .pickerStyle(.segmented)
-//
-//            if tab == .palette {
-//                paletteGrid
-//            } else {
-//                ScrollView {
-//                    selectedSection
-//                        .padding(.bottom, 8)
-//                }
-//                .frame(maxHeight: .infinity)
-//            }
-//
-//            intensitySection
-//
-//            Button {
-//                select(nil)
-//            } label: {
-//                HStack {
-//                    Image(systemName: selection == nil ? "checkmark.circle.fill" : "circle")
-//                    Text("Global")
-//                        .font(.system(size: 13, weight: .semibold))
-//                    Spacer()
-//                }
-//                .padding(.vertical, 8)
-//                .padding(.horizontal, 10)
-//                .background(Color.white.opacity(0.12))
-//                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-//            }
-//            .buttonStyle(.plain)
-//        }
-//        .padding(18)
-//        .frame(width: 340, height: 460)
-//        .background(
-//            RoundedRectangle(cornerRadius: 28, style: .continuous)
-//                .fill(.ultraThinMaterial)
-//                .overlay(
-//                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-//                        .stroke(Color.white.opacity(0.12))
-//                )
-//        )
-//        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-//        .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
-//        .onAppear {
-//            syncCustomColorHex(with: selection)
-//        }
-//        .onChange(of: selection) { newValue in
-//            syncCustomColorHex(with: newValue)
-//        }
-//    }
-//
-//    private var header: some View {
-//        HStack {
-//            Button {
-//                isPresented = false
-//            } label: {
-//                Label("Back", systemImage: "chevron.left")
-//                    .labelStyle(.titleAndIcon)
-//            }
-//            .buttonStyle(.plain)
-//            .foregroundColor(.white.opacity(0.9))
-//
-//            Spacer()
-//
-//            Text("Primary Color")
-//                .font(.headline.weight(.semibold))
-//                .foregroundColor(.white)
-//
-//            Spacer()
-//
-//            Spacer()
-//                .frame(width: 60)
-//        }
-//    }
-//
-//    private var paletteGrid: some View {
-//        ScrollView {
-//            LazyVGrid(columns: columns, spacing: 12) {
-//                ForEach(palette) { option in
-//                    Button {
-//                        select(option.assetName)
-//                    } label: {
-//                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-//                            .fill(Color(option.assetName))
-//                            .frame(height: 32)
-//                            .overlay(
-//                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-//                                    .stroke(Color.white.opacity(selection == option.assetName ? 1 : 0.2),
-//                                            lineWidth: selection == option.assetName ? 3 : 1)
-//                            )
-//                    }
-//                    .buttonStyle(.plain)
-//                }
-//            }
-//            .padding(.vertical, 4)
-//        }
-//    }
-//
-//    private var selectedSection: some View {
-//        VStack(spacing: 14) {
-//            if let selection {
-//                ColorChip(colorName: selection, intensity: intensity)
-//            } else {
-//                Text("No color selected.\nUse the palette below to pick one.")
-//                    .font(.system(size: 13))
-//                    .foregroundColor(.white.opacity(0.7))
-//                    .multilineTextAlignment(.center)
-//                    .padding(.vertical, 4)
-//            }
-//
-//            colorWheel
-//
-//            Button("Clear") {
-//                select(nil)
-//            }
-//            .buttonStyle(.plain)
-//            .foregroundColor(.white.opacity(selection == nil ? 0.4 : 0.9))
-//            .disabled(selection == nil)
-//        }
-//        .frame(maxWidth: .infinity)
-//        .padding(.vertical, 12)
-//        .padding(.horizontal, 10)
-//        .background(Color.white.opacity(0.08))
-//        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-//    }
-//
-//    private var intensitySection: some View {
-//        VStack(alignment: .leading, spacing: 8) {
-//            Text("Brightness")
-//                .font(.caption.weight(.semibold))
-//                .foregroundColor(.white.opacity(0.7))
-//
-//            Slider(value: $intensity, in: 0...1.0) {
-//                Text("Brightness")
-//            }
-//            .accentColor(.white)
-//            .onChange(of: intensity) { _ in
-//                onChange()
-//            }
-//            .background(
-//                RoundedRectangle(cornerRadius: 10, style: .continuous)
-//                    .fill(
-//                        LinearGradient(colors: [
-//                            WidgetPaletteColor.color(named: selection, intensity: 0.0, fallback: .black),
-//                            WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .primary)
-//                        ], startPoint: .leading, endPoint: .trailing)
-//                    )
-//                    .opacity(0.35)
-//            )
-//        }
-//    }
-//
-//    private var colorWheel: some View {
-//        ColorWheelControl(color: customColorBinding)
-//            .frame(height: 180)
-//            .frame(maxWidth: .infinity)
-//            .padding(.vertical, 6)
-//            .padding(.horizontal, 8)
-//            .background(Color.white.opacity(0.06))
-//            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-//    }
-//
-//    private var customColorBinding: Binding<Color> {
-//        Binding(
-//            get: {
-//                HexColor.color(from: customColorHex)
-//                ?? WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .white)
-//            },
-//            set: { newColor in
-//                guard let hex = HexColor.hexString(from: newColor) else { return }
-//                customColorHex = hex
-//                selection = hex
-//                onChange()
-//            }
-//        )
-//    }
-//
-//    private func select(_ colorName: String?) {
-//        selection = colorName
-//        onChange()
-//        if colorName == nil {
-//            isPresented = false
-//        }
-//    }
-//
-//    private func syncCustomColorHex(with newValue: String?) {
-//        guard let newValue else {
-//            customColorHex = "#FFFFFFFF"
-//            return
-//        }
-//
-//        if let normalized = HexColor.normalizedHex(from: newValue) {
-//            customColorHex = normalized
-//        } else if let resolved = HexColor.hexStringForNamedColor(newValue) {
-//            customColorHex = resolved
-//        }
-//    }
+//    ...
 //}
 
 private struct PaletteColorOption: Identifiable {

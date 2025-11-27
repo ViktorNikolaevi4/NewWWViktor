@@ -7,7 +7,7 @@ struct WidgetGeneralSettingsSection: View {
     @Binding var showWeather: Bool
 
     var body: some View {
-        WidgetSettingsGroup(title: "Location") {
+        WidgetSettingsGroup(title: localization.text(.locationTitle)) {
             WidgetSettingsRowButton(title: localization.text(.widgetLocationSection)) {
                 isLocationPickerPresented = true
             } content: {
@@ -34,12 +34,12 @@ enum WidgetColorRole {
     case main
     case secondary
 
-    var title: String {
+    func title(using localization: LocalizationManager) -> String {
         switch self {
         case .main:
-            return "Primary Color"
+            return localization.text(.appearancePrimaryColor)
         case .secondary:
-            return "Secondary Color"
+            return localization.text(.appearanceSecondaryColor)
         }
     }
 }

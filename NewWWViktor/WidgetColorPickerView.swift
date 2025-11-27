@@ -7,8 +7,8 @@ import UIKit
 
 struct WidgetColorPickerView: View {
     enum Tab: String, CaseIterable {
-        case palette = "Palette"
-        case selected = "Selected"
+        case palette
+        case selected
     }
 
     let title: String
@@ -29,7 +29,7 @@ struct WidgetColorPickerView: View {
 
             Picker("", selection: $tab) {
                 ForEach(Tab.allCases, id: \.self) { tab in
-                    Text(tab.rawValue)
+                    Text(title(for: tab))
                 }
             }
             .pickerStyle(.segmented)
@@ -51,7 +51,7 @@ struct WidgetColorPickerView: View {
             } label: {
                 HStack {
                     Image(systemName: selection == nil ? "checkmark.circle.fill" : "circle")
-                    Text("Global")
+                    Text(localization.text(.global))
                         .font(.system(size: 13, weight: .semibold))
                     Spacer()
                 }
@@ -87,7 +87,7 @@ struct WidgetColorPickerView: View {
             Button {
                 isPresented = false
             } label: {
-                Label("Back", systemImage: "chevron.left")
+                Label(localization.text(.back), systemImage: "chevron.left")
                     .labelStyle(.titleAndIcon)
             }
             .buttonStyle(.plain)
@@ -143,7 +143,7 @@ struct WidgetColorPickerView: View {
             if let selection {
                 ColorChip(colorName: selection, intensity: intensity)
             } else {
-                Text("No color selected.\nUse the palette below to pick one.")
+                Text(localization.text(.noColorSelected))
                     .font(.system(size: 13))
                     .foregroundColor(.white.opacity(0.7))
                     .multilineTextAlignment(.center)
@@ -158,7 +158,7 @@ struct WidgetColorPickerView: View {
                 .background(Color.white.opacity(0.06))
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
-            Button("Clear") {
+            Button(localization.text(.clear)) {
                 select(nil)
             }
             .buttonStyle(.plain)
@@ -174,12 +174,12 @@ struct WidgetColorPickerView: View {
 
     private var intensitySection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Opacity")
+            Text(localization.text(.opacity))
                 .font(.caption.weight(.semibold))
                 .foregroundColor(.white.opacity(0.7))
 
             Slider(value: $intensity, in: 0...1.0) {
-                Text("Opacity")
+                Text(localization.text(.opacity))
             }
             .accentColor(.white)
             .onChange(of: intensity) { _, _ in
@@ -197,6 +197,17 @@ struct WidgetColorPickerView: View {
             )
         }
     }
+
+    private func title(for tab: Tab) -> String {
+        switch tab {
+        case .palette:
+            return localization.text(.paletteTitle)
+        case .selected:
+            return localization.text(.paletteSelected)
+        }
+    }
+
+    @EnvironmentObject private var localization: LocalizationManager
 
     private var customColorBinding: Binding<Color> {
         Binding(

@@ -130,7 +130,7 @@
 "widgetSizeSmallSubtitle" = "Компактный";
 "widgetSizeMediumSubtitle" = "Больше контента";
 "noColorSelected" = "Цвет не выбран.\nВыберите из палитры ниже.";
-"opacity" = "Непрозрачность";
+"opacity" = "Прозрачность";
 "back" = "Назад";
 "clear" = "Очистить";
 "global" = "Глобально";

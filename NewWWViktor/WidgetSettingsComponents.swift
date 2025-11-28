@@ -175,28 +175,19 @@ struct ColorChip: View {
     var intensity: Double = 1.0
 
     var body: some View {
-        HStack(spacing: 10) {
-            Circle()
-                .fill(displayColor)
-                .frame(width: 24, height: 24)
-                .overlay(
-                    Circle()
-                        .stroke(Color.white.opacity(0.4), lineWidth: 1)
-                )
-            Text(colorTitle)
-                .font(.system(size: 13, weight: .medium))
-        }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 10)
-        .background(Color.white.opacity(0.14))
-        .clipShape(Capsule())
+        Circle()
+            .fill(displayColor)
+            .frame(width: 24, height: 24)
+            .overlay(
+                Circle()
+                    .stroke(Color.white.opacity(0.4), lineWidth: 1)
+            )
+            .padding(8)
+            .background(Color.white.opacity(0.14))
+            .clipShape(Capsule())
     }
 
     private var displayColor: Color {
         WidgetPaletteColor.color(named: colorName, intensity: intensity, fallback: .primary)
-    }
-
-    private var colorTitle: String {
-        colorName.map { $0 } ?? "Global"
     }
 }

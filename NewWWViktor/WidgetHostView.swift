@@ -125,12 +125,21 @@ struct WidgetHostView: View {
             .onChange(of: instance.x) { _, _ in
                 repositionPanelIfNeeded(for: instance)
             }
-                    .onChange(of: instance.y) { _, _ in
-                        repositionPanelIfNeeded(for: instance)
-                    }
-                    .onReceive(manager.$globalColorsVersion) { _ in
-                        // Trigger view refresh when appearance changes (e.g., background image/palette)
-                    }
+            .onChange(of: instance.y) { _, _ in
+                repositionPanelIfNeeded(for: instance)
+            }
+            .onReceive(manager.$globalColorsVersion) { _ in
+                // Trigger view refresh when appearance changes (e.g., background image/palette)
+            }
+            .onReceive(manager.$widgets) { widgets in
+                // Если открыта панель настроек для этого виджета, держим её около виджета при любых изменениях размеров/позиции.
+                guard let updated = widgets.first(where: { $0.id == instance.id }) else { return }
+                repositionPanelIfNeeded(for: updated)
+                // Пересчёт через кадр — после того, как окно виджета применило новый frame (setFrame может быть анимирован).
+                DispatchQueue.main.async {
+                    repositionPanelIfNeeded(for: updated)
+                }
+            }
 #endif
         } else {
             EmptyView()

@@ -530,29 +530,33 @@ final class WidgetManager: ObservableObject {
     }
 
     func update(_ instance: WidgetInstance) {
-        guard let idx = widgets.firstIndex(where: { $0.id == instance.id }) else { return }
+        // Отложенный апдейт, чтобы не трогать @Published-поля прямо во время рендера SwiftUI (иначе warning "Publishing changes from within view updates").
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self,
+                  let idx = self.widgets.firstIndex(where: { $0.id == instance.id }) else { return }
 
-        var updatedInstance = instance
-        if let window = windows[instance.id] {
-            let frame = window.frame
-            updatedInstance.x = frame.origin.x
-            updatedInstance.y = frame.origin.y
-        }
+            var updatedInstance = instance
+            if let window = self.windows[instance.id] {
+                let frame = window.frame
+                updatedInstance.x = frame.origin.x
+                updatedInstance.y = frame.origin.y
+            }
 
-        widgets[idx] = updatedInstance
+            self.widgets[idx] = updatedInstance
 
-        if let window = windows[instance.id] {
-            let newFrame = NSRect(x: updatedInstance.x,
-                                  y: updatedInstance.y,
-                                  width: updatedInstance.width,
-                                  height: updatedInstance.height)
-            let shouldAnimate = window.frame.size != newFrame.size
-            window.setFrame(newFrame,
-                            display: true,
-                            animate: shouldAnimate)
-            // Закрепленные — над окнами, незакрепленные — в верхнем слое рабочего стола (statusBar), чтобы переживали «Показать рабочий стол» и перебивали чужие виджеты.
-            window.level = updatedInstance.isPinned ? .floating : .desktopWidgetTop
-            window.isMovableByWindowBackground = !updatedInstance.isPositionLocked
+            if let window = self.windows[instance.id] {
+                let newFrame = NSRect(x: updatedInstance.x,
+                                      y: updatedInstance.y,
+                                      width: updatedInstance.width,
+                                      height: updatedInstance.height)
+                let shouldAnimate = window.frame.size != newFrame.size
+                window.setFrame(newFrame,
+                                display: true,
+                                animate: shouldAnimate)
+                // Закрепленные — над окнами, незакрепленные — в верхнем слое рабочего стола (statusBar), чтобы переживали «Показать рабочий стол» и перебивали чужие виджеты.
+                window.level = updatedInstance.isPinned ? .floating : .desktopWidgetTop
+                window.isMovableByWindowBackground = !updatedInstance.isPositionLocked
+            }
         }
     }
 

@@ -176,7 +176,7 @@ struct WidgetColorPickerView: View {
                 Text(localization.text(.opacity))
             }
             .accentColor(.white)
-            .labelsHidden() // показываем только заголовок сверху, без дублирующей подписи
+            .labelsHidden()
             .onChange(of: intensity) { _, _ in
                 onChange()
             }
@@ -249,79 +249,103 @@ private struct PaletteColorOption: Identifiable {
 
 private struct ColorWheelControl: View {
     @Binding var color: Color
-    @State private var hsb = HSBColor(hue: 0, saturation: 0, brightness: 1, alpha: 1)
+    @State private var hsb = HSBColor(hue: 0, saturation: 1, brightness: 1, alpha: 1)
 
     private static let hueGradient: [Color] = [
         .red, .yellow, .green, .cyan, .blue, .purple, .red
     ]
 
     var body: some View {
-        GeometryReader { proxy in
-            let diameter = min(proxy.size.width, proxy.size.height)
-            let radius = diameter / 2
-            let center = CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2)
-            let indicator = indicatorPosition(center: center, radius: radius)
+        VStack(spacing: 12) {
+            // Поле S/B: по горизонтали насыщенность, по вертикали яркость.
+            GeometryReader { proxy in
+                let size = min(proxy.size.width, proxy.size.height)
+                let sat = CGFloat(hsb.saturation)
+                let bri = CGFloat(hsb.brightness)
 
-            ZStack {
-                Circle()
-                    .fill(
-                        AngularGradient(gradient: Gradient(colors: Self.hueGradient),
-                                        center: .center)
-                    )
-                    .overlay(
-                        Circle()
-                            .fill(
-                                RadialGradient(gradient: Gradient(colors: [.white, .clear]),
-                                               center: .center,
-                                               startRadius: 0,
-                                               endRadius: radius)
-                            )
-                    )
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { value in
-                                updateColor(at: value.location, center: center, radius: radius)
-                            }
-                            .onEnded { value in
-                                updateColor(at: value.location, center: center, radius: radius)
-                            }
-                    )
+                ZStack {
+                    // База: слева белый, справа выбранный цвет по текущему hue.
+                    LinearGradient(colors: [.white, hueColor], startPoint: .leading, endPoint: .trailing)
+                        .frame(width: size, height: size)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        // Оверлей: сверху прозрачный, снизу чёрный — чтобы получить все яркости.
+                        .overlay(
+                            LinearGradient(colors: [.clear, .black],
+                                           startPoint: .top,
+                                           endPoint: .bottom)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        )
+                        .gesture(
+                            DragGesture(minimumDistance: 0)
+                                .onChanged { value in
+                                    updateSaturationBrightness(at: value.location, size: size)
+                                }
+                                .onEnded { value in
+                                    updateSaturationBrightness(at: value.location, size: size)
+                                }
+                        )
 
-                Circle()
-                    .strokeBorder(Color.white, lineWidth: 2)
-                    .background(Circle().fill(color))
-                    .shadow(color: .black.opacity(0.4), radius: 2)
-                    .frame(width: 18, height: 18)
-                    .position(indicator)
+                    // Маркер выбора внутри квадрата
+                    Circle()
+                        .strokeBorder(Color.white, lineWidth: 2)
+                        .background(Circle().fill(color))
+                        .shadow(color: .black.opacity(0.4), radius: 2)
+                        .frame(width: 16, height: 16)
+                        .position(x: sat * size, y: (1 - bri) * size)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
-            .onAppear {
-                hsb = HSBColor(color: color)
+            .aspectRatio(1, contentMode: .fit)
+
+            // Hue-бар
+            GeometryReader { proxy in
+                let width = proxy.size.width
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(LinearGradient(colors: Self.hueGradient, startPoint: .leading, endPoint: .trailing))
+
+                    let x = CGFloat(hsb.hue) * width
+                    Circle()
+                        .strokeBorder(Color.white, lineWidth: 2)
+                        .background(Circle().fill(hueColor))
+                        .frame(width: 18, height: 18)
+                        .position(x: x, y: proxy.size.height / 2)
+                }
+                .frame(height: 18)
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            updateHue(at: value.location.x, width: width)
+                        }
+                        .onEnded { value in
+                            updateHue(at: value.location.x, width: width)
+                        }
+                )
             }
-            .onChange(of: color) { _, newValue in
-                hsb = HSBColor(color: newValue)
-            }
+            .frame(height: 22)
         }
-        .aspectRatio(1, contentMode: .fit)
+        .onAppear {
+            hsb = HSBColor(color: color)
+        }
+        .onChange(of: color) { _, newValue in
+            hsb = HSBColor(color: newValue)
+        }
     }
 
-    private func indicatorPosition(center: CGPoint, radius: CGFloat) -> CGPoint {
-        let angle = 2 * .pi * CGFloat(hsb.hue)
-        let distance = CGFloat(hsb.saturation) * radius
-        return CGPoint(
-            x: center.x + distance * cos(angle),
-            y: center.y + distance * sin(angle)
-        )
+    private var hueColor: Color {
+        Color(hue: hsb.hue, saturation: 1, brightness: 1)
     }
 
-    private func updateColor(at point: CGPoint, center: CGPoint, radius: CGFloat) {
-        let dx = Double(point.x - center.x)
-        let dy = Double(point.y - center.y)
-        var hue = atan2(dy, dx) / (2 * .pi)
-        if hue < 0 { hue += 1 }
-        let distance = min(max(Double(hypot(dx, dy)), 0), Double(radius))
-        let saturation = distance / Double(radius)
+    private func updateSaturationBrightness(at point: CGPoint, size: CGFloat) {
+        let sat = min(max(Double(point.x / size), 0), 1)
+        let bri = min(max(Double(1 - point.y / size), 0), 1)
+        hsb = HSBColor(hue: hsb.hue, saturation: sat, brightness: bri, alpha: 1)
+        color = hsb.color
+    }
 
-        hsb = HSBColor(hue: hue, saturation: saturation, brightness: hsb.brightness, alpha: 1)
+    private func updateHue(at x: CGFloat, width: CGFloat) {
+        let hue = min(max(Double(x / width), 0), 1)
+        hsb.hue = hue
         color = hsb.color
     }
 }

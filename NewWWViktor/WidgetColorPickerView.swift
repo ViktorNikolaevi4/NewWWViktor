@@ -59,22 +59,16 @@ struct WidgetColorPickerView: View {
                 .padding(.vertical, 8)
                 .padding(.horizontal, 10)
                 .background(Color.white.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+             //   .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
         }
-        .padding(18)
-        .frame(width: 340, height: 460)
-        .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(Color.white.opacity(0.12))
-                )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 14)
+        .frame(width: 360, height: 520)
+        // Возвращаем материал, но с жёсткой маской, чтобы фон позади панели не выглядывал.
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 36, style: .continuous))
+        .mask(RoundedRectangle(cornerRadius: 36, style: .continuous))
         .onAppear {
             syncCustomColorHex(with: selection)
         }
@@ -157,7 +151,6 @@ struct WidgetColorPickerView: View {
                 .padding(.vertical, 6)
                 .padding(.horizontal, 8)
                 .background(Color.white.opacity(0.06))
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
             Button(localization.text(.clear)) {
                 select(nil)
@@ -170,7 +163,7 @@ struct WidgetColorPickerView: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 10)
         .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+       .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private var intensitySection: some View {
@@ -183,19 +176,10 @@ struct WidgetColorPickerView: View {
                 Text(localization.text(.opacity))
             }
             .accentColor(.white)
+            .labelsHidden() // показываем только заголовок сверху, без дублирующей подписи
             .onChange(of: intensity) { _, _ in
                 onChange()
             }
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(
-                        LinearGradient(colors: [
-                            WidgetPaletteColor.color(named: selection, intensity: 0.0, fallback: .black),
-                            WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .primary)
-                        ], startPoint: .leading, endPoint: .trailing)
-                    )
-                    .opacity(0.35)
-            )
         }
     }
 

@@ -55,8 +55,9 @@ struct WidgetSettingsMenuView: View {
         return ZStack {
             panelContent
                 .disabled(isOverlayPresented)
-                .blur(radius: isOverlayPresented ? 3 : 0)
-                .opacity(isOverlayPresented ? 0.4 : 1)
+                // Оставляем фон без затемнения при показе оверлеев, чтобы не было темной подложки позади палитры.
+                .blur(radius: 0)
+                .opacity(1)
 
             if showLocationPicker {
                 WidgetLocationPickerView(isPresented: $showLocationPicker,

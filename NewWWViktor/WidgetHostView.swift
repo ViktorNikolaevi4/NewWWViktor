@@ -392,6 +392,7 @@ struct WidgetHostView: View {
         panel.titlebarAppearsTransparent = true
         panel.isOpaque = false
         panel.backgroundColor = .clear
+        panel.hasShadow = false
         panel.becomesKeyOnlyIfNeeded = true
         panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle, .stationary]
@@ -421,6 +422,8 @@ struct WidgetHostView: View {
         let hosting = NSHostingView(rootView: content)
         hosting.frame = NSRect(origin: .zero, size: size)
         hosting.wantsLayer = true
+        hosting.layer?.cornerRadius = 36
+        hosting.layer?.masksToBounds = true
         panel.contentView = hosting
 
         settingsPanelCoordinator.onClose = { [weak panel] in

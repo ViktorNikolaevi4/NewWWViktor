@@ -306,18 +306,9 @@ private struct ColorWheelControl: View {
                         // Оверлей: сверху прозрачный, снизу чёрный — чтобы получить все яркости.
                         .overlay(
                             LinearGradient(colors: [.clear, .black],
-                                           startPoint: .top,
-                                           endPoint: .bottom)
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        )
-                        .gesture(
-                            DragGesture(minimumDistance: 0)
-                                .onChanged { value in
-                                    updateSaturationBrightness(at: value.location, size: size)
-                                }
-                                .onEnded { value in
-                                    updateSaturationBrightness(at: value.location, size: size)
-                                }
+                               startPoint: .top,
+                               endPoint: .bottom)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         )
 
                     // Маркер выбора внутри квадрата
@@ -328,6 +319,16 @@ private struct ColorWheelControl: View {
                         .frame(width: 16, height: 16)
                         .position(x: sat * size, y: (1 - bri) * size)
                 }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            updateSaturationBrightness(at: value.location, size: size)
+                        }
+                        .onEnded { value in
+                            updateSaturationBrightness(at: value.location, size: size)
+                        }
+                )
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
             .aspectRatio(1, contentMode: .fit)

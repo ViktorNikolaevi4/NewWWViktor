@@ -20,7 +20,8 @@ struct WidgetColorPickerView: View {
     @State private var tab: Tab = .palette
     @State private var customColorHex: String = "#FFFFFFFF"
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 5)
+    // Более плотная сетка палитры: больше столбцов, меньше отступы.
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 4)
     private let palette = PaletteColorOption.defaultPalette
 
     var body: some View {
@@ -117,18 +118,18 @@ struct WidgetColorPickerView: View {
 
     private var paletteGrid: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 12) {
+            LazyVGrid(columns: columns, spacing: 6) {
                 ForEach(palette) { option in
                     Button {
                         select(option.assetName)
                     } label: {
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
                             .fill(Color(option.assetName))
-                            .frame(height: 32)
+                            .frame(height: 24)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                RoundedRectangle(cornerRadius: 7, style: .continuous)
                                     .stroke(Color.white.opacity(selection == option.assetName ? 1 : 0.2),
-                                            lineWidth: selection == option.assetName ? 3 : 1)
+                                            lineWidth: selection == option.assetName ? 2 : 1)
                             )
                     }
                     .buttonStyle(.plain)

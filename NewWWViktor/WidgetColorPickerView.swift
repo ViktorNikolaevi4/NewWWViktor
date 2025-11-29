@@ -158,14 +158,13 @@ struct WidgetColorPickerView: View {
                 .font(.caption.weight(.semibold))
                 .foregroundColor(.white.opacity(0.7))
 
-            Slider(value: $intensity, in: 0...1.0) {
-                Text(localization.text(.opacity))
-            }
-            .accentColor(.white)
-            .labelsHidden()
-            .onChange(of: intensity) { _, _ in
-                onChange()
-            }
+            GradientSlider(
+                value: $intensity,
+                gradient: opacityGradient,
+                thumbColor: .white,
+                height: 10,
+                onChange: onChange
+            )
         }
     }
 
@@ -179,6 +178,12 @@ struct WidgetColorPickerView: View {
     }
 
     @EnvironmentObject private var localization: LocalizationManager
+
+    private var opacityGradient: [Color] {
+        let base = HexColor.color(from: customColorHex)
+        ?? WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .white)
+        return [base.opacity(0), base.opacity(1)]
+    }
 
     private var customColorBinding: Binding<Color> {
         Binding(
@@ -215,6 +220,50 @@ struct WidgetColorPickerView: View {
             customColorHex = resolved
         }
     }
+}
+
+// Общий стилизованный слайдер для hue/opacity
+private struct GradientSlider: View {
+    @Binding var value: Double
+    var gradient: [Color]
+    var thumbColor: Color
+    var height: CGFloat = 10
+    var onChange: (() -> Void)? = nil
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: height / 2, style: .continuous)
+                    .fill(LinearGradient(colors: gradient, startPoint: .leading, endPoint: .trailing))
+                    .frame(height: height)
+
+                let x = CGFloat(value.clamped) * width
+                Circle()
+                    .strokeBorder(Color.white, lineWidth: 2)
+                    .background(Circle().fill(thumbColor))
+                    .frame(width: height + 8, height: height + 8)
+                    .position(x: x, y: height / 2)
+            }
+            .frame(height: height + 8)
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { updateValue(at: $0.location.x, width: width) }
+                    .onEnded { updateValue(at: $0.location.x, width: width) }
+            )
+        }
+        .frame(height: height + 10)
+    }
+
+    private func updateValue(at x: CGFloat, width: CGFloat) {
+        let newValue = Double(min(max(x / width, 0), 1))
+        value = newValue
+        onChange?()
+    }
+}
+
+private extension Double {
+    var clamped: Double { min(max(self, 0), 1) }
 }
 
 private struct PaletteColorOption: Identifiable {
@@ -284,31 +333,17 @@ private struct ColorWheelControl: View {
             .aspectRatio(1, contentMode: .fit)
 
             // Hue-бар
-            GeometryReader { proxy in
-                let width = proxy.size.width
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(LinearGradient(colors: Self.hueGradient, startPoint: .leading, endPoint: .trailing))
-
-                    let x = CGFloat(hsb.hue) * width
-                    Circle()
-                        .strokeBorder(Color.white, lineWidth: 2)
-                        .background(Circle().fill(hueColor))
-                        .frame(width: 18, height: 18)
-                        .position(x: x, y: proxy.size.height / 2)
-                }
-                .frame(height: 18)
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { value in
-                            updateHue(at: value.location.x, width: width)
-                        }
-                        .onEnded { value in
-                            updateHue(at: value.location.x, width: width)
-                        }
-                )
-            }
-            .frame(height: 22)
+            GradientSlider(
+                value: Binding(
+                    get: { hsb.hue },
+                    set: { newHue in
+                        hsb.hue = newHue
+                        color = hsb.color
+                    }
+                ),
+                gradient: Self.hueGradient,
+                thumbColor: hueColor
+            )
         }
         .onAppear {
             hsb = HSBColor(color: color)

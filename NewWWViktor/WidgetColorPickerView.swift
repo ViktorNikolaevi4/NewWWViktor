@@ -134,23 +134,11 @@ struct WidgetColorPickerView: View {
     }
 
     private var selectedSection: some View {
-        VStack(spacing: 14) {
-            if let selection {
-                ColorChip(colorName: selection, intensity: intensity)
-            } else {
-                Text(localization.text(.noColorSelected))
-                    .font(.system(size: 13))
-                    .foregroundColor(.white.opacity(0.7))
-                    .multilineTextAlignment(.center)
-                    .padding(.vertical, 4)
-            }
-
+        VStack(spacing: 10) {
             ColorWheelControl(color: customColorBinding)
-                .frame(height: 180)
+                .frame(height: 220)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 6)
-                .padding(.horizontal, 8)
-                .background(Color.white.opacity(0.06))
+                .padding(.vertical, 4)
 
             Button(localization.text(.clear)) {
                 select(nil)
@@ -162,8 +150,6 @@ struct WidgetColorPickerView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .padding(.horizontal, 10)
-        .background(Color.white.opacity(0.08))
-       .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private var intensitySection: some View {

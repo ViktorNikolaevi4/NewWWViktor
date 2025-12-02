@@ -353,16 +353,16 @@ private struct WidgetBackgroundPickerSheet: View {
     var body: some View {
         ZStack {
             content
-                .frame(width: 340, height: 480)
+                .frame(width: 360, height: 520)
                 .background(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    RoundedRectangle(cornerRadius: 36, style: .continuous)
                         .fill(.ultraThinMaterial)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                            RoundedRectangle(cornerRadius: 36, style: .continuous)
                                 .stroke(Color.white.opacity(0.12))
                         )
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
                 .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
 
             if showPalettePicker {
@@ -399,45 +399,50 @@ private struct WidgetBackgroundPickerSheet: View {
     }
 
     private var content: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             header
 
-            if isGlobalContext {
-                Toggle("Использовать глобальный фон", isOn: $isUsingGlobalBackground)
-                    .toggleStyle(SwitchToggleStyle(tint: .orange))
-                    .onChange(of: isUsingGlobalBackground) { _, newValue in
-                        if newValue {
-                            // Reset to global
-                            backgroundStyle = .photo
-                            backgroundColorName = nil
-                            backgroundImageURL = nil
-                            gradientColor1Name = nil
-                            gradientColor2Name = nil
-                        }
-                        onApply()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    if isGlobalContext {
+                        Toggle("Использовать глобальный фон", isOn: $isUsingGlobalBackground)
+                            .toggleStyle(SwitchToggleStyle(tint: .orange))
+                            .onChange(of: isUsingGlobalBackground) { _, newValue in
+                                if newValue {
+                                    // Reset to global
+                                    backgroundStyle = .photo
+                                    backgroundColorName = nil
+                                    backgroundImageURL = nil
+                                    gradientColor1Name = nil
+                                    gradientColor2Name = nil
+                                }
+                                onApply()
+                            }
+                            .padding(.bottom, 4)
                     }
-                    .padding(.bottom, 4)
-            }
 
-            Picker("", selection: $backgroundStyle) {
-                ForEach(BackgroundStyle.allCases) { style in
-                    Label(styleTitle(style), systemImage: style.systemImage)
-                        .labelStyle(.iconOnly)
-                        .tag(style)
+                    Picker("", selection: $backgroundStyle) {
+                        ForEach(BackgroundStyle.allCases) { style in
+                            Label(styleTitle(style), systemImage: style.systemImage)
+                                .labelStyle(.iconOnly)
+                                .tag(style)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .disabled(isGlobalContext ? isUsingGlobalBackground : false)
+
+                    if backgroundStyle == .palette && !(isGlobalContext ? isUsingGlobalBackground : false) {
+                        backgroundPaletteButton
+                    } else if backgroundStyle == .gradient && !(isGlobalContext ? isUsingGlobalBackground : false) {
+                        gradientControls
+                    } else if backgroundStyle == .photo && !(isGlobalContext ? isUsingGlobalBackground : false) {
+                        photoControls
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 6)
+                .padding(.bottom, 4)
             }
-            .pickerStyle(.segmented)
-            .disabled(isGlobalContext ? isUsingGlobalBackground : false)
-
-            if backgroundStyle == .palette && !(isGlobalContext ? isUsingGlobalBackground : false) {
-                backgroundPaletteButton
-            } else if backgroundStyle == .gradient && !(isGlobalContext ? isUsingGlobalBackground : false) {
-                gradientControls
-            } else if backgroundStyle == .photo && !(isGlobalContext ? isUsingGlobalBackground : false) {
-                photoControls
-            }
-
-            Spacer()
         }
         .padding(18)
     }
@@ -495,12 +500,16 @@ private struct WidgetBackgroundPickerSheet: View {
                         onPick: { showGradientPicker2 = true })
 
             if gradientColor2Name != nil {
-                Picker("Тип", selection: $gradientType) {
-                    ForEach(BackgroundGradientType.allCases) { type in
-                        Text(type.localizedTitle).tag(type)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Тип")
+                        .font(.subheadline.weight(.semibold))
+                    Picker("", selection: $gradientType) {
+                        ForEach(BackgroundGradientType.allCases) { type in
+                            Text(type.localizedTitle).tag(type)
+                        }
                     }
+                    .pickerStyle(.segmented)
                 }
-                .pickerStyle(.segmented)
 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {

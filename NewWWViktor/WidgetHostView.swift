@@ -159,17 +159,24 @@ struct WidgetHostView: View {
             return AnyView(Color.clear)
         }
 
-        return AnyView(ZStack {
-            if resolvedBackgroundStyle == .photo, let image = resolvedBackgroundImage {
-                Image(nsImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .clipped()
-            } else {
-                RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-                    .fill(widgetBackgroundFill)
+        return AnyView(
+            GeometryReader { proxy in
+                ZStack {
+                    if resolvedBackgroundStyle == .photo, let image = resolvedBackgroundImage {
+                        Image(nsImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .clipped()
+                    } else {
+                        RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                            .fill(widgetBackgroundFill)
+                    }
+                }
+                .frame(width: proxy.size.width, height: proxy.size.height)
+                .clipped()
             }
-        })
+        )
     }
 
     private var widgetBackgroundFill: AnyShapeStyle {

@@ -40,15 +40,10 @@ struct WidgetPreviewCard: View {
     // MARK: - Subviews
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Text(localization.text(type.categoryLabelKey).uppercased())
-                    .font(.caption.weight(.semibold))
-                .foregroundColor(.secondary)
-                Spacer()
-                layoutControls
-            }
+        VStack(alignment: .center, spacing: 8) {
+            layoutControls
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var previewContainer: some View {
@@ -159,14 +154,14 @@ struct WidgetPreviewCard: View {
     private var infoSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localization.text(type.detailTitleKey))
-                .font(.headline.weight(.semibold))
+                .font(.title3.weight(.semibold))
             Text(localization.text(type.detailDescriptionKey))
-                .font(.subheadline)
+                .font(.body)
                 .foregroundColor(.secondary)
 
             if let linkKey = type.detailLinkTitleKey {
                 Text(localization.text(linkKey))
-                    .font(.footnote.weight(.semibold))
+                    .font(.callout.weight(.semibold))
                     .foregroundColor(.primary)
             }
         }

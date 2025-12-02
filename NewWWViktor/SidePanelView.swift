@@ -14,7 +14,7 @@ struct SidePanelView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(localization.text(.panelChooseWidget))
-                        .font(.caption)
+                        .font(.title3.weight(.semibold))
                         .foregroundColor(.secondary)
                 }
 

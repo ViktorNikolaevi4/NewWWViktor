@@ -4,6 +4,7 @@ import Combine
 
 final class LocationProvider: NSObject, ObservableObject {
     @Published private(set) var cityName: String?
+    @Published private(set) var regionName: String?
     @Published private(set) var currentTimeZone: TimeZone?
 
     private let manager = CLLocationManager()
@@ -46,6 +47,7 @@ final class LocationProvider: NSObject, ObservableObject {
         case .restricted, .denied:
             DispatchQueue.main.async {
                 self.cityName = "Location disabled"
+                self.regionName = nil
                 self.currentTimeZone = .current
             }
         @unknown default:
@@ -73,6 +75,7 @@ extension LocationProvider: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         DispatchQueue.main.async {
             self.cityName = "Location unavailable"
+            self.regionName = nil
             self.currentTimeZone = .current
         }
     }
@@ -91,9 +94,11 @@ extension LocationProvider: CLLocationManagerDelegate {
             let city = bestMatch?.locality ??
                 bestMatch?.subAdministrativeArea ??
                 bestMatch?.administrativeArea
+            let region = bestMatch?.administrativeArea ?? bestMatch?.subAdministrativeArea
 
             DispatchQueue.main.async {
                 self.cityName = city ?? "Current location"
+                self.regionName = region
                 self.currentTimeZone = bestMatch?.timeZone ?? .current
             }
         }

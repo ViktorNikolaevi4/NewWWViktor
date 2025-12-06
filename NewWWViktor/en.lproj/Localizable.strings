@@ -135,3 +135,7 @@
 "clear" = "Clear";
 "global" = "Global";
 "locationTitle" = "Location";
+"locationSearchPlaceholder" = "Search city...";
+"locationSearchHelp" = "Enter a city name to change the zone.";
+"locationCurrentLocation" = "Current Location";
+"locationNoResults" = "No results";

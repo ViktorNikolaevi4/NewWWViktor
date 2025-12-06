@@ -131,6 +131,10 @@ enum LocalizationKey: String {
     case clear
     case global
     case locationTitle
+    case locationSearchPlaceholder
+    case locationSearchHelp
+    case locationCurrentLocation
+    case locationNoResults
     case widgetSizeSmall
     case widgetSizeMedium
     case widgetSizeSmallSubtitle

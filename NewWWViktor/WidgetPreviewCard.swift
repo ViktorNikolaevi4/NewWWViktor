@@ -156,7 +156,7 @@ struct WidgetPreviewCard: View {
             Text(localization.text(type.detailTitleKey))
                 .font(.title3.weight(.semibold))
             Text(localization.text(type.detailDescriptionKey))
-                .font(.body)
+                .font(.body.weight(.medium))
                 .foregroundColor(.secondary)
 
             if let linkKey = type.detailLinkTitleKey {

@@ -758,7 +758,7 @@ private struct WidgetLocationPickerView: View {
 
             ScrollView {
                 VStack(spacing: 10) {
-                    LocationOptionRow(title: "Current Location",
+                    LocationOptionRow(title: localization.text(.locationCurrentLocation),
                                       subtitle: nil,
                                       icon: "location.fill",
                                       isSelected: selection.mode == .current) {
@@ -773,7 +773,7 @@ private struct WidgetLocationPickerView: View {
                             .tint(.white)
                             .padding(.top, 30)
                     } else if searchService.results.isEmpty {
-                        Text("No results")
+                        Text(localization.text(.locationNoResults))
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.white.opacity(0.7))
                             .padding(.top, 20)
@@ -792,16 +792,16 @@ private struct WidgetLocationPickerView: View {
             }
         }
         .padding(18)
-        .frame(width: 320, height: 440)
+        .frame(width: 360, height: 520)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 36, style: .continuous)
                 .fill(.ultraThinMaterial)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    RoundedRectangle(cornerRadius: 36, style: .continuous)
                         .stroke(Color.white.opacity(0.12))
                 )
         )
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
         .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
         .onChange(of: searchText) { _, newValue in
             searchService.update(query: newValue)
@@ -813,7 +813,7 @@ private struct WidgetLocationPickerView: View {
             Button {
                 isPresented = false
             } label: {
-                Label("Back", systemImage: "chevron.left")
+                Label(localization.text(.back), systemImage: "chevron.left")
                     .labelStyle(.titleAndIcon)
             }
             .buttonStyle(.plain)
@@ -837,7 +837,7 @@ private struct WidgetLocationPickerView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.white.opacity(0.6))
 
-            TextField("Search city...", text: $searchText)
+            TextField(localization.text(.locationSearchPlaceholder), text: $searchText)
                 .textFieldStyle(.plain)
                 .foregroundColor(.white)
         }
@@ -848,7 +848,7 @@ private struct WidgetLocationPickerView: View {
     }
 
     private var searchPlaceholder: some View {
-        Text("Enter a city name to change the zone.")
+        Text(localization.text(.locationSearchHelp))
             .font(.system(size: 13, weight: .semibold))
             .foregroundColor(.white.opacity(0.65))
             .multilineTextAlignment(.center)

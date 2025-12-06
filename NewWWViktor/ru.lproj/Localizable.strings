@@ -135,3 +135,7 @@
 "clear" = "Очистить";
 "global" = "Глобально";
 "locationTitle" = "Локация";
+"locationSearchPlaceholder" = "Поиск города...";
+"locationSearchHelp" = "Введите название города, чтобы сменить зону.";
+"locationCurrentLocation" = "Текущее местоположение";
+"locationNoResults" = "Нет результатов";

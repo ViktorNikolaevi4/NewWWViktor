@@ -97,17 +97,26 @@ struct ClockWidgetView: View {
     }
 
     private var locationLabel: String {
+        let city: String?
+        let region: String?
+
         switch widget.location.mode {
         case .current:
-            return manager.locationProvider.cityName ?? fallbackCityName()
+            city = manager.locationProvider.cityName ?? fallbackCityName()
+            region = manager.locationProvider.regionName
         case .custom:
-            if let city = widget.location.city {
-                if let region = widget.location.region, !region.isEmpty {
-                    return "\(city), \(region)"
-                }
-                return city
+            city = widget.location.city?.isEmpty == false ? widget.location.city : nil
+            region = widget.location.region?.isEmpty == false ? widget.location.region : nil
+        }
+
+        // Small: только город. Medium/large: добавляем регион/штат, если есть.
+        if isSmallWidget {
+            return city ?? region ?? localization.text(.widgetSelectedCityFallback)
+        } else {
+            if let city, let region {
+                return "\(city), \(region)"
             }
-            return localization.text(.widgetSelectedCityFallback)
+            return city ?? region ?? localization.text(.widgetSelectedCityFallback)
         }
     }
 

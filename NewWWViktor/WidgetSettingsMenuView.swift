@@ -804,7 +804,7 @@ private struct WidgetLocationPickerView: View {
         .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
         .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
         .onChange(of: searchText) { _, newValue in
-            searchService.update(query: newValue)
+            searchService.update(query: newValue, locale: localization.selectedLanguage.locale)
         }
     }
 

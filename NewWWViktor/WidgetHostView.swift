@@ -358,6 +358,7 @@ struct WidgetHostView: View {
     }
 
     private func showSettings(for instance: WidgetInstance) {
+        manager.hideSidePanel()
         let panel = createSettingsPanel(for: instance)
         preparePanelAppearance(panel)
         settingsPanel = panel

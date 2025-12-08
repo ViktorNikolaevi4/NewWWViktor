@@ -664,6 +664,10 @@ final class WidgetManager: ObservableObject {
         panelController?.showPanel()
     }
 
+    func hideSidePanel() {
+        panelController?.hidePanel()
+    }
+
     func showGeneralSettings() {
         settingsCoordinator?.show(.general)
     }

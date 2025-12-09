@@ -167,11 +167,11 @@ final class WidgetManager: ObservableObject {
     }
 
     private func loadGlobalColors() {
-        let defaults = UserDefaults.standard
-        globalPrimaryColorName = defaults.string(forKey: primaryColorKey)
-        globalSecondaryColorName = defaults.string(forKey: secondaryColorKey)
-        globalPrimaryIntensity = defaults.object(forKey: primaryIntensityKey) as? Double ?? 1.0
-        globalSecondaryIntensity = defaults.object(forKey: secondaryIntensityKey) as? Double ?? 1.0
+        let colors = AppearanceStorage.loadColors()
+        globalPrimaryColorName = colors.primaryName
+        globalSecondaryColorName = colors.secondaryName
+        globalPrimaryIntensity = colors.primaryIntensity
+        globalSecondaryIntensity = colors.secondaryIntensity
         globalColorsVersion &+= 1
         #if os(macOS)
         refreshWidgetWindows()
@@ -179,23 +179,19 @@ final class WidgetManager: ObservableObject {
     }
 
     private func loadGlobalBackground() {
-        let defaults = UserDefaults.standard
-        let storedStyle = defaults.string(forKey: backgroundStyleKey) ?? BackgroundStyle.photo.rawValue
-        globalBackgroundStyle = BackgroundStyle(rawValue: storedStyle) ?? .photo
-        globalBackgroundColorName = defaults.string(forKey: backgroundColorKey)
-        globalBackgroundIntensity = defaults.object(forKey: backgroundIntensityKey) as? Double ?? 1.0
-        globalBackgroundHidden = defaults.object(forKey: backgroundHideKey) as? Bool ?? false
-        globalGradientColor1Name = defaults.string(forKey: gradientColor1Key)
-        globalGradientColor2Name = defaults.string(forKey: gradientColor2Key)
-        globalGradientColor1Opacity = defaults.object(forKey: gradientColor1OpacityKey) as? Double ?? 1.0
-        globalGradientColor2Opacity = defaults.object(forKey: gradientColor2OpacityKey) as? Double ?? 1.0
-        globalGradientColor1Position = defaults.object(forKey: gradientColor1PositionKey) as? Double ?? 0.0
-        globalGradientColor2Position = defaults.object(forKey: gradientColor2PositionKey) as? Double ?? 1.0
-        if let storedType = defaults.string(forKey: gradientTypeKey),
-           let type = BackgroundGradientType(rawValue: storedType) {
-            globalGradientType = type
-        }
-        globalGradientAngle = defaults.object(forKey: gradientAngleKey) as? Double ?? 0.0
+        let background = AppearanceStorage.loadBackground()
+        globalBackgroundStyle = background.style
+        globalBackgroundColorName = background.colorName
+        globalBackgroundIntensity = background.intensity
+        globalBackgroundHidden = background.hideBackground
+        globalGradientColor1Name = background.gradientColor1Name
+        globalGradientColor2Name = background.gradientColor2Name
+        globalGradientColor1Opacity = background.gradientColor1Opacity
+        globalGradientColor2Opacity = background.gradientColor2Opacity
+        globalGradientColor1Position = background.gradientColor1Position
+        globalGradientColor2Position = background.gradientColor2Position
+        globalGradientType = background.gradientType
+        globalGradientAngle = background.gradientAngle
         #if os(macOS)
         loadGlobalBackgroundImage()
         refreshWidgetWindows()
@@ -205,39 +201,12 @@ final class WidgetManager: ObservableObject {
 
     #if os(macOS)
     private func loadGlobalBackgroundImage() {
-        let defaults = UserDefaults.standard
-        if let storedPath = defaults.string(forKey: backgroundImagePathKey) {
-            let url = URL(fileURLWithPath: storedPath)
-            if let data = try? Data(contentsOf: url) {
-                globalBackgroundImage = NSImage(data: data)
-                return
-            }
-        }
-
-        guard let data = defaults.data(forKey: backgroundImageBookmarkKey) else {
+        guard let url = AppearanceStorage.loadBackgroundImageURL() else {
             globalBackgroundImage = nil
             return
         }
-
-        var stale = false
-        if let url = try? URL(resolvingBookmarkData: data,
-                              options: [.withSecurityScope],
-                              relativeTo: nil,
-                              bookmarkDataIsStale: &stale) {
-            let accessed = url.startAccessingSecurityScopedResource()
-            if let imageData = try? Data(contentsOf: url) {
-                globalBackgroundImage = NSImage(data: imageData)
-            } else {
-                globalBackgroundImage = nil
-            }
-            if stale, let refreshed = try? url.bookmarkData(options: .withSecurityScope,
-                                                            includingResourceValuesForKeys: nil,
-                                                            relativeTo: nil) {
-                defaults.set(refreshed, forKey: backgroundImageBookmarkKey)
-            }
-            if accessed {
-                url.stopAccessingSecurityScopedResource()
-            }
+        if let data = try? Data(contentsOf: url) {
+            globalBackgroundImage = NSImage(data: data)
         } else {
             globalBackgroundImage = nil
         }
@@ -258,7 +227,7 @@ final class WidgetManager: ObservableObject {
 
     private func installAppearanceObservers() {
         let colorObserver = NotificationCenter.default.addObserver(
-            forName: Notification.Name("appearance.colors.changed"),
+            forName: AppearanceStorage.colorDidChange,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -266,7 +235,7 @@ final class WidgetManager: ObservableObject {
         }
 
         let backgroundObserver = NotificationCenter.default.addObserver(
-            forName: Notification.Name("appearance.background.changed"),
+            forName: AppearanceStorage.backgroundDidChange,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -486,8 +455,8 @@ final class WidgetManager: ObservableObject {
             saveRestoredBackgroundImage(data: imageData)
         }
 
-        NotificationCenter.default.post(name: Notification.Name("appearance.colors.changed"), object: nil)
-        NotificationCenter.default.post(name: Notification.Name("appearance.background.changed"), object: nil)
+        NotificationCenter.default.post(name: AppearanceStorage.colorDidChange, object: nil)
+        NotificationCenter.default.post(name: AppearanceStorage.backgroundDidChange, object: nil)
         refreshWidgetWindows()
     }
 

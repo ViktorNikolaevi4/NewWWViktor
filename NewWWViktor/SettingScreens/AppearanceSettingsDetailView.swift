@@ -33,27 +33,6 @@ struct AppearanceSettingsDetailView: View {
     @State private var backgroundImageURL: URL?
     @State private var showResetConfirm = false
 
-    private let primaryColorKey = "appearance.primaryColorName"
-    private let primaryIntensityKey = "appearance.primaryIntensity"
-    private let secondaryColorKey = "appearance.secondaryColorName"
-    private let secondaryIntensityKey = "appearance.secondaryIntensity"
-    private let backgroundStyleKey = "appearance.backgroundStyle"
-    private let backgroundColorKey = "appearance.backgroundColorName"
-    private let backgroundIntensityKey = "appearance.backgroundColorIntensity"
-    private let gradientColor1Key = "appearance.gradient.color1"
-    private let gradientColor2Key = "appearance.gradient.color2"
-    private let gradientColor1OpacityKey = "appearance.gradient.color1.opacity"
-    private let gradientColor2OpacityKey = "appearance.gradient.color2.opacity"
-    private let gradientColor1PositionKey = "appearance.gradient.color1.position"
-    private let gradientColor2PositionKey = "appearance.gradient.color2.position"
-    private let gradientTypeKey = "appearance.gradient.type"
-    private let gradientAngleKey = "appearance.gradient.angle"
-    private let backgroundHideKey = "appearance.background.hide"
-    private let appearanceColorDidChange = Notification.Name("appearance.colors.changed")
-    private let appearanceBackgroundDidChange = Notification.Name("appearance.background.changed")
-    private let backgroundImageBookmarkKey = "appearance.backgroundImageBookmark"
-    private let backgroundImagePathKey = "appearance.backgroundImagePath"
-
     var body: some View {
         ZStack {
             VStack(alignment: .leading, spacing: 18) {
@@ -116,7 +95,6 @@ struct AppearanceSettingsDetailView: View {
                 loadColors()
                 loadBackgroundSettings()
                 didAppear = true
-                blurBackground = manager.globalBackgroundHidden
             }
             .onChange(of: backgroundStyle) { _, newValue in
                 guard didAppear else { return }
@@ -128,6 +106,7 @@ struct AppearanceSettingsDetailView: View {
             .onChange(of: blurBackground) { _, newValue in
                 guard didAppear else { return }
                 manager.setGlobalBackgroundHidden(newValue)
+                persistBackgroundSettings()
             }
             .onChange(of: gradientColor1Name) { _, _ in persistGradientSettings() }
             .onChange(of: gradientColor2Name) { _, _ in persistGradientSettings() }
@@ -437,64 +416,64 @@ struct AppearanceSettingsDetailView: View {
     }
 
     private func persistColors() {
-        let defaults = UserDefaults.standard
-        defaults.set(primaryColorName, forKey: primaryColorKey)
-        defaults.set(primaryIntensity, forKey: primaryIntensityKey)
-        defaults.set(secondaryColorName, forKey: secondaryColorKey)
-        defaults.set(secondaryIntensity, forKey: secondaryIntensityKey)
-        NotificationCenter.default.post(name: appearanceColorDidChange, object: nil)
+        AppearanceStorage.saveColors(
+            .init(
+                primaryName: primaryColorName,
+                secondaryName: secondaryColorName,
+                primaryIntensity: primaryIntensity,
+                secondaryIntensity: secondaryIntensity
+            )
+        )
     }
 
     private func loadColors() {
-        let defaults = UserDefaults.standard
-        primaryColorName = defaults.string(forKey: primaryColorKey)
-        secondaryColorName = defaults.string(forKey: secondaryColorKey)
-        primaryIntensity = defaults.object(forKey: primaryIntensityKey) as? Double ?? 1.0
-        secondaryIntensity = defaults.object(forKey: secondaryIntensityKey) as? Double ?? 1.0
+        let colors = AppearanceStorage.loadColors()
+        primaryColorName = colors.primaryName
+        secondaryColorName = colors.secondaryName
+        primaryIntensity = colors.primaryIntensity
+        secondaryIntensity = colors.secondaryIntensity
     }
 
     private func persistBackgroundSettings() {
-        let defaults = UserDefaults.standard
-        defaults.set(backgroundStyle.rawValue, forKey: backgroundStyleKey)
-        defaults.set(backgroundColorName, forKey: backgroundColorKey)
-        defaults.set(backgroundIntensity, forKey: backgroundIntensityKey)
-        NotificationCenter.default.post(name: appearanceBackgroundDidChange, object: nil)
+        AppearanceStorage.saveBackground(currentBackgroundState())
     }
 
     private func loadBackgroundSettings() {
-        let defaults = UserDefaults.standard
-        if let stored = defaults.string(forKey: backgroundStyleKey),
-           let style = BackgroundStyle(rawValue: stored) {
-            backgroundStyle = style
-        }
-        backgroundColorName = defaults.string(forKey: backgroundColorKey)
-        backgroundIntensity = defaults.object(forKey: backgroundIntensityKey) as? Double ?? 1.0
-        blurBackground = manager.globalBackgroundHidden
+        let background = AppearanceStorage.loadBackground()
+        backgroundStyle = background.style
+        backgroundColorName = background.colorName
+        backgroundIntensity = background.intensity
+        blurBackground = background.hideBackground
+        gradientColor1Name = background.gradientColor1Name
+        gradientColor2Name = background.gradientColor2Name
+        gradientColor1Opacity = background.gradientColor1Opacity
+        gradientColor2Opacity = background.gradientColor2Opacity
+        gradientColor1Position = background.gradientColor1Position
+        gradientColor2Position = background.gradientColor2Position
+        gradientType = background.gradientType
+        gradientAngle = background.gradientAngle
         loadBackgroundImage()
-        gradientColor1Name = defaults.string(forKey: gradientColor1Key)
-        gradientColor2Name = defaults.string(forKey: gradientColor2Key)
-        gradientColor1Opacity = defaults.object(forKey: gradientColor1OpacityKey) as? Double ?? 1.0
-        gradientColor2Opacity = defaults.object(forKey: gradientColor2OpacityKey) as? Double ?? 1.0
-        gradientColor1Position = defaults.object(forKey: gradientColor1PositionKey) as? Double ?? 0.0
-        gradientColor2Position = defaults.object(forKey: gradientColor2PositionKey) as? Double ?? 1.0
-        if let storedType = defaults.string(forKey: gradientTypeKey),
-           let loadedType = BackgroundGradientType(rawValue: storedType) {
-            gradientType = loadedType
-        }
-        gradientAngle = defaults.object(forKey: gradientAngleKey) as? Double ?? 0.0
     }
 
     private func persistGradientSettings() {
-        let defaults = UserDefaults.standard
-        defaults.set(gradientColor1Name, forKey: gradientColor1Key)
-        defaults.set(gradientColor2Name, forKey: gradientColor2Key)
-        defaults.set(gradientColor1Opacity, forKey: gradientColor1OpacityKey)
-        defaults.set(gradientColor2Opacity, forKey: gradientColor2OpacityKey)
-        defaults.set(gradientColor1Position, forKey: gradientColor1PositionKey)
-        defaults.set(gradientColor2Position, forKey: gradientColor2PositionKey)
-        defaults.set(gradientType.rawValue, forKey: gradientTypeKey)
-        defaults.set(gradientAngle, forKey: gradientAngleKey)
-        NotificationCenter.default.post(name: appearanceBackgroundDidChange, object: nil)
+        persistBackgroundSettings()
+    }
+
+    private func currentBackgroundState() -> AppearanceStorage.Background {
+        AppearanceStorage.Background(
+            style: backgroundStyle,
+            colorName: backgroundColorName,
+            intensity: backgroundIntensity,
+            gradientColor1Name: gradientColor1Name,
+            gradientColor2Name: gradientColor2Name,
+            gradientColor1Opacity: gradientColor1Opacity,
+            gradientColor2Opacity: gradientColor2Opacity,
+            gradientColor1Position: gradientColor1Position,
+            gradientColor2Position: gradientColor2Position,
+            gradientType: gradientType,
+            gradientAngle: gradientAngle,
+            hideBackground: blurBackground
+        )
     }
 
     private func pickBackgroundPhoto() {
@@ -506,104 +485,25 @@ struct AppearanceSettingsDetailView: View {
         panel.allowedContentTypes = [.image]
         panel.prompt = localization.text(.appearanceBrowseButton)
         if panel.runModal() == .OK, let url = panel.url {
-            let copied = copyToAppSupport(url: url)
-            backgroundImageURL = copied ?? url
-            saveBackgroundImageBookmark(url)
-            if let copied {
-                UserDefaults.standard.set(copied.path, forKey: backgroundImagePathKey)
+            if let storedURL = AppearanceStorage.saveBackgroundImage(url: url) {
+                backgroundImageURL = storedURL
+            } else {
+                backgroundImageURL = url
             }
-            NotificationCenter.default.post(name: appearanceBackgroundDidChange, object: nil)
-        }
-        #endif
-    }
-
-    private func saveBackgroundImageBookmark(_ url: URL) {
-        #if os(macOS)
-        do {
-            let data = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-            UserDefaults.standard.set(data, forKey: backgroundImageBookmarkKey)
-        } catch {
-            print("Failed to save background image bookmark: \(error)")
+            persistBackgroundSettings()
         }
         #endif
     }
 
     private func loadBackgroundImage() {
         #if os(macOS)
-        let defaults = UserDefaults.standard
-        if let storedPath = defaults.string(forKey: backgroundImagePathKey) {
-            let url = URL(fileURLWithPath: storedPath)
-            if FileManager.default.fileExists(atPath: url.path) {
-                backgroundImageURL = url
-                return
-            }
-        }
-        guard let data = defaults.data(forKey: backgroundImageBookmarkKey) else { return }
-        var stale = false
-        if let url = try? URL(resolvingBookmarkData: data,
-                              options: [.withSecurityScope],
-                              relativeTo: nil,
-                              bookmarkDataIsStale: &stale) {
-            backgroundImageURL = url
-            if stale, let refreshed = try? url.bookmarkData(options: .withSecurityScope,
-                                                            includingResourceValuesForKeys: nil,
-                                                            relativeTo: nil) {
-                defaults.set(refreshed, forKey: backgroundImageBookmarkKey)
-            }
-        }
-        #endif
-    }
-
-    private func copyToAppSupport(url: URL) -> URL? {
-        #if os(macOS)
-        do {
-            let fm = FileManager.default
-            let base = try fm.url(for: .applicationSupportDirectory,
-                                  in: .userDomainMask,
-                                  appropriateFor: nil,
-                                  create: true)
-            let dir = base.appendingPathComponent("NewWWViktorBackgrounds", isDirectory: true)
-            if !fm.fileExists(atPath: dir.path) {
-                try fm.createDirectory(at: dir, withIntermediateDirectories: true)
-            }
-            let dest = dir.appendingPathComponent(url.lastPathComponent)
-            if fm.fileExists(atPath: dest.path) {
-                try fm.removeItem(at: dest)
-            }
-            try fm.copyItem(at: url, to: dest)
-            return dest
-        } catch {
-            print("Failed to copy background image: \(error)")
-            return nil
-        }
-        #else
-        return nil
+        backgroundImageURL = AppearanceStorage.loadBackgroundImageURL()
         #endif
     }
 
     private func resetGlobalAppearance() {
-        let defaults = UserDefaults.standard
-        defaults.removeObject(forKey: primaryColorKey)
-        defaults.removeObject(forKey: primaryIntensityKey)
-        defaults.removeObject(forKey: secondaryColorKey)
-        defaults.removeObject(forKey: secondaryIntensityKey)
-        defaults.removeObject(forKey: backgroundStyleKey)
-        defaults.removeObject(forKey: backgroundColorKey)
-        defaults.removeObject(forKey: backgroundIntensityKey)
-        defaults.removeObject(forKey: backgroundImageBookmarkKey)
-        defaults.removeObject(forKey: backgroundImagePathKey)
-        defaults.removeObject(forKey: gradientColor1Key)
-        defaults.removeObject(forKey: gradientColor2Key)
-        defaults.removeObject(forKey: gradientColor1OpacityKey)
-        defaults.removeObject(forKey: gradientColor2OpacityKey)
-        defaults.removeObject(forKey: gradientColor1PositionKey)
-        defaults.removeObject(forKey: gradientColor2PositionKey)
-        defaults.removeObject(forKey: gradientTypeKey)
-        defaults.removeObject(forKey: gradientAngleKey)
-        defaults.removeObject(forKey: backgroundHideKey)
+        AppearanceStorage.reset()
         manager.setGlobalBackgroundHidden(false)
-        NotificationCenter.default.post(name: appearanceColorDidChange, object: nil)
-        NotificationCenter.default.post(name: appearanceBackgroundDidChange, object: nil)
         loadColors()
         loadBackgroundSettings()
     }

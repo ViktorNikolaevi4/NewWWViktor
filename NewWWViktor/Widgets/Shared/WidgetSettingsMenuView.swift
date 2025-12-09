@@ -363,7 +363,7 @@ private struct WidgetBackgroundPickerSheet: View {
                         )
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
-                .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
+                .shadow(color: .clear, radius: 0)
 
             if showPalettePicker {
                 WidgetColorPickerView(title: "Фон",
@@ -802,7 +802,6 @@ private struct WidgetLocationPickerView: View {
                 )
         )
         .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
-        .shadow(color: .black.opacity(0.35), radius: 25, x: 0, y: 20)
         .onChange(of: searchText) { _, newValue in
             searchService.update(query: newValue, locale: localization.selectedLanguage.locale)
         }
@@ -973,7 +972,7 @@ private struct ColorWheelControl: View {
                 Circle()
                     .strokeBorder(Color.white, lineWidth: 2)
                     .background(Circle().fill(color))
-                    .shadow(color: .black.opacity(0.4), radius: 2)
+                    .shadow(color: .clear, radius: 0)
                     .frame(width: 18, height: 18)
                     .position(indicator)
             }

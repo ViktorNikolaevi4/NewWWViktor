@@ -44,42 +44,11 @@ enum WidgetColorRole {
     }
 }
 
-struct WidgetAppearanceSettingsSection: View {
-    @EnvironmentObject private var localization: LocalizationManager
-    @Binding var widget: WidgetInstance
-    let onColorPicker: (WidgetColorRole) -> Void
-    let onBackgroundPicker: () -> Void
-
-    var body: some View {
-        WidgetSettingsGroup(title: localization.text(.widgetColorsSection)) {
-            WidgetSettingsRowButton(title: localization.text(.appearancePrimaryColor)) {
-                onColorPicker(.main)
-            } content: {
-                ColorChip(colorName: widget.mainColorName,
-                          intensity: widget.mainColorIntensity)
-            }
-            WidgetSettingsRowButton(title: localization.text(.appearanceSecondaryColor)) {
-                onColorPicker(.secondary)
-            } content: {
-                ColorChip(colorName: widget.secondaryColorName,
-                          intensity: widget.secondaryColorIntensity)
-            }
-            WidgetSettingsRowButton(title: localization.text(.appearanceBackgroundSection), action: onBackgroundPicker) {
-                let isGlobal = widget.backgroundStyle == nil
-                ValuePill(text: isGlobal ? localization.text(.widgetBackgroundGlobal) : localization.text(.widgetBackgroundCustom),
-                          icon: isGlobal ? "circle.lefthalf.filled" : "paintpalette")
-            }
-            ToggleRow(title: localization.text(.appearanceBlurBackground), isOn: $widget.isBackgroundHidden)
-        }
-    }
-}
-
 struct WidgetBehaviorSettingsSection: View {
     @EnvironmentObject private var localization: LocalizationManager
     @Binding var sizeSelection: WidgetSizeOption
     @Binding var isPinnedTop: Bool
     @Binding var lockPosition: Bool
-    @Binding var snapToGrid: Bool
 
     var body: some View {
         WidgetSettingsGroup(title: localization.text(.widgetBehaviorSection)) {
@@ -88,7 +57,6 @@ struct WidgetBehaviorSettingsSection: View {
             }
             ToggleRow(title: localization.text(.widgetPinToTop), isOn: $isPinnedTop)
             ToggleRow(title: localization.text(.widgetLockPosition), isOn: $lockPosition)
-            ToggleRow(title: localization.text(.widgetSnapToGrid), isOn: $snapToGrid)
         }
     }
 }

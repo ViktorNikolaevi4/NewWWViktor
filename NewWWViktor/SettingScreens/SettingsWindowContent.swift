@@ -123,8 +123,6 @@ private struct GeneralSettingsDetailView: View {
     @StateObject private var launchAtLoginManager = LaunchAtLoginManager()
     @State private var languageSelection: LocalizationManager.Language = .english
     @State private var pinWidgets = true
-    @State private var gridSize = 0
-    @State private var snapToGrid = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -170,29 +168,6 @@ private struct GeneralSettingsDetailView: View {
                     toggleSection(title: localization.text(.pinWidgets),
                                   isOn: $pinWidgets)
 
-                    section(title: localization.text(.gridSize), inline: true) {
-                        Picker("", selection: Binding(
-                            get: { manager.gridMode.rawValue },
-                            set: { newValue in
-                                gridSize = newValue
-                                if let mode = WidgetGridMode(rawValue: newValue) {
-                                    manager.gridMode = mode
-                                }
-                            }
-                        )) {
-                            Text(localization.text(.gridOptionMacOS)).tag(0)
-                            Text(localization.text(.gridOptionWidgetWall)).tag(1)
-                        }
-                        .pickerStyle(.segmented)
-                        .frame(width: 180)
-                    }
-
-                    toggleSection(title: localization.text(.snapToGrid),
-                                  isOn: Binding(
-                                    get: { manager.snapToGrid },
-                                    set: { manager.snapToGrid = $0 }
-                                  ))
-
                     section(title: localization.text(.notificationsTitle), inline: true) {
                         Button(localization.text(.notificationsButton)) {}
                             .buttonStyle(.borderedProminent)
@@ -212,8 +187,6 @@ private struct GeneralSettingsDetailView: View {
         .frame(maxWidth: .infinity)
         .onAppear {
             languageSelection = localization.selectedLanguage
-            gridSize = manager.gridMode.rawValue
-            snapToGrid = manager.snapToGrid
         }
         .onChange(of: localization.selectedLanguage) { newValue in
             guard languageSelection != newValue else { return }

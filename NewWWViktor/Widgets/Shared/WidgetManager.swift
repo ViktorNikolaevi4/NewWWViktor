@@ -7,18 +7,6 @@ private extension NSWindow.Level {
     static let desktopWidgetTop = NSWindow.Level(Int(CGWindowLevelForKey(.desktopIconWindow)) + 200)
 }
 
-enum WidgetGridMode: Int, Codable {
-    case macOS = 0
-    case widgetWall = 1
-
-    var spacing: CGFloat {
-        switch self {
-        case .macOS: return 24 // немного больше воздуха между виджетами
-        case .widgetWall: return 16
-        }
-    }
-}
-
 // Panel that doesn’t activate the app when interacting, so Show Desktop не отменяется от кликов/перетаскиваний.
 private final class WidgetPanel: NSPanel {
     override var canBecomeKey: Bool { true }
@@ -34,16 +22,6 @@ final class WidgetManager: ObservableObject {
         didSet {
             UserDefaults.standard.set(areWidgetsHidden, forKey: hideWidgetsKey)
             updateWidgetVisibility()
-        }
-    }
-    @Published var snapToGrid: Bool {
-        didSet {
-            UserDefaults.standard.set(snapToGrid, forKey: snapToGridKey)
-        }
-    }
-    @Published var gridMode: WidgetGridMode {
-        didSet {
-            UserDefaults.standard.set(gridMode.rawValue, forKey: gridModeKey)
         }
     }
     @Published private(set) var globalGradientColor1Name: String?
@@ -68,11 +46,8 @@ final class WidgetManager: ObservableObject {
 
     private var windows: [UUID: NSWindow] = [:]
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
-    private var mouseUpMonitor: Any?
     private var appearanceObserver: NSObjectProtocol?
     private let hideWidgetsKey = "miniww.widgets.hidden"
-    private let snapToGridKey = "miniww.widgets.snap"
-    private let gridModeKey = "miniww.widgets.gridmode"
     private let safeInset: CGFloat = 4 // чуть ближе к краям, но не вылезая за visibleFrame
     // Global appearance keys (shared with AppearanceSettingsDetailView)
     private let primaryColorKey = "appearance.primaryColorName"
@@ -105,21 +80,12 @@ final class WidgetManager: ObservableObject {
 
     init(localizationManager: LocalizationManager? = nil) {
         let hidden = UserDefaults.standard.object(forKey: hideWidgetsKey) as? Bool ?? false
-        let snapStored = UserDefaults.standard.object(forKey: snapToGridKey) as? Bool ?? true
-        let gridStoredRaw = UserDefaults.standard.object(forKey: gridModeKey) as? Int
-        let gridStored = WidgetGridMode(rawValue: gridStoredRaw ?? 0) ?? .macOS
         _areWidgetsHidden = Published(initialValue: hidden)
-        _snapToGrid = Published(initialValue: snapStored)
-        _gridMode = Published(initialValue: gridStored)
         self.localizationManager = localizationManager
         loadGlobalColors()
         loadGlobalBackground()
         load()
         widgets.forEach { attachWindow(for: $0) }
-
-        mouseUpMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] _ in
-            self?.snapAllWidgetsToGrid()
-        }
 
         installAppearanceObservers()
         startSharedTimer()
@@ -136,9 +102,6 @@ final class WidgetManager: ObservableObject {
 
     deinit {
         windowCloseObservers.values.forEach(NotificationCenter.default.removeObserver)
-        if let monitor = mouseUpMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
         appearanceObservers.forEach(NotificationCenter.default.removeObserver)
         if let cancellable = timerCancellable {
             cancellable.cancel()
@@ -252,55 +215,9 @@ final class WidgetManager: ObservableObject {
         }
     }
 
-    private func snapAllWidgetsToGrid() {
-        guard snapToGrid else { return }
-
-        for (id, window) in windows {
-            guard let idx = widgets.firstIndex(where: { $0.id == id }) else { continue }
-            var instance = widgets[idx]
-            guard !instance.isPositionLocked else { continue }
-
-            let frame = window.frame
-            let snappedOrigin = snap(origin: frame.origin, spacing: gridMode.spacing)
-            let clampedOrigin = clamp(origin: snappedOrigin, size: frame.size, screen: window.screen)
-            if clampedOrigin != frame.origin {
-                let newFrame = NSRect(origin: clampedOrigin, size: frame.size)
-                window.setFrame(newFrame, display: true, animate: false)
-                instance.x = clampedOrigin.x
-                instance.y = clampedOrigin.y
-                widgets[idx] = instance
-            }
-        }
-    }
-
-    private func snap(origin: CGPoint, spacing: CGFloat) -> CGPoint {
-        let snapValue: (CGFloat) -> CGFloat = { value in
-            let remainder = value.truncatingRemainder(dividingBy: spacing)
-            let half = spacing / 2
-            if remainder >= half {
-                return value - remainder + spacing
-            } else {
-                return value - remainder
-            }
-        }
-        return CGPoint(x: snapValue(origin.x), y: snapValue(origin.y))
-    }
-
-    private func clamp(origin: CGPoint, size: CGSize, screen: NSScreen?) -> CGPoint {
-        let visible = screen?.visibleFrame ?? NSScreen.main?.visibleFrame ?? NSRect(origin: .zero, size: size)
-        let insetFrame = visible.insetBy(dx: safeInset, dy: safeInset)
-        let minX = insetFrame.minX
-        let minY = insetFrame.minY
-        let maxX = insetFrame.maxX - size.width
-        let maxY = insetFrame.maxY - size.height
-        let clampedX = max(minX, min(origin.x, maxX))
-        let clampedY = max(minY, min(origin.y, maxY))
-        return CGPoint(x: clampedX, y: clampedY)
-    }
-
-    // Find the first free spot in a grid-like scan, starting from top-left of visible screen.
+    // Find the first free spot in a simple flowing layout, starting from top-left of visible screen.
     private func nextGridOrigin(for instance: WidgetInstance) -> CGPoint {
-        let spacing = gridMode.spacing
+        let spacing: CGFloat = 16
         let size = CGSize(width: instance.width, height: instance.height)
         guard let screenFrame = NSScreen.main?.visibleFrame else {
             return CGPoint(x: safeInset, y: safeInset)
@@ -332,7 +249,9 @@ final class WidgetManager: ObservableObject {
         }
 
         // Fallback: clamp at start.
-        return clamp(origin: CGPoint(x: startX, y: startY), size: size, screen: NSScreen.main)
+        let clampedX = max(startX, min(screenFrame.maxX - size.width - safeInset, startX))
+        let clampedY = max(minY, min(startY, screenFrame.maxY - size.height - safeInset))
+        return CGPoint(x: clampedX, y: clampedY)
     }
 
     func removeAllWidgets() {

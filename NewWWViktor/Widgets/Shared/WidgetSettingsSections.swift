@@ -44,6 +44,35 @@ enum WidgetColorRole {
     }
 }
 
+struct WidgetAppearanceSettingsSection: View {
+    @EnvironmentObject private var localization: LocalizationManager
+    @Binding var widget: WidgetInstance
+    let onColorPicker: (WidgetColorRole) -> Void
+    let onBackgroundPicker: () -> Void
+
+    var body: some View {
+        WidgetSettingsGroup(title: localization.text(.widgetColorsSection)) {
+            WidgetSettingsRowButton(title: localization.text(.appearancePrimaryColor)) {
+                onColorPicker(.main)
+            } content: {
+                ColorChip(colorName: widget.mainColorName,
+                          intensity: widget.mainColorIntensity)
+            }
+            WidgetSettingsRowButton(title: localization.text(.appearanceSecondaryColor)) {
+                onColorPicker(.secondary)
+            } content: {
+                ColorChip(colorName: widget.secondaryColorName,
+                          intensity: widget.secondaryColorIntensity)
+            }
+            WidgetSettingsRowButton(title: localization.text(.appearanceBackgroundSection), action: onBackgroundPicker) {
+                ColorChip(colorName: widget.backgroundColorName ?? localization.text(.global),
+                          intensity: widget.backgroundIntensity)
+            }
+            ToggleRow(title: localization.text(.appearanceBlurBackground), isOn: $widget.isBackgroundHidden)
+        }
+    }
+}
+
 struct WidgetBehaviorSettingsSection: View {
     @EnvironmentObject private var localization: LocalizationManager
     @Binding var sizeSelection: WidgetSizeOption

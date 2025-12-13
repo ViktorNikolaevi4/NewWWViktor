@@ -3,6 +3,8 @@ import Combine
 #if os(macOS)
 import AppKit
 import QuartzCore
+#else
+import UIKit
 #endif
 
 struct WidgetHostView: View {
@@ -82,6 +84,14 @@ struct WidgetHostView: View {
                     .frame(maxWidth: .infinity,
                            maxHeight: .infinity,
                            alignment: .topLeading)
+                    .background(widgetBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                            .strokeBorder(Color.white.opacity(backgroundStrokeOpacity))
+                    )
+                    .clipShape(
+                        RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                    )
             }
             .id(manager.globalColorsVersion) // refresh on any appearance change
             .padding(EdgeInsets(top: 2, leading: 2, bottom: 2, trailing: 2))
@@ -135,6 +145,200 @@ struct WidgetHostView: View {
         } else {
             EmptyView()
         }
+    }
+
+    private var widgetBackground: some View {
+        if resolvedBackgroundHidden {
+            return AnyView(Color.clear)
+        }
+
+        return AnyView(
+            GeometryReader { proxy in
+                ZStack {
+                    if resolvedBackgroundStyle == .photo, let image = resolvedBackgroundImage {
+                        // Apply Image-specific modifiers before erasing to AnyView to avoid type inference to generic View.
+                        #if os(macOS)
+                        AnyView(
+                            Image(nsImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: proxy.size.width, height: proxy.size.height)
+                                .clipped()
+                        )
+                        #else
+                        AnyView(
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: proxy.size.width, height: proxy.size.height)
+                                .clipped()
+                        )
+                        #endif
+                    } else {
+                        AnyView(
+                            RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                                .fill(widgetBackgroundFill)
+                        )
+                    }
+                }
+                .frame(width: proxy.size.width, height: proxy.size.height)
+                .clipped()
+            }
+        )
+    }
+
+    private var widgetBackgroundFill: AnyShapeStyle {
+        switch resolvedBackgroundStyle {
+        case .palette:
+            let color = WidgetPaletteColor.color(
+                named: resolvedBackgroundColorName,
+                intensity: resolvedBackgroundIntensity,
+                fallback: Color.white.opacity(0.14)
+            )
+            return AnyShapeStyle(color.opacity(0.96))
+        case .solid:
+            return AnyShapeStyle(Color.white.opacity(0.12))
+        case .gradient:
+            return gradientBackgroundStyle()
+        case .photo:
+            return AnyShapeStyle(.regularMaterial)
+        }
+    }
+
+    private func gradientBackgroundStyle() -> AnyShapeStyle {
+        let color1 = WidgetPaletteColor.color(
+            named: resolvedGradientColor1Name,
+            intensity: resolvedGradientColor1Opacity,
+            fallback: Color.white.opacity(0.2)
+        )
+        let color2 = WidgetPaletteColor.color(
+            named: resolvedGradientColor2Name,
+            intensity: resolvedGradientColor2Opacity,
+            fallback: Color.black.opacity(0.35)
+        )
+
+        let pos1 = max(0, min(1, resolvedGradientColor1Position))
+        let pos2 = max(0, min(1, resolvedGradientColor2Position))
+        let orderedStops = [
+            (color: color1, location: pos1),
+            (color: color2, location: pos2)
+        ]
+        .sorted { $0.location < $1.location }
+
+        let stops = Gradient(stops: orderedStops.map {
+            .init(color: $0.color, location: CGFloat($0.location))
+        })
+
+        switch resolvedGradientType {
+        case .linear:
+            let points = anglePoints(degrees: resolvedGradientAngle)
+            return AnyShapeStyle(LinearGradient(gradient: stops,
+                                                startPoint: points.start,
+                                                endPoint: points.end))
+        case .radial:
+            return AnyShapeStyle(
+                RadialGradient(gradient: stops,
+                               center: .center,
+                               startRadius: 0,
+                               endRadius: 400)
+            )
+        case .angular:
+            return AnyShapeStyle(AngularGradient(gradient: stops, center: .center))
+        }
+    }
+
+    private func anglePoints(degrees: Double) -> (start: UnitPoint, end: UnitPoint) {
+        let radians = degrees * .pi / 180
+        let dx = cos(radians)
+        let dy = sin(radians)
+        // map vector to unit space
+        let start = UnitPoint(x: 0.5 - dx / 2, y: 0.5 - dy / 2)
+        let end = UnitPoint(x: 0.5 + dx / 2, y: 0.5 + dy / 2)
+        return (start, end)
+    }
+
+    private var backgroundStrokeOpacity: Double {
+        resolvedBackgroundHidden ? 0 : 0.10
+    }
+
+    private var resolvedBackgroundHidden: Bool {
+        manager.widgets.first(where: { $0.id == instanceID })?.isBackgroundHidden ?? manager.globalBackgroundHidden
+    }
+
+    // MARK: - Resolved appearance (widget override > global)
+
+    private var resolvedBackgroundStyle: BackgroundStyle {
+        if let widget = manager.widgets.first(where: { $0.id == instanceID }),
+           let style = widget.backgroundStyle {
+            return adjustedBackgroundStyle(style, colorName: widget.backgroundColorName ?? manager.globalBackgroundColorName)
+        }
+        return adjustedBackgroundStyle(manager.globalBackgroundStyle, colorName: manager.globalBackgroundColorName)
+    }
+
+    private var resolvedBackgroundColorName: String? {
+        if let widget = manager.widgets.first(where: { $0.id == instanceID }),
+           let style = widget.backgroundStyle,
+           style == .palette {
+            return widget.backgroundColorName ?? manager.globalBackgroundColorName
+        }
+        return manager.globalBackgroundColorName
+    }
+
+    private var resolvedBackgroundIntensity: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.backgroundIntensity ?? manager.globalBackgroundIntensity
+    }
+
+    #if os(macOS)
+    private var resolvedBackgroundImage: NSImage? {
+        if let path = manager.widgets.first(where: { $0.id == instanceID })?.backgroundImagePath,
+           let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
+            return NSImage(data: data)
+        }
+        return manager.globalBackgroundImage
+    }
+    #else
+    private var resolvedBackgroundImage: UIImage? {
+        nil
+    }
+    #endif
+
+    private var resolvedGradientColor1Name: String? {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor1Name ?? manager.globalGradientColor1Name
+    }
+
+    private var resolvedGradientColor2Name: String? {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor2Name ?? manager.globalGradientColor2Name
+    }
+
+    private var resolvedGradientColor1Opacity: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor1Opacity ?? manager.globalGradientColor1Opacity
+    }
+
+    private var resolvedGradientColor2Opacity: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor2Opacity ?? manager.globalGradientColor2Opacity
+    }
+
+    private var resolvedGradientColor1Position: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor1Position ?? manager.globalGradientColor1Position
+    }
+
+    private var resolvedGradientColor2Position: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientColor2Position ?? manager.globalGradientColor2Position
+    }
+
+    private var resolvedGradientType: BackgroundGradientType {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientType ?? manager.globalGradientType
+    }
+
+    private var resolvedGradientAngle: Double {
+        manager.widgets.first(where: { $0.id == instanceID })?.gradientAngle ?? manager.globalGradientAngle
+    }
+
+    private func adjustedBackgroundStyle(_ style: BackgroundStyle, colorName: String?) -> BackgroundStyle {
+        if style == .palette, (colorName?.isEmpty ?? true) {
+            return .photo // keep the same dark base until a palette color is chosen
+        }
+        return style
     }
 
     @ViewBuilder

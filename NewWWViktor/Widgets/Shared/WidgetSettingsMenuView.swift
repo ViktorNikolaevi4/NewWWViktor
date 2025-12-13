@@ -14,6 +14,8 @@ struct WidgetSettingsMenuView: View {
 
     @State private var workingWidget: WidgetInstance
     @State private var showLocationPicker = false
+    @State private var activeColorRole: WidgetColorRole?
+    @State private var showBackgroundPicker = false
     @State private var showWeather = false
     @State private var isPinnedTop = false
     @State private var lockPosition = false
@@ -30,7 +32,8 @@ struct WidgetSettingsMenuView: View {
     }
 
     var body: some View {
-        let isOverlayPresented = showLocationPicker
+        let isColorPickerPresented = activeColorRole != nil
+        let isOverlayPresented = showLocationPicker || isColorPickerPresented || showBackgroundPicker
 
         return ZStack {
             panelContent
@@ -46,8 +49,50 @@ struct WidgetSettingsMenuView: View {
                 }
                 .transition(.move(edge: .trailing).combined(with: .opacity))
             }
+
+            if let colorRole = activeColorRole {
+                WidgetColorPickerView(
+                    title: colorRole.title(using: localization),
+                    isPresented: Binding(
+                        get: { activeColorRole != nil },
+                        set: { shouldShow in
+                            if !shouldShow { activeColorRole = nil }
+                        }
+                    ),
+                    selection: colorSelectionBinding(for: colorRole),
+                    intensity: colorIntensityBinding(for: colorRole)
+                ) {
+                    onUpdate(workingWidget)
+                }
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
+
+            if showBackgroundPicker {
+                WidgetColorPickerView(
+                    title: localization.text(.appearanceBackgroundSection),
+                    isPresented: $showBackgroundPicker,
+                    selection: Binding(
+                        get: { workingWidget.backgroundColorName },
+                        set: { newValue in
+                            workingWidget.backgroundColorName = newValue
+                            workingWidget.backgroundStyle = .palette
+                            onUpdate(workingWidget)
+                        }
+                    ),
+                    intensity: Binding(
+                        get: { workingWidget.backgroundIntensity },
+                        set: { workingWidget.backgroundIntensity = $0; onUpdate(workingWidget) }
+                    )
+                ) {
+                    workingWidget.backgroundStyle = .palette
+                    onUpdate(workingWidget)
+                }
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showLocationPicker)
+        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: isColorPickerPresented)
+        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showBackgroundPicker)
         .frame(width: 360, height: 520)
         .onChange(of: widget) { _, newValue in
             workingWidget = newValue
@@ -82,6 +127,9 @@ struct WidgetSettingsMenuView: View {
             WidgetGeneralSettingsSection(widget: $workingWidget,
                                          isLocationPickerPresented: $showLocationPicker,
                                          showWeather: $showWeather)
+                    WidgetAppearanceSettingsSection(widget: $workingWidget,
+                                                    onColorPicker: { activeColorRole = $0 },
+                                                    onBackgroundPicker: { showBackgroundPicker = true })
                     WidgetBehaviorSettingsSection(sizeSelection: sizeSelectionBinding,
                                                   isPinnedTop: pinnedBinding,
                                                   lockPosition: lockedBinding)
@@ -139,6 +187,24 @@ struct WidgetSettingsMenuView: View {
                 onUpdate(workingWidget)
             }
         )
+    }
+
+    private func colorSelectionBinding(for role: WidgetColorRole) -> Binding<String?> {
+        switch role {
+        case .main:
+            return $workingWidget.mainColorName
+        case .secondary:
+            return $workingWidget.secondaryColorName
+        }
+    }
+
+    private func colorIntensityBinding(for role: WidgetColorRole) -> Binding<Double> {
+        switch role {
+        case .main:
+            return $workingWidget.mainColorIntensity
+        case .secondary:
+            return $workingWidget.secondaryColorIntensity
+        }
     }
 
     private func openSidePanel() {

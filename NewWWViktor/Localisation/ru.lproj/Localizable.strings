@@ -63,6 +63,10 @@
 "widgetCategoryLabel" = "Виджет";
 "widgetClockDetailTitle" = "Часы";
 "widgetClockDetailDescription" = "Один виджет — и вы знаете, кто уже спит, кто работает, а кто просто опаздывает.";
+"widgetWeatherDetailTitle" = "Погода";
+"widgetWeatherDetailDescription" = "Следите за погодой и температурой за день прямо на рабочем столе.";
+"widgetWeatherPlaceholderCondition" = "Переменная облачность";
+"widgetWeatherPlaceholderHiLow" = "Днём 26° · Ночью 18°";
 "appearanceSubtitle" = "Настройте внешний вид MyWidgets.";
 "appearanceColorsSection" = "Цвета";
 "appearancePrimaryColor" = "Основной цвет";

@@ -63,6 +63,10 @@ enum LocalizationKey: String {
     case widgetCategoryLabel
     case widgetClockDetailTitle
     case widgetClockDetailDescription
+    case widgetWeatherDetailTitle
+    case widgetWeatherDetailDescription
+    case widgetWeatherPlaceholderCondition
+    case widgetWeatherPlaceholderHiLow
     case appearanceSubtitle
     case appearanceColorsSection
     case appearancePrimaryColor

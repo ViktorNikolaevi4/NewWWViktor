@@ -195,6 +195,8 @@ struct WidgetPreviewCard: View {
         switch type {
         case .clock:
             ClockWidgetView(widget: previewWidget)
+        case .weather:
+            WeatherWidgetView(widget: previewWidget)
         }
     }
 

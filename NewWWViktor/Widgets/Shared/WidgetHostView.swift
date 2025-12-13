@@ -151,6 +151,8 @@ struct WidgetHostView: View {
         switch instance.type {
         case .clock:
             ClockWidgetView(widget: instance)
+        case .weather:
+            WeatherWidgetView(widget: instance)
         }
     }
 

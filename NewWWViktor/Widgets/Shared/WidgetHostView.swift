@@ -18,6 +18,7 @@ struct WidgetHostView: View {
     @State private var settingsPanelWidgetID: UUID?
     @State private var settingsPanelMonitors: [Any] = []
     @StateObject private var settingsPanelCoordinator = WidgetSettingsPanelCoordinator()
+    @State private var windowMoveObserver: NSObjectProtocol?
 #endif
 
     var body: some View {
@@ -116,6 +117,7 @@ struct WidgetHostView: View {
             )
             .onDisappear {
                 closeSettingsPanel()
+                removeWindowMoveObserver()
             }
             .onChange(of: instance.width) { _, _ in
                 repositionPanelIfNeeded(for: instance)
@@ -139,6 +141,11 @@ struct WidgetHostView: View {
                 // Пересчёт через кадр — после того, как окно виджета применило новый frame (setFrame может быть анимирован).
                 DispatchQueue.main.async {
                     repositionPanelIfNeeded(for: updated)
+                }
+            }
+            .onAppear {
+                if let window = manager.window(for: instance.id) {
+                    installWindowMoveObserver(for: window, widgetID: instance.id)
                 }
             }
 #endif
@@ -607,6 +614,28 @@ struct WidgetHostView: View {
     private func removePanelMonitors() {
         settingsPanelMonitors.forEach { NSEvent.removeMonitor($0) }
         settingsPanelMonitors.removeAll()
+    }
+
+    private func installWindowMoveObserver(for window: NSWindow, widgetID: UUID) {
+        removeWindowMoveObserver()
+        let observer = NotificationCenter.default.addObserver(
+            forName: NSWindow.didMoveNotification,
+            object: window,
+            queue: .main
+        ) { _ in
+            // Если открыты настройки этого виджета и его перетаскивают, закрываем панель.
+            if settingsPanelWidgetID == widgetID, settingsPanel != nil {
+                closeSettingsPanel(animated: false)
+            }
+        }
+        windowMoveObserver = observer
+    }
+
+    private func removeWindowMoveObserver() {
+        if let observer = windowMoveObserver {
+            NotificationCenter.default.removeObserver(observer)
+            windowMoveObserver = nil
+        }
     }
 #endif
 }

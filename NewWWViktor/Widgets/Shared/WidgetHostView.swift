@@ -268,18 +268,26 @@ struct WidgetHostView: View {
     // MARK: - Resolved appearance (widget override > global)
 
     private var resolvedBackgroundStyle: BackgroundStyle {
-        if let widget = manager.widgets.first(where: { $0.id == instanceID }),
-           let style = widget.backgroundStyle {
-            return adjustedBackgroundStyle(style, colorName: widget.backgroundColorName ?? manager.globalBackgroundColorName)
+        if let widget = manager.widgets.first(where: { $0.id == instanceID }) {
+            if let colorName = widget.backgroundColorName, !colorName.isEmpty {
+                return .palette
+            }
+            if let style = widget.backgroundStyle {
+                return adjustedBackgroundStyle(style, colorName: widget.backgroundColorName ?? manager.globalBackgroundColorName)
+            }
         }
         return adjustedBackgroundStyle(manager.globalBackgroundStyle, colorName: manager.globalBackgroundColorName)
     }
 
     private var resolvedBackgroundColorName: String? {
-        if let widget = manager.widgets.first(where: { $0.id == instanceID }),
-           let style = widget.backgroundStyle,
-           style == .palette {
-            return widget.backgroundColorName ?? manager.globalBackgroundColorName
+        if let widget = manager.widgets.first(where: { $0.id == instanceID }) {
+            if let name = widget.backgroundColorName, !name.isEmpty {
+                return name
+            }
+            if let style = widget.backgroundStyle,
+               style == .palette {
+                return widget.backgroundColorName ?? manager.globalBackgroundColorName
+            }
         }
         return manager.globalBackgroundColorName
     }

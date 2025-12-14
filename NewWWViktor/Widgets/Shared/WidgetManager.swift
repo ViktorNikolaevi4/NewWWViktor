@@ -1,6 +1,32 @@
 import AppKit
 import SwiftUI
 import Combine
+import CoreLocation
+import WeatherKit
+
+struct WeatherSnapshot: Equatable {
+    let city: String
+    let temperatureCelsius: Int?
+    let conditionDescription: String?
+    let highCelsius: Int?
+    let lowCelsius: Int?
+    let symbolName: String?
+    let lastUpdated: Date?
+
+    static let placeholder = WeatherSnapshot(city: "Сочи",
+                                             temperatureCelsius: nil,
+                                             conditionDescription: nil,
+                                             highCelsius: nil,
+                                             lowCelsius: nil,
+                                             symbolName: "cloud.sun.fill",
+                                             lastUpdated: nil)
+}
+
+private extension Measurement where UnitType == UnitTemperature {
+    var roundedCelsiusInt: Int {
+        Int(converted(to: .celsius).value.rounded())
+    }
+}
 
 private extension NSWindow.Level {
     // Максимум в пределах desktop-слоя: выше иконок/других desktop-виджетов, но всё ещё ниже обычных окон приложений.
@@ -43,6 +69,7 @@ final class WidgetManager: ObservableObject {
     weak var settingsCoordinator: SettingsCoordinator?
     weak var localizationManager: LocalizationManager?
     @Published private(set) var globalBackgroundHidden: Bool = false
+    @Published private(set) var weatherSnapshot: WeatherSnapshot = .placeholder
 
     private var windows: [UUID: NSWindow] = [:]
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
@@ -77,6 +104,8 @@ final class WidgetManager: ObservableObject {
     @Published var locationProvider: LocationProvider = LocationProvider()
     private var appearanceObservers: [NSObjectProtocol] = []
     private var timerCancellable: AnyCancellable?
+    private var weatherTimerCancellable: AnyCancellable?
+    private let defaultWeatherLocation = CLLocation(latitude: 43.5855, longitude: 39.7231)
 
     init(localizationManager: LocalizationManager? = nil) {
         let hidden = UserDefaults.standard.object(forKey: hideWidgetsKey) as? Bool ?? false
@@ -89,6 +118,7 @@ final class WidgetManager: ObservableObject {
 
         installAppearanceObservers()
         startSharedTimer()
+        startWeatherUpdates()
 
         let resetObserver = NotificationCenter.default.addObserver(
             forName: Notification.Name("widgets.reset.appearance"),
@@ -106,6 +136,7 @@ final class WidgetManager: ObservableObject {
         if let cancellable = timerCancellable {
             cancellable.cancel()
         }
+        weatherTimerCancellable?.cancel()
     }
 
     func addWidget(type: WidgetType, size: WidgetSizeOption = .medium) {
@@ -212,6 +243,49 @@ final class WidgetManager: ObservableObject {
         let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
         timerCancellable = timer.sink { [weak self] output in
             self?.sharedDate = output
+        }
+    }
+
+    private func startWeatherUpdates() {
+        refreshWeather()
+        weatherTimerCancellable = Timer.publish(every: 3600, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.refreshWeather()
+            }
+    }
+
+    func refreshWeather() {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            await fetchWeather()
+        }
+    }
+
+    @MainActor
+    private func fetchWeather() async {
+        do {
+            let report = try await WeatherService.shared.weather(for: defaultWeatherLocation)
+            weatherSnapshot = WeatherSnapshot(
+                city: "Сочи",
+                temperatureCelsius: report.currentWeather.temperature.roundedCelsiusInt,
+                conditionDescription: report.currentWeather.condition.description,
+                highCelsius: report.dailyForecast.forecast.first?.highTemperature.roundedCelsiusInt,
+                lowCelsius: report.dailyForecast.forecast.first?.lowTemperature.roundedCelsiusInt,
+                symbolName: report.currentWeather.symbolName,
+                lastUpdated: Date()
+            )
+        } catch {
+            let stale = weatherSnapshot
+            weatherSnapshot = WeatherSnapshot(
+                city: stale.city,
+                temperatureCelsius: stale.temperatureCelsius,
+                conditionDescription: stale.conditionDescription,
+                highCelsius: stale.highCelsius,
+                lowCelsius: stale.lowCelsius,
+                symbolName: stale.symbolName ?? "cloud.fill",
+                lastUpdated: Date()
+            )
         }
     }
 

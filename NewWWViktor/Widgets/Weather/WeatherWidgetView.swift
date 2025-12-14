@@ -10,24 +10,63 @@ struct WeatherWidgetView: View {
         VStack(alignment: .leading, spacing: isSmallWidget ? 10 : 14) {
             header
 
-            HStack(alignment: .firstTextBaseline, spacing: isSmallWidget ? 6 : 8) {
-                Text("23°")
+            HStack(alignment: .firstTextBaseline, spacing: isSmallWidget ? 10 : 12) {
+                Text(temperatureText)
                     .font(temperatureFont)
                     .fontWeight(.semibold)
                     .foregroundStyle(primaryColor)
                     .contentTransition(.numericText())
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(conditionText)
+                        .font(conditionFont)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+
+                    Text(highLowText)
+                        .font(highLowFont)
+                        .foregroundStyle(secondaryColor)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(contentPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .id(manager.globalColorsVersion) // refresh when palette changes
+        .task {
+            manager.refreshWeather()
+        }
     }
 }
 
 private extension WeatherWidgetView {
     var isSmallWidget: Bool {
         widget.sizeOption == .small
+    }
+
+    var weather: WeatherSnapshot {
+        manager.weatherSnapshot
+    }
+
+    var temperatureText: String {
+        if let temperature = weather.temperatureCelsius {
+            return "\(temperature)°"
+        }
+        return "--°"
+    }
+
+    var conditionText: String {
+        weather.conditionDescription ?? localization.text(.widgetWeatherPlaceholderCondition)
+    }
+
+    var highLowText: String {
+        if let high = weather.highCelsius, let low = weather.lowCelsius {
+            return "H: \(high)° · L: \(low)°"
+        }
+        return localization.text(.widgetWeatherPlaceholderHiLow)
     }
 
     var contentPadding: EdgeInsets {
@@ -41,6 +80,18 @@ private extension WeatherWidgetView {
         isSmallWidget
         ? .system(size: 23, weight: .medium, design: .rounded)
         : .system(size: 28, weight: .medium, design: .rounded)
+    }
+
+    var conditionFont: Font {
+        isSmallWidget
+        ? .system(size: 16, weight: .semibold, design: .rounded)
+        : .system(size: 18, weight: .semibold, design: .rounded)
+    }
+
+    var highLowFont: Font {
+        isSmallWidget
+        ? .system(size: 13, weight: .medium)
+        : .system(size: 14, weight: .medium)
     }
 
     var primaryColor: Color {
@@ -61,6 +112,10 @@ private extension WeatherWidgetView {
                                         fallback: .secondary)
     }
 
+    var weatherSymbolName: String {
+        weather.symbolName ?? "cloud.sun.fill"
+    }
+
     var header: some View {
         HStack(spacing: 10) {
             ZStack {
@@ -71,7 +126,7 @@ private extension WeatherWidgetView {
                     .frame(width: isSmallWidget ? 34 : 40, height: isSmallWidget ? 34 : 40)
                     .shadow(color: primaryColor.opacity(0.28), radius: 10, x: 0, y: 8)
 
-                Image(systemName: "cloud.sun.fill")
+                Image(systemName: weatherSymbolName)
                     .font(.system(size: isSmallWidget ? 16 : 18, weight: .semibold))
                     .foregroundStyle(.black.opacity(0.85))
             }

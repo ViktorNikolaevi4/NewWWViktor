@@ -7,31 +7,36 @@ struct WeatherWidgetView: View {
     @EnvironmentObject private var localization: LocalizationManager
 
     var body: some View {
-        VStack(alignment: .leading, spacing: isSmallWidget ? 10 : 14) {
+        VStack(alignment: .leading, spacing: 2) {
             header
 
-            HStack(alignment: .firstTextBaseline, spacing: isSmallWidget ? 10 : 12) {
-                Text(temperatureText)
-                    .font(temperatureFont)
-                    .fontWeight(.semibold)
+            Text(temperatureText)
+                .font(temperatureFont)
+                .fontWeight(.semibold)
+                .foregroundStyle(primaryColor)
+                .contentTransition(.numericText())
+
+       //     Spacer(minLength: 0)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Image(systemName: weatherSymbolName)
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(primaryColor)
-                    .contentTransition(.numericText())
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(conditionText)
-                        .font(conditionFont)
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-
-                    Text(highLowText)
-                        .font(highLowFont)
-                        .foregroundStyle(secondaryColor)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text(conditionText)
+                    .font(conditionFont)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+
+                Text(highLowText)
+                    .font(highLowFont)
+                    .foregroundStyle(secondaryColor)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
         }
         .padding(contentPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -70,28 +75,22 @@ private extension WeatherWidgetView {
     }
 
     var contentPadding: EdgeInsets {
-        EdgeInsets(top: isSmallWidget ? 4 : 8,
-                   leading: isSmallWidget ? 6 : 10,
+        EdgeInsets(top: 8,
+                   leading: 10,
                    bottom: 8,
                    trailing: 8)
     }
 
     var temperatureFont: Font {
-        isSmallWidget
-        ? .system(size: 23, weight: .medium, design: .rounded)
-        : .system(size: 28, weight: .medium, design: .rounded)
+        .system(size: 26, weight: .medium, design: .rounded)
     }
 
     var conditionFont: Font {
-        isSmallWidget
-        ? .system(size: 16, weight: .semibold, design: .rounded)
-        : .system(size: 18, weight: .semibold, design: .rounded)
+        .system(size: 15, weight: .semibold, design: .rounded)
     }
 
     var highLowFont: Font {
-        isSmallWidget
-        ? .system(size: 13, weight: .medium)
-        : .system(size: 14, weight: .medium)
+        .system(size: 12, weight: .medium)
     }
 
     var primaryColor: Color {
@@ -117,30 +116,25 @@ private extension WeatherWidgetView {
     }
 
     var header: some View {
-        HStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(LinearGradient(colors: [primaryColor, primaryColor.opacity(0.65)],
-                                         startPoint: .topLeading,
-                                         endPoint: .bottomTrailing))
-                    .frame(width: isSmallWidget ? 34 : 40, height: isSmallWidget ? 34 : 40)
-                    .shadow(color: primaryColor.opacity(0.28), radius: 10, x: 0, y: 8)
+        Text(cityTitle)
+            .font(cityFont)
+            .foregroundStyle(.primary)
+            .lineLimit(1)
+            .truncationMode(.tail)
+    }
 
-                Image(systemName: weatherSymbolName)
-                    .font(.system(size: isSmallWidget ? 16 : 18, weight: .semibold))
-                    .foregroundStyle(.black.opacity(0.85))
-            }
+    var cityFont: Font {
+        .system(size: 18, weight: .semibold, design: .rounded)
+    }
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(localization.text(.widgetWeatherDetailTitle))
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                Text(localization.text(.widgetCategoryLabel))
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(secondaryColor.opacity(0.9))
-            }
-
-            Spacer(minLength: 0)
+    var cityTitle: String {
+        let weatherCity = manager.weatherSnapshot.city
+        if !weatherCity.isEmpty {
+            return weatherCity
         }
+        if let currentCity = manager.locationProvider.cityName, !currentCity.isEmpty {
+            return currentCity
+        }
+        return localization.text(.widgetWeatherDetailTitle)
     }
 }

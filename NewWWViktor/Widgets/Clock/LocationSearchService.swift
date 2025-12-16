@@ -33,20 +33,25 @@ final class LocationSearchService: NSObject, ObservableObject {
             return
         }
 
-        // Avoid re-requesting if the query text didn't meaningfully change (e.g., trailing spaces).
-        if normalized == lastQueryFragment {
-            return
-        }
         lastQueryFragment = normalized
 
         isSearching = true
         let workItem = DispatchWorkItem { [weak self] in
             guard let self else { return }
-            self.searchToken = UUID()
-            self.completer.queryFragment = normalized
+            let token = UUID()
+            self.searchToken = token
+            self.performDirectSearch(query: normalized, token: token)
         }
         pendingWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: workItem)
+    }
+
+    func reset() {
+        pendingWorkItem?.cancel()
+        pendingWorkItem = nil
+        lastQueryFragment = nil
+        searchToken = UUID()
+        resetResults()
     }
 
     private func resetResults() {
@@ -59,10 +64,7 @@ final class LocationSearchService: NSObject, ObservableObject {
     private func buildResults(from completions: [MKLocalSearchCompletion]) {
         let token = searchToken
         let limited = Array(completions.prefix(8))
-        guard !limited.isEmpty else {
-            resetResults()
-            return
-        }
+        guard !limited.isEmpty else { return }
 
         let group = DispatchGroup()
         var collected: [LocationSearchResult] = []
@@ -109,8 +111,60 @@ final class LocationSearchService: NSObject, ObservableObject {
         group.notify(queue: .main) { [weak self] in
             guard let self else { return }
             guard self.searchToken == token else { return }
-            self.results = self.deduplicated(collected)
-            self.isSearching = false
+            let merged = self.deduplicated(self.results + collected)
+            self.results = merged
+        }
+    }
+
+    private func performDirectSearch(query: String, token: UUID) {
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = query
+        request.resultTypes = .address
+        let search = MKLocalSearch(request: request)
+
+        search.start { [weak self] response, _ in
+            guard let self else { return }
+            guard self.searchToken == token else { return }
+
+            let items = response?.mapItems.prefix(8) ?? []
+            let locale = currentLocale
+            let group = DispatchGroup()
+            var collected: [LocationSearchResult] = []
+
+            for item in items {
+                group.enter()
+                let location = item.placemark.location
+                let geocoder = CLGeocoder()
+                if let location {
+                    geocoder.reverseGeocodeLocation(location, preferredLocale: locale) { placemarks, _ in
+                        self.collectQueue.async {
+                            if self.searchToken == token {
+                                if let placemark = placemarks?.first,
+                                   let result = LocationSearchResult(placemark: placemark) {
+                                    collected.append(result)
+                                } else if let result = LocationSearchResult(placemark: item.placemark) {
+                                    collected.append(result)
+                                }
+                            }
+                            group.leave()
+                        }
+                    }
+                } else {
+                    self.collectQueue.async {
+                        if let result = LocationSearchResult(placemark: item.placemark) {
+                            collected.append(result)
+                        }
+                        group.leave()
+                    }
+                }
+            }
+
+            group.notify(queue: .main) { [weak self] in
+                guard let self else { return }
+                guard self.searchToken == token else { return }
+                self.results = self.deduplicated(collected)
+                self.isSearching = false
+            }
         }
     }
 

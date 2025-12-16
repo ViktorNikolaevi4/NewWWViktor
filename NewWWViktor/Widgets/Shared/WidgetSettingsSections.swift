@@ -7,6 +7,7 @@ struct WidgetGeneralSettingsSection: View {
     @Binding var showWeather: Bool
 
     var body: some View {
+        let isWeather = widget.type == .weather
         WidgetSettingsGroup(title: localization.text(.locationTitle)) {
             WidgetSettingsRowButton(title: localization.text(.widgetLocationSection)) {
                 isLocationPickerPresented = true
@@ -15,16 +16,18 @@ struct WidgetGeneralSettingsSection: View {
                           icon: widget.location.iconName)
             }
 
-            WidgetSettingsRow(title: localization.text(.widgetNameLabel)) {
-                ValuePill(text: widget.location.city ?? localization.text(.widgetPlaceholderDash))
-            }
+            if !isWeather {
+                WidgetSettingsRow(title: localization.text(.widgetNameLabel)) {
+                    ValuePill(text: widget.location.city ?? localization.text(.widgetPlaceholderDash))
+                }
 
-            ToggleRow(title: localization.text(.widgetShowDate), isOn: $widget.showsDate)
-            ToggleRow(title: localization.text(.widgetShowLocation), isOn: $widget.showsLocation)
-            ToggleRow(title: localization.text(.widgetShowWeather), isOn: $showWeather)
+                ToggleRow(title: localization.text(.widgetShowDate), isOn: $widget.showsDate)
+                ToggleRow(title: localization.text(.widgetShowLocation), isOn: $widget.showsLocation)
+                ToggleRow(title: localization.text(.widgetShowWeather), isOn: $showWeather)
 
-            WidgetSettingsRow(title: localization.text(.widgetTimeLabel)) {
-                SegmentedPill(options: ["12h", "24h"], selected: $widget.prefersTwelveHour)
+                WidgetSettingsRow(title: localization.text(.widgetTimeLabel)) {
+                    SegmentedPill(options: ["12h", "24h"], selected: $widget.prefersTwelveHour)
+                }
             }
         }
     }

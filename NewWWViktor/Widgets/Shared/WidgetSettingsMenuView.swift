@@ -284,6 +284,13 @@ private struct WidgetLocationPickerView: View {
         .onChange(of: searchText) { _, newValue in
             searchService.update(query: newValue, locale: localization.selectedLanguage.locale)
         }
+        .onAppear {
+            searchText = ""
+            searchService.reset()
+        }
+        .onDisappear {
+            searchService.reset()
+        }
     }
 
     private var pickerHeader: some View {

@@ -42,7 +42,7 @@ struct WeatherWidgetView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .id(manager.globalColorsVersion) // refresh when palette changes
         .task {
-            manager.refreshWeather()
+            manager.refreshWeather(for: widget)
         }
     }
 }
@@ -53,7 +53,7 @@ private extension WeatherWidgetView {
     }
 
     var weather: WeatherSnapshot {
-        manager.weatherSnapshot
+        manager.weatherSnapshot(for: widget)
     }
 
     var temperatureText: String {
@@ -128,7 +128,7 @@ private extension WeatherWidgetView {
     }
 
     var cityTitle: String {
-        let weatherCity = manager.weatherSnapshot.city
+        let weatherCity = manager.weatherSnapshot(for: widget).city
         if !weatherCity.isEmpty {
             return weatherCity
         }

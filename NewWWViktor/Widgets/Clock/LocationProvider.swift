@@ -6,6 +6,7 @@ final class LocationProvider: NSObject, ObservableObject {
     @Published private(set) var cityName: String?
     @Published private(set) var regionName: String?
     @Published private(set) var currentTimeZone: TimeZone?
+    @Published private(set) var currentCoordinate: CLLocationCoordinate2D?
 
     private let manager = CLLocationManager()
     private let geocoder = CLGeocoder()
@@ -68,6 +69,7 @@ extension LocationProvider: CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
+        currentCoordinate = location.coordinate
         lastKnownLocation = location
         geocode(location: location)
     }

@@ -13,13 +13,15 @@ struct WeatherSnapshot: Equatable {
     let symbolName: String?
     let lastUpdated: Date?
 
-    static let placeholder = WeatherSnapshot(city: "Сочи",
-                                             temperatureCelsius: nil,
-                                             conditionDescription: nil,
-                                             highCelsius: nil,
-                                             lowCelsius: nil,
-                                             symbolName: "cloud.sun.fill",
-                                             lastUpdated: nil)
+    static func placeholder(city: String? = nil) -> WeatherSnapshot {
+        WeatherSnapshot(city: city ?? "Сочи",
+                        temperatureCelsius: nil,
+                        conditionDescription: nil,
+                        highCelsius: nil,
+                        lowCelsius: nil,
+                        symbolName: "cloud.sun.fill",
+                        lastUpdated: nil)
+    }
 }
 
 private extension Measurement where UnitType == UnitTemperature {
@@ -69,7 +71,7 @@ final class WidgetManager: ObservableObject {
     weak var settingsCoordinator: SettingsCoordinator?
     weak var localizationManager: LocalizationManager?
     @Published private(set) var globalBackgroundHidden: Bool = false
-    @Published private(set) var weatherSnapshot: WeatherSnapshot = .placeholder
+    @Published private(set) var weatherSnapshots: [UUID: WeatherSnapshot] = [:]
 
     private var windows: [UUID: NSWindow] = [:]
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
@@ -115,6 +117,7 @@ final class WidgetManager: ObservableObject {
         loadGlobalBackground()
         load()
         widgets.forEach { attachWindow(for: $0) }
+        widgets.forEach { refreshWeather(for: $0) }
 
         installAppearanceObservers()
         startSharedTimer()
@@ -148,6 +151,7 @@ final class WidgetManager: ObservableObject {
         instance.y = origin.y
         widgets.append(instance)
         attachWindow(for: instance)
+        refreshWeather(for: instance)
     }
 
     func removeWidget(id: UUID) {
@@ -158,6 +162,7 @@ final class WidgetManager: ObservableObject {
             NotificationCenter.default.removeObserver(observer)
             windowCloseObservers[id] = nil
         }
+        weatherSnapshots[id] = nil
     }
 
     private func loadGlobalColors() {
@@ -247,27 +252,41 @@ final class WidgetManager: ObservableObject {
     }
 
     private func startWeatherUpdates() {
-        refreshWeather()
+        refreshWeatherForAllWidgets()
         weatherTimerCancellable = Timer.publish(every: 3600, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
-                self?.refreshWeather()
+                self?.refreshWeatherForAllWidgets()
             }
     }
 
-    func refreshWeather() {
+    func weatherSnapshot(for widget: WidgetInstance) -> WeatherSnapshot {
+        if let cached = weatherSnapshots[widget.id] {
+            return cached
+        }
+        let placeholderCity = widget.location.city ?? "Сочи"
+        return WeatherSnapshot.placeholder(city: placeholderCity)
+    }
+
+    func refreshWeather(for widget: WidgetInstance) {
         Task { @MainActor [weak self] in
             guard let self else { return }
-            await fetchWeather()
+            await fetchWeather(for: widget)
         }
     }
 
+    private func refreshWeatherForAllWidgets() {
+        widgets.forEach { refreshWeather(for: $0) }
+    }
+
     @MainActor
-    private func fetchWeather() async {
+    private func fetchWeather(for widget: WidgetInstance) async {
+        let location = locationForWeather(widget: widget)
+        let cityLabel = widget.location.city ?? "Сочи"
         do {
-            let report = try await WeatherService.shared.weather(for: defaultWeatherLocation)
-            weatherSnapshot = WeatherSnapshot(
-                city: "Сочи",
+            let report = try await WeatherService.shared.weather(for: location)
+            let snapshot = WeatherSnapshot(
+                city: cityLabel,
                 temperatureCelsius: report.currentWeather.temperature.roundedCelsiusInt,
                 conditionDescription: report.currentWeather.condition.description,
                 highCelsius: report.dailyForecast.forecast.first?.highTemperature.roundedCelsiusInt,
@@ -275,9 +294,10 @@ final class WidgetManager: ObservableObject {
                 symbolName: report.currentWeather.symbolName,
                 lastUpdated: Date()
             )
+            weatherSnapshots[widget.id] = snapshot
         } catch {
-            let stale = weatherSnapshot
-            weatherSnapshot = WeatherSnapshot(
+            let stale = weatherSnapshots[widget.id] ?? WeatherSnapshot.placeholder(city: cityLabel)
+            weatherSnapshots[widget.id] = WeatherSnapshot(
                 city: stale.city,
                 temperatureCelsius: stale.temperatureCelsius,
                 conditionDescription: stale.conditionDescription,
@@ -287,6 +307,21 @@ final class WidgetManager: ObservableObject {
                 lastUpdated: Date()
             )
         }
+    }
+
+    private func locationForWeather(widget: WidgetInstance) -> CLLocation {
+        switch widget.location.mode {
+        case .custom:
+            if let lat = widget.location.latitude, let lon = widget.location.longitude {
+                return CLLocation(latitude: lat, longitude: lon)
+            }
+        case .current:
+            // Для текущей локации пока используем дефолт, если нет координат.
+            if let coord = locationProvider.currentCoordinate {
+                return CLLocation(latitude: coord.latitude, longitude: coord.longitude)
+            }
+        }
+        return defaultWeatherLocation
     }
 
     // Find the first free spot in a simple flowing layout, starting from top-left of visible screen.
@@ -519,6 +554,9 @@ final class WidgetManager: ObservableObject {
                 window.level = updatedInstance.isPinned ? .floating : .desktopWidgetTop
                 window.isMovableByWindowBackground = !updatedInstance.isPositionLocked
             }
+
+            // Перезагрузим погоду, если локация изменилась.
+            refreshWeather(for: updatedInstance)
         }
     }
 

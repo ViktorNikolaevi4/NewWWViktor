@@ -7,35 +7,11 @@ struct WeatherWidgetView: View {
     @EnvironmentObject private var localization: LocalizationManager
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            header
-
-            Text(temperatureText)
-                .font(temperatureFont)
-                .fontWeight(.semibold)
-                .foregroundStyle(primaryColor)
-                .contentTransition(.numericText())
-
-       //     Spacer(minLength: 0)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Image(systemName: weatherSymbolName)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(primaryColor)
-            }
-
-            VStack(alignment: .leading, spacing: 0) {
-                Text(conditionText)
-                    .font(conditionFont)
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-
-                Text(highLowText)
-                    .font(highLowFont)
-                    .foregroundStyle(secondaryColor)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+        Group {
+            if isSmallWidget {
+                smallLayout
+            } else {
+                mediumLayout
             }
         }
         .padding(contentPadding)
@@ -86,7 +62,7 @@ private extension WeatherWidgetView {
     }
 
     var conditionFont: Font {
-        .system(size: 15, weight: .semibold, design: .rounded)
+        .system(size: 14, weight: .semibold, design: .rounded)
     }
 
     var highLowFont: Font {
@@ -115,6 +91,10 @@ private extension WeatherWidgetView {
         weather.symbolName ?? "cloud.sun.fill"
     }
 
+    var hourlyItems: [HourlyWeatherSnapshot] {
+        weather.hourly
+    }
+
     var header: some View {
         Text(cityTitle)
             .font(cityFont)
@@ -136,5 +116,116 @@ private extension WeatherWidgetView {
             return currentCity
         }
         return localization.text(.widgetWeatherDetailTitle)
+    }
+
+    var hourlyForecast: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 14) {
+                ForEach(Array(hourlyItems.prefix(6)).enumerated(), id: \.offset) { item in
+                    let entry = item.element
+                    VStack(spacing: 6) {
+                        Text(formattedHour(entry.date))
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(.primary)
+                        Image(systemName: entry.symbolName ?? "cloud.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(primaryColor)
+                        Text(entry.temperatureCelsius.map { "\($0)°" } ?? "--°")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(secondaryColor)
+                    }
+                    .frame(width: 38, alignment: .center)
+                }
+            }
+            .padding(.top, 4)
+        }
+        .padding(.top, 4)
+    }
+
+    func formattedHour(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = localization.selectedLanguage.locale
+        formatter.dateFormat = "ha"
+        formatter.timeZone = effectiveTimeZone
+        return formatter.string(from: date).lowercased()
+    }
+
+    var effectiveTimeZone: TimeZone {
+        switch widget.location.mode {
+        case .custom:
+            return widget.location.timeZone
+        case .current:
+            return manager.locationProvider.currentTimeZone ?? .current
+        }
+    }
+
+    var smallLayout: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            header
+
+            Text(temperatureText)
+                .font(temperatureFont)
+                .fontWeight(.semibold)
+                .foregroundStyle(primaryColor)
+                .contentTransition(.numericText())
+
+            VStack(alignment: .leading, spacing: 6) {
+                Image(systemName: weatherSymbolName)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(primaryColor)
+            }
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text(conditionText)
+                    .font(conditionFont)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+
+                Text(highLowText)
+                    .font(highLowFont)
+                    .foregroundStyle(secondaryColor)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+        }
+    }
+
+    var mediumLayout: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    header
+                    Text(temperatureText)
+                        .font(temperatureFont)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(primaryColor)
+                        .contentTransition(.numericText())
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 4) {
+                    Image(systemName: weatherSymbolName)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(primaryColor)
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(conditionText)
+                            .font(conditionFont)
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+
+                        Text(highLowText)
+                            .font(highLowFont)
+                            .foregroundStyle(secondaryColor)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+                }
+            }
+
+            hourlyForecast
+        }
     }
 }

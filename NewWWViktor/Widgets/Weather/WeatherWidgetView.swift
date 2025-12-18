@@ -69,10 +69,16 @@ private extension WeatherWidgetView {
     }
 
     var contentPadding: EdgeInsets {
-        EdgeInsets(top: 8,
-                   leading: 10,
-                   bottom: 8,
-                   trailing: 8)
+        if isSmallWidget {
+            return EdgeInsets(top: 8,
+                              leading: 10,
+                              bottom: 8,
+                              trailing: 8)
+        }
+        return EdgeInsets(top: 6,
+                          leading: 10,
+                          bottom: 6,
+                          trailing: 8)
     }
 
     var temperatureFont: Font {
@@ -141,13 +147,13 @@ private extension WeatherWidgetView {
             HStack(spacing: 14) {
                 ForEach(Array(hourlyItems.prefix(6)).enumerated(), id: \.offset) { item in
                     let entry = item.element
-                    VStack(spacing: 6) {
+                    VStack(spacing: 4) {
                         Text(formattedHour(entry.date))
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(.primary)
-                        Image(systemName: entry.symbolName ?? "cloud.fill")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(primaryColor)
+                        stylizedWeatherIcon(systemName: entry.symbolName ?? "cloud.fill",
+                                            size: 14,
+                                            background: 28)
                         Text(displayTemperature(from: entry.temperatureCelsius))
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(secondaryColor)
@@ -155,9 +161,29 @@ private extension WeatherWidgetView {
                     .frame(width: 38, alignment: .center)
                 }
             }
-            .padding(.top, 4)
+            .padding(.top, 2)
         }
-        .padding(.top, 4)
+        .padding(.top, 2)
+    }
+
+    @ViewBuilder
+    func stylizedWeatherIcon(systemName: String, size: CGFloat, background: CGFloat) -> some View {
+        ZStack {
+            Circle()
+                .fill(primaryColor.opacity(0.18))
+                .frame(width: background, height: background)
+                .overlay(
+                    Circle()
+                        .stroke(Color.white.opacity(0.10), lineWidth: 1)
+                )
+
+            Image(systemName: systemName)
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(primaryColor, Color.white.opacity(0.92))
+                .font(.system(size: size, weight: .semibold))
+                .shadow(color: primaryColor.opacity(0.35), radius: 6, x: 0, y: 2)
+        }
+        .accessibilityHidden(true)
     }
 
     func formattedHour(_ date: Date) -> String {
@@ -183,7 +209,7 @@ private extension WeatherWidgetView {
     }
 
     var smallLayout: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 1) {
             header
 
             Text(temperatureText)
@@ -192,11 +218,9 @@ private extension WeatherWidgetView {
                 .foregroundStyle(primaryColor)
                 .contentTransition(.numericText())
 
-            VStack(alignment: .leading, spacing: 6) {
-                Image(systemName: weatherSymbolName)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(primaryColor)
-            }
+            stylizedWeatherIcon(systemName: weatherSymbolName,
+                                size: 16,
+                                background: 30)
 
             VStack(alignment: .leading, spacing: 0) {
                 Text(conditionText)
@@ -215,9 +239,9 @@ private extension WeatherWidgetView {
     }
 
     var mediumLayout: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     header
                     Text(temperatureText)
                         .font(temperatureFont)
@@ -228,11 +252,11 @@ private extension WeatherWidgetView {
 
                 Spacer()
 
-                VStack(alignment: .trailing, spacing: 4) {
-                    Image(systemName: weatherSymbolName)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(primaryColor)
-                    VStack(alignment: .trailing, spacing: 2) {
+                VStack(alignment: .trailing, spacing: 2) {
+                    stylizedWeatherIcon(systemName: weatherSymbolName,
+                                        size: 18,
+                                        background: 34)
+                    VStack(alignment: .trailing, spacing: 1) {
                         Text(conditionText)
                             .font(conditionFont)
                             .foregroundStyle(.primary)

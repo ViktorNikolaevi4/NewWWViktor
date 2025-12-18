@@ -37,10 +37,9 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
     var defaultSize: CGSize {
         switch self {
         case .clock:
-            // Similar to a medium widget: 2:1 ratio, feels native
-            return CGSize(width: 320, height: 160)
+            return WidgetSizeOption.medium.dimensions
         case .weather:
-            return CGSize(width: 360, height: 190)
+            return WidgetSizeOption.medium.dimensions
         }
     }
 }

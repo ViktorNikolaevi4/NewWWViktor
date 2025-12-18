@@ -23,79 +23,26 @@ struct WidgetHostView: View {
 
     var body: some View {
         if let instance = manager.widgets.first(where: { $0.id == instanceID }) {
-            VStack(spacing: 0) {
-                HStack(alignment: .bottom) {
-                    Spacer()
-#if os(macOS)
-                    Button {
-                        togglePanel(for: instance)
-                    } label: {
-                        Image(systemName: "ellipsis")
-                            .font(.system(size: 24, weight: .bold))
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 2)
-                            .opacity(isMenuVisible ? 1 : 0)
-                            .scaleEffect(isMenuVisible ? 1 : 0.6)
-                    }
-                    .buttonStyle(.plain)
-                    .opacity(isMenuVisible ? 1 : 0)
-                    .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isMenuVisible)
-#else
-                    Button {
-                        showSettingsPanel.toggle()
-                    } label: {
-                        Image(systemName: "ellipsis")
-                            .font(.system(size: 24, weight: .bold))
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 2)
-                            .opacity(isMenuVisible ? 1 : 0)
-                            .scaleEffect(isMenuVisible ? 1 : 0.6)
-                    }
-                    .buttonStyle(.plain)
-                    .opacity(isMenuVisible ? 1 : 0)
-                    .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isMenuVisible)
-                    .popover(isPresented: $showSettingsPanel, arrowEdge: .top) {
-                        WidgetSettingsMenuView(
-                            widget: instance,
-                            onUpdate: { updated in
-                                manager.update(updated)
-                            },
-                            onDelete: { id in
-                                showSettingsPanel = false
-                                DispatchQueue.main.async {
-                                    manager.removeWidget(id: id)
-                                }
-                            }
-                        )
-                        .environmentObject(manager)
-                        .environmentObject(localization)
-                        .frame(width: 360, height: 520)
-                        .onDisappear {
-                            showSettingsPanel = false
-                        }
-                    }
-#endif
+            widgetView(for: instance)
+                .padding(.horizontal, 16)
+                .padding(.vertical, instance.sizeOption == .small ? 10 : 8)
+                .frame(maxWidth: .infinity,
+                       maxHeight: .infinity,
+                       alignment: .topLeading)
+                .background(widgetBackground)
+                .overlay(
+                    RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                        .strokeBorder(Color.white.opacity(backgroundStrokeOpacity))
+                )
+                .clipShape(
+                    RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                )
+                .overlay(alignment: .topTrailing) {
+                    menuButton(for: instance)
+                        .padding(.top, 8)
+                        .padding(.trailing, 8)
                 }
-                .padding(.trailing, 4)
-                .padding(.bottom, 1)
-
-                widgetView(for: instance)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity,
-                           maxHeight: .infinity,
-                           alignment: .topLeading)
-                    .background(widgetBackground)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-                            .strokeBorder(Color.white.opacity(backgroundStrokeOpacity))
-                    )
-                    .clipShape(
-                        RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-                    )
-            }
             .id(manager.globalColorsVersion) // refresh on any appearance change
-            .padding(EdgeInsets(top: 2, leading: 2, bottom: 2, trailing: 2))
             .contentShape(Rectangle())
             .onHover { hovering in
                 withAnimation(.snappy(duration: 0.16, extraBounce: 0.0)) {
@@ -151,6 +98,65 @@ struct WidgetHostView: View {
 #endif
         } else {
             EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func menuButton(for instance: WidgetInstance) -> some View {
+        if !isMenuVisible {
+            EmptyView()
+        } else {
+#if os(macOS)
+            Button {
+                togglePanel(for: instance)
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 22, weight: .bold))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(Color.black.opacity(0.22))
+                    )
+            }
+            .buttonStyle(.plain)
+            .transition(.scale(scale: 0.6, anchor: .topTrailing).combined(with: .opacity))
+#else
+            Button {
+                showSettingsPanel.toggle()
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 22, weight: .bold))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(Color.black.opacity(0.22))
+                    )
+            }
+            .buttonStyle(.plain)
+            .transition(.scale(scale: 0.6, anchor: .topTrailing).combined(with: .opacity))
+            .popover(isPresented: $showSettingsPanel, arrowEdge: .top) {
+                WidgetSettingsMenuView(
+                    widget: instance,
+                    onUpdate: { updated in
+                        manager.update(updated)
+                    },
+                    onDelete: { id in
+                        showSettingsPanel = false
+                        DispatchQueue.main.async {
+                            manager.removeWidget(id: id)
+                        }
+                    }
+                )
+                .environmentObject(manager)
+                .environmentObject(localization)
+                .frame(width: 360, height: 520)
+                .onDisappear {
+                    showSettingsPanel = false
+                }
+            }
+#endif
         }
     }
 

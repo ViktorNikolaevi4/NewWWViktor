@@ -115,6 +115,7 @@ final class WidgetManager: ObservableObject {
     private var appearanceObservers: [NSObjectProtocol] = []
     private var timerCancellable: AnyCancellable?
     private var weatherTimerCancellable: AnyCancellable?
+    private var locationCancellable: AnyCancellable?
     private let defaultWeatherLocation = CLLocation(latitude: 43.5855, longitude: 39.7231)
 
     init(localizationManager: LocalizationManager? = nil) {
@@ -130,6 +131,7 @@ final class WidgetManager: ObservableObject {
         installAppearanceObservers()
         startSharedTimer()
         startWeatherUpdates()
+        installLocationObservers()
 
         let resetObserver = NotificationCenter.default.addObserver(
             forName: Notification.Name("widgets.reset.appearance"),
@@ -148,6 +150,7 @@ final class WidgetManager: ObservableObject {
             cancellable.cancel()
         }
         weatherTimerCancellable?.cancel()
+        locationCancellable?.cancel()
     }
 
     func addWidget(type: WidgetType, size: WidgetSizeOption = .medium) {
@@ -272,7 +275,7 @@ final class WidgetManager: ObservableObject {
         if let cached = weatherSnapshots[widget.id] {
             return cached
         }
-        let placeholderCity = widget.location.city ?? "Сочи"
+        let placeholderCity = cityLabel(for: widget)
         return WeatherSnapshot.placeholder(city: placeholderCity)
     }
 
@@ -290,7 +293,7 @@ final class WidgetManager: ObservableObject {
     @MainActor
     private func fetchWeather(for widget: WidgetInstance) async {
         let location = locationForWeather(widget: widget)
-        let cityLabel = widget.location.city ?? "Сочи"
+        let cityLabel = cityLabel(for: widget)
         do {
             let report = try await WeatherService.shared.weather(for: location)
             let now = Date()
@@ -341,6 +344,30 @@ final class WidgetManager: ObservableObject {
             }
         }
         return defaultWeatherLocation
+    }
+
+    private func cityLabel(for widget: WidgetInstance) -> String {
+        switch widget.location.mode {
+        case .custom:
+            return widget.location.city ??
+                localizationManager?.text(.widgetSelectedCityFallback) ??
+                "Selected city"
+        case .current:
+            return locationProvider.cityName ??
+                localizationManager?.text(.locationCurrentLocation) ??
+                "Current location"
+        }
+    }
+
+    private func installLocationObservers() {
+        locationCancellable = locationProvider.$currentCoordinate
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.widgets
+                    .filter { $0.location.mode == .current }
+                    .forEach { self.refreshWeather(for: $0) }
+            }
     }
 
     // Find the first free spot in a simple flowing layout, starting from top-left of visible screen.

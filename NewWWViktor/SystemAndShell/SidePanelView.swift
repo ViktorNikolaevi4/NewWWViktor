@@ -7,6 +7,7 @@ struct SidePanelView: View {
     @EnvironmentObject var localization: LocalizationManager
     private let cardMaxWidth: CGFloat = 368
     @State private var showSettingsPopover = false
+    @State private var didKickoffLocation = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -89,6 +90,15 @@ struct SidePanelView: View {
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .ignoresSafeArea()
         .environment(\.colorScheme, .dark) // keep panel visuals consistent regardless of system theme
+        .task {
+            guard !didKickoffLocation else { return }
+            didKickoffLocation = true
+            manager.locationProvider.updatePreferredLocale(localization.selectedLanguage.locale)
+            manager.locationProvider.requestLocationIfNeeded()
+        }
+        .onChange(of: localization.selectedLanguage) { newValue in
+            manager.locationProvider.updatePreferredLocale(newValue.locale)
+        }
     }
 }
 

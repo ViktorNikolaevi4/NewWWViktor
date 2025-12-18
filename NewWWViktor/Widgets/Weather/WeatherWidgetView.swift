@@ -20,6 +20,11 @@ struct WeatherWidgetView: View {
         .task {
             manager.refreshWeather(for: widget)
         }
+        .onReceive(manager.locationProvider.$currentCoordinate) { coord in
+            guard coord != nil else { return }
+            guard widget.location.mode == .current else { return }
+            manager.refreshWeather(for: widget)
+        }
     }
 }
 

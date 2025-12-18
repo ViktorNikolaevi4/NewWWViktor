@@ -10,6 +10,18 @@ struct WidgetPreviewCard: View {
     @State private var isHovered = false
     @State private var isPressed = false
     @State private var previewSizeOption: WidgetSizeOption = .medium
+    @State private var previewInstance: WidgetInstance
+
+    init(type: WidgetType, onAdd: @escaping (WidgetSizeOption) -> Void) {
+        self.type = type
+        self.onAdd = onAdd
+        _previewInstance = State(initialValue: {
+            var instance = WidgetInstance(type: type)
+            instance.location = .current
+            instance.applySizeOption(.medium)
+            return instance
+        }())
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -108,6 +120,7 @@ struct WidgetPreviewCard: View {
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
                         previewSizeOption = option
+                        previewInstance.applySizeOption(option)
                     }
                 } label: {
                     Image(option.iconAssetName)
@@ -171,17 +184,10 @@ struct WidgetPreviewCard: View {
     private var preview: some View {
         switch type {
         case .clock:
-            ClockWidgetView(widget: previewWidget)
+            ClockWidgetView(widget: previewInstance)
         case .weather:
-            WeatherWidgetView(widget: previewWidget)
+            WeatherWidgetView(widget: previewInstance)
         }
-    }
-
-    private var previewWidget: WidgetInstance {
-        var instance = WidgetInstance(type: type)
-        instance.location = .current
-        instance.applySizeOption(previewSizeOption)
-        return instance
     }
 
     private var previewDisplaySize: CGSize {

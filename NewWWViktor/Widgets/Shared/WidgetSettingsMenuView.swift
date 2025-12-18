@@ -108,6 +108,9 @@ struct WidgetSettingsMenuView: View {
         .onChange(of: workingWidget.prefersTwelveHour) { _, _ in
             onUpdate(workingWidget)
         }
+        .onChange(of: workingWidget.prefersCelsius) { _, _ in
+            onUpdate(workingWidget)
+        }
         .onChange(of: workingWidget.isBackgroundHidden) { _, _ in
             onUpdate(workingWidget)
         }

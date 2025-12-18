@@ -114,7 +114,10 @@ enum LocalizationKey: String {
     case widgetShowDate
     case widgetShowLocation
     case widgetShowWeather
+    case widgetTemperatureLabel
     case widgetTimeLabel
+    case widgetTimeFormat12h
+    case widgetTimeFormat24h
     case widgetColorsSection
     case widgetBackgroundGlobal
     case widgetBackgroundCustom

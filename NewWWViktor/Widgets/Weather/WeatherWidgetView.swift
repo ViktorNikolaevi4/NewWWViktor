@@ -37,11 +37,17 @@ private extension WeatherWidgetView {
         manager.weatherSnapshot(for: widget)
     }
 
-    var temperatureText: String {
-        if let temperature = weather.temperatureCelsius {
-            return "\(temperature)°"
+    func displayTemperature(from celsius: Int?) -> String {
+        guard let celsius else { return "--°" }
+        if widget.prefersCelsius {
+            return "\(celsius)°"
         }
-        return "--°"
+        let fahrenheit = Int((Double(celsius) * 9.0 / 5.0 + 32.0).rounded())
+        return "\(fahrenheit)°"
+    }
+
+    var temperatureText: String {
+        displayTemperature(from: weather.temperatureCelsius)
     }
 
     var conditionText: String {
@@ -50,9 +56,16 @@ private extension WeatherWidgetView {
 
     var highLowText: String {
         if let high = weather.highCelsius, let low = weather.lowCelsius {
-            return "H: \(high)° · L: \(low)°"
+            return "H: \(displayTemperatureValue(from: high))° · L: \(displayTemperatureValue(from: low))°"
         }
         return localization.text(.widgetWeatherPlaceholderHiLow)
+    }
+
+    func displayTemperatureValue(from celsius: Int) -> Int {
+        if widget.prefersCelsius {
+            return celsius
+        }
+        return Int((Double(celsius) * 9.0 / 5.0 + 32.0).rounded())
     }
 
     var contentPadding: EdgeInsets {
@@ -135,7 +148,7 @@ private extension WeatherWidgetView {
                         Image(systemName: entry.symbolName ?? "cloud.fill")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(primaryColor)
-                        Text(entry.temperatureCelsius.map { "\($0)°" } ?? "--°")
+                        Text(displayTemperature(from: entry.temperatureCelsius))
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(secondaryColor)
                     }
@@ -150,9 +163,14 @@ private extension WeatherWidgetView {
     func formattedHour(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = localization.selectedLanguage.locale
-        formatter.dateFormat = "ha"
         formatter.timeZone = effectiveTimeZone
-        return formatter.string(from: date).lowercased()
+        if widget.prefersTwelveHour {
+            formatter.setLocalizedDateFormatFromTemplate("ha")
+            return formatter.string(from: date).lowercased()
+        } else {
+            formatter.setLocalizedDateFormatFromTemplate("H")
+            return formatter.string(from: date)
+        }
     }
 
     var effectiveTimeZone: TimeZone {

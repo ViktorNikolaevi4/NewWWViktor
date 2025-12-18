@@ -114,7 +114,10 @@
 "widgetShowDate" = "Show Date";
 "widgetShowLocation" = "Show Location";
 "widgetShowWeather" = "Show Weather";
+"widgetTemperatureLabel" = "Temperature";
 "widgetTimeLabel" = "Time";
+"widgetTimeFormat12h" = "12h";
+"widgetTimeFormat24h" = "24h";
 "widgetColorsSection" = "Colors";
 "widgetBackgroundGlobal" = "Global";
 "widgetBackgroundCustom" = "Custom";

@@ -114,7 +114,10 @@
 "widgetShowDate" = "Показывать дату";
 "widgetShowLocation" = "Показывать город";
 "widgetShowWeather" = "Погода";
+"widgetTemperatureLabel" = "Температура";
 "widgetTimeLabel" = "Время";
+"widgetTimeFormat12h" = "12ч";
+"widgetTimeFormat24h" = "24ч";
 "widgetColorsSection" = "Цвета";
 "widgetBackgroundGlobal" = "Глобально";
 "widgetBackgroundCustom" = "Свой фон";

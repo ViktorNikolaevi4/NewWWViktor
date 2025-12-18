@@ -12,6 +12,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var showsDate: Bool
     var showsLocation: Bool
     var prefersTwelveHour: Bool
+    var prefersCelsius: Bool
     var location: WidgetLocation
     var mainColorName: String?
     var mainColorIntensity: Double
@@ -47,6 +48,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.showsLocation = true
         self.location = .current
         self.prefersTwelveHour = true
+        self.prefersCelsius = true
         self.mainColorName = nil
         self.mainColorIntensity = 1.0
         self.secondaryColorName = nil
@@ -69,7 +71,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption
+        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption
     }
 
     init(from decoder: Decoder) throws {
@@ -85,6 +87,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         showsDate = try container.decodeIfPresent(Bool.self, forKey: .showsDate) ?? true
         showsLocation = try container.decodeIfPresent(Bool.self, forKey: .showsLocation) ?? true
         prefersTwelveHour = try container.decodeIfPresent(Bool.self, forKey: .prefersTwelveHour) ?? true
+        prefersCelsius = try container.decodeIfPresent(Bool.self, forKey: .prefersCelsius) ?? true
         location = try container.decodeIfPresent(WidgetLocation.self, forKey: .location) ?? .current
         mainColorName = try container.decodeIfPresent(String.self, forKey: .mainColorName)
         mainColorIntensity = try container.decodeIfPresent(Double.self, forKey: .mainColorIntensity) ?? 1.0
@@ -120,6 +123,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(showsDate, forKey: .showsDate)
         try container.encode(showsLocation, forKey: .showsLocation)
         try container.encode(prefersTwelveHour, forKey: .prefersTwelveHour)
+        try container.encode(prefersCelsius, forKey: .prefersCelsius)
         try container.encode(location, forKey: .location)
         try container.encodeIfPresent(mainColorName, forKey: .mainColorName)
         try container.encode(mainColorIntensity, forKey: .mainColorIntensity)

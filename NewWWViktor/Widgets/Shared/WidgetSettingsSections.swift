@@ -26,7 +26,23 @@ struct WidgetGeneralSettingsSection: View {
                 ToggleRow(title: localization.text(.widgetShowWeather), isOn: $showWeather)
 
                 WidgetSettingsRow(title: localization.text(.widgetTimeLabel)) {
-                    SegmentedPill(options: ["12h", "24h"], selected: $widget.prefersTwelveHour)
+                    SegmentedPill(options: [localization.text(.widgetTimeFormat12h),
+                                            localization.text(.widgetTimeFormat24h)],
+                                  selected: $widget.prefersTwelveHour)
+                }
+            }
+        }
+
+        if isWeather {
+            WidgetSettingsGroup(title: localization.text(.widgetWeatherDetailTitle)) {
+                WidgetSettingsRow(title: localization.text(.widgetTemperatureLabel)) {
+                    SegmentedPill(options: ["°C", "°F"], selected: $widget.prefersCelsius)
+                }
+
+                WidgetSettingsRow(title: localization.text(.widgetTimeLabel)) {
+                    SegmentedPill(options: [localization.text(.widgetTimeFormat12h),
+                                            localization.text(.widgetTimeFormat24h)],
+                                  selected: $widget.prefersTwelveHour)
                 }
             }
         }

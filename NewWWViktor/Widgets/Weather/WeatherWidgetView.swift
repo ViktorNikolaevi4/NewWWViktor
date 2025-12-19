@@ -280,11 +280,17 @@ private struct TemperatureValueView: View {
     let digitColor: Color
 
     var body: some View {
-        Text(valueText)
-            .font(.system(size: baseSize * 1.7, weight: digitWeight, design: design))
-            .foregroundStyle(digitColor)
-            .monospacedDigit()
-            .contentTransition(.numericText())
-            .accessibilityLabel(valueText)
+        HStack(alignment: .firstTextBaseline, spacing: 1) {
+            Text(valueText)
+                .font(.system(size: baseSize * 1.7, weight: digitWeight, design: design))
+                .foregroundStyle(digitColor)
+                .monospacedDigit()
+                .contentTransition(.numericText())
+            Text("°")
+                .font(.system(size: baseSize * 1.1, weight: .semibold, design: design))
+                .foregroundStyle(digitColor)
+                .baselineOffset(baseSize * 0.6) // nudge degree further downward/right
+        }
+        .accessibilityLabel("\(valueText)°")
     }
 }

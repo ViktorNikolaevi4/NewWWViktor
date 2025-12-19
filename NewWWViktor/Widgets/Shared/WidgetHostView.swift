@@ -24,8 +24,8 @@ struct WidgetHostView: View {
     var body: some View {
         if let instance = manager.widgets.first(where: { $0.id == instanceID }) {
             widgetView(for: instance)
-                .padding(.horizontal, 16)
-                .padding(.vertical, instance.sizeOption == .small ? 10 : 8)
+                .padding(.horizontal, instance.sizeOption == .small ? 12 : 16)
+                .padding(.vertical, instance.sizeOption == .small ? 8 : 8)
                 .frame(maxWidth: .infinity,
                        maxHeight: .infinity,
                        alignment: .topLeading)

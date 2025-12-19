@@ -37,13 +37,17 @@ private extension WeatherWidgetView {
         manager.weatherSnapshot(for: widget)
     }
 
-    func displayTemperature(from celsius: Int?) -> String {
-        guard let celsius else { return "--°" }
+    func displayTemperatureNumber(from celsius: Int?) -> String {
+        guard let celsius else { return "--" }
         if widget.prefersCelsius {
-            return "\(celsius)°"
+            return "\(celsius)"
         }
         let fahrenheit = Int((Double(celsius) * 9.0 / 5.0 + 32.0).rounded())
-        return "\(fahrenheit)°"
+        return "\(fahrenheit)"
+    }
+
+    func displayTemperature(from celsius: Int?) -> String {
+        "\(displayTemperatureNumber(from: celsius))°"
     }
 
     var temperatureText: String {
@@ -70,10 +74,10 @@ private extension WeatherWidgetView {
 
     var contentPadding: EdgeInsets {
         if isSmallWidget {
-            return EdgeInsets(top: 8,
-                              leading: 10,
-                              bottom: 8,
-                              trailing: 8)
+            return EdgeInsets(top: 6,
+                              leading: 8,
+                              bottom: 6,
+                              trailing: 6)
         }
         return EdgeInsets(top: 6,
                           leading: 10,
@@ -144,15 +148,17 @@ private extension WeatherWidgetView {
 
     var hourlyForecast: some View {
         ScrollView(.horizontal, showsIndicators: false) {
+
             HStack(spacing: 14) {
                 ForEach(Array(hourlyItems.prefix(6)).enumerated(), id: \.offset) { item in
                     let entry = item.element
+
                     VStack(spacing: 4) {
                         Text(formattedHour(entry.date))
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(.primary)
                         stylizedWeatherIcon(systemName: entry.symbolName ?? "cloud.fill",
-                                            size: 14,
+                                            size: 16,
                                             background: 28)
                         Text(displayTemperature(from: entry.temperatureCelsius))
                             .font(.system(size: 12, weight: .medium))
@@ -168,22 +174,11 @@ private extension WeatherWidgetView {
 
     @ViewBuilder
     func stylizedWeatherIcon(systemName: String, size: CGFloat, background: CGFloat) -> some View {
-        ZStack {
-            Circle()
-                .fill(primaryColor.opacity(0.18))
-                .frame(width: background, height: background)
-                .overlay(
-                    Circle()
-                        .stroke(Color.white.opacity(0.10), lineWidth: 1)
-                )
-
-            Image(systemName: systemName)
-                .symbolRenderingMode(.palette)
-                .foregroundStyle(primaryColor, Color.white.opacity(0.92))
-                .font(.system(size: size, weight: .semibold))
-                .shadow(color: primaryColor.opacity(0.35), radius: 6, x: 0, y: 2)
-        }
-        .accessibilityHidden(true)
+        Image(systemName: systemName)
+            .symbolRenderingMode(.palette)
+            .foregroundStyle(primaryColor, Color.white.opacity(0.9))
+            .font(.system(size: size, weight: .semibold))
+            .accessibilityHidden(true)
     }
 
     func formattedHour(_ date: Date) -> String {
@@ -212,14 +207,14 @@ private extension WeatherWidgetView {
         VStack(alignment: .leading, spacing: 1) {
             header
 
-            Text(temperatureText)
-                .font(temperatureFont)
-                .fontWeight(.semibold)
-                .foregroundStyle(primaryColor)
-                .contentTransition(.numericText())
+            TemperatureValueView(valueText: displayTemperatureNumber(from: weather.temperatureCelsius),
+                                 baseSize: 26,
+                                 digitWeight: .regular,
+                                 design: .rounded,
+                                 digitColor: primaryColor)
 
             stylizedWeatherIcon(systemName: weatherSymbolName,
-                                size: 16,
+                                size: 18,
                                 background: 30)
 
             VStack(alignment: .leading, spacing: 0) {
@@ -243,18 +238,18 @@ private extension WeatherWidgetView {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 2) {
                     header
-                    Text(temperatureText)
-                        .font(temperatureFont)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(primaryColor)
-                        .contentTransition(.numericText())
+                    TemperatureValueView(valueText: displayTemperatureNumber(from: weather.temperatureCelsius),
+                                         baseSize: 26,
+                                         digitWeight: .regular,
+                                         design: .rounded,
+                                         digitColor: primaryColor)
                 }
 
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
                     stylizedWeatherIcon(systemName: weatherSymbolName,
-                                        size: 18,
+                                        size: 20,
                                         background: 34)
                     VStack(alignment: .trailing, spacing: 1) {
                         Text(conditionText)
@@ -274,5 +269,22 @@ private extension WeatherWidgetView {
 
             hourlyForecast
         }
+    }
+}
+
+private struct TemperatureValueView: View {
+    let valueText: String
+    let baseSize: CGFloat
+    let digitWeight: Font.Weight
+    let design: Font.Design
+    let digitColor: Color
+
+    var body: some View {
+        Text(valueText)
+            .font(.system(size: baseSize * 1.7, weight: digitWeight, design: design))
+            .foregroundStyle(digitColor)
+            .monospacedDigit()
+            .contentTransition(.numericText())
+            .accessibilityLabel(valueText)
     }
 }

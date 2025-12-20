@@ -10,6 +10,8 @@ struct WeatherWidgetView: View {
         Group {
             if isSmallWidget {
                 smallLayout
+            } else if isLargeWidget {
+                largeLayout
             } else {
                 mediumLayout
             }
@@ -58,8 +60,12 @@ private extension WeatherWidgetView {
         weather.conditionDescription ?? localization.text(.widgetWeatherPlaceholderCondition)
     }
 
+    var highLowPair: (Int?, Int?) {
+        (weather.highCelsius, weather.lowCelsius)
+    }
+
     var highLowText: String {
-        if let high = weather.highCelsius, let low = weather.lowCelsius {
+        if let high = highLowPair.0, let low = highLowPair.1 {
             return "H: \(displayTemperatureValue(from: high))° · L: \(displayTemperatureValue(from: low))°"
         }
         return localization.text(.widgetWeatherPlaceholderHiLow)
@@ -79,10 +85,10 @@ private extension WeatherWidgetView {
                               bottom: 6,
                               trailing: 8)
         }
-        return EdgeInsets(top: 6,
-                          leading: 6, // move content slightly left
-                          bottom: 6,
-                          trailing: 10)
+        return EdgeInsets(top: 8,
+                          leading: 8, // move content slightly left
+                          bottom: 8,
+                          trailing: 12)
     }
 
     var temperatureFont: Font {
@@ -121,6 +127,14 @@ private extension WeatherWidgetView {
 
     var hourlyItems: [HourlyWeatherSnapshot] {
         weather.hourly
+    }
+
+    var dailyItems: [DailyWeatherSnapshot] {
+        weather.daily
+    }
+
+    var isLargeWidget: Bool {
+        widget.sizeOption == .large || widget.sizeOption == .extraLarge
     }
 
     var hourlyDisplayLimit: Int {
@@ -207,6 +221,27 @@ private extension WeatherWidgetView {
         }
     }
 
+    func formattedDay(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = localization.selectedLanguage.locale
+        formatter.timeZone = effectiveTimeZone
+        formatter.dateFormat = "E"
+        return formatter.string(from: date)
+    }
+
+    func formattedDayFull(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = localization.selectedLanguage.locale
+        formatter.timeZone = effectiveTimeZone
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: date)
+    }
+
+    func temperatureText(_ value: Int?) -> String {
+        guard let value else { return "--" }
+        return displayTemperature(from: value)
+    }
+
     var effectiveTimeZone: TimeZone {
         switch widget.location.mode {
         case .custom:
@@ -281,6 +316,89 @@ private extension WeatherWidgetView {
             }
 
             hourlyForecast
+        }
+    }
+
+    var largeLayout: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 2) {
+                    header
+                    TemperatureValueView(valueText: displayTemperatureNumber(from: weather.temperatureCelsius),
+                                         baseSize: 28,
+                                         digitWeight: .regular,
+                                         design: .rounded,
+                                         digitColor: primaryColor)
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 2) {
+                    stylizedWeatherIcon(systemName: weatherSymbolName,
+                                        size: 24,
+                                        background: 38)
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text(conditionText)
+                            .font(conditionFont)
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+
+                        Text(highLowText)
+                            .font(highLowFont)
+                            .foregroundStyle(secondaryColor)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+                }
+            }
+
+            hourlyForecast
+
+            if !dailyItems.isEmpty {
+                Divider()
+                    .frame(height: 1)
+                    .background(primaryColor.opacity(0.20))
+                    .overlay(
+                        LinearGradient(gradient: Gradient(colors: [
+                            .clear,
+                            primaryColor.opacity(0.35),
+                            .clear
+                        ]), startPoint: .leading, endPoint: .trailing)
+                    )
+                    .padding(.horizontal, -4)
+                    .opacity(0.85)
+                dailyForecast
+            }
+        }
+    }
+
+    var dailyForecast: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(Array(dailyItems.prefix(5)).enumerated(), id: \.offset) { item in
+                let entry = item.element
+                HStack(spacing: 10) {
+                    Text(formattedDay(entry.date))
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .frame(width: 70, alignment: .leading)
+                        .lineLimit(1)
+
+                    stylizedWeatherIcon(systemName: entry.symbolName ?? "cloud.fill",
+                                        size: 16,
+                                        background: 0)
+
+                    Spacer()
+
+                    Text(temperatureText(entry.highCelsius))
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.primary)
+
+                    Text(temperatureText(entry.lowCelsius))
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(secondaryColor)
+                }
+            }
         }
     }
 }

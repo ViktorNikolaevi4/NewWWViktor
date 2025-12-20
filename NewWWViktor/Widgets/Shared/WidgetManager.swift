@@ -13,6 +13,7 @@ struct WeatherSnapshot: Equatable {
     let symbolName: String?
     let lastUpdated: Date?
     let hourly: [HourlyWeatherSnapshot]
+    let daily: [DailyWeatherSnapshot]
 
     static func placeholder(city: String? = nil) -> WeatherSnapshot {
         WeatherSnapshot(city: city ?? "Сочи",
@@ -22,7 +23,8 @@ struct WeatherSnapshot: Equatable {
                         lowCelsius: nil,
                         symbolName: "cloud.sun.fill",
                         lastUpdated: nil,
-                        hourly: [])
+                        hourly: [],
+                        daily: [])
     }
 }
 
@@ -35,6 +37,13 @@ private extension Measurement where UnitType == UnitTemperature {
 struct HourlyWeatherSnapshot: Equatable {
     let date: Date
     let temperatureCelsius: Int?
+    let symbolName: String?
+}
+
+struct DailyWeatherSnapshot: Equatable {
+    let date: Date
+    let highCelsius: Int?
+    let lowCelsius: Int?
     let symbolName: String?
 }
 
@@ -299,12 +308,21 @@ final class WidgetManager: ObservableObject {
             let now = Date()
             let hourly = report.hourlyForecast.forecast
                 .filter { $0.date >= now }
-                .prefix(6)
+                .prefix(24)
                 .map {
-                HourlyWeatherSnapshot(date: $0.date,
-                                      temperatureCelsius: $0.temperature.roundedCelsiusInt,
-                                      symbolName: $0.symbolName)
-            }
+                    HourlyWeatherSnapshot(date: $0.date,
+                                          temperatureCelsius: $0.temperature.roundedCelsiusInt,
+                                          symbolName: $0.symbolName)
+                }
+            let daily = report.dailyForecast.forecast
+                .dropFirst() // start from tomorrow
+                .prefix(5)
+                .map {
+                    DailyWeatherSnapshot(date: $0.date,
+                                         highCelsius: $0.highTemperature.roundedCelsiusInt,
+                                         lowCelsius: $0.lowTemperature.roundedCelsiusInt,
+                                         symbolName: $0.symbolName)
+                }
             let snapshot = WeatherSnapshot(
                 city: cityLabel,
                 temperatureCelsius: report.currentWeather.temperature.roundedCelsiusInt,
@@ -313,7 +331,8 @@ final class WidgetManager: ObservableObject {
                 lowCelsius: report.dailyForecast.forecast.first?.lowTemperature.roundedCelsiusInt,
                 symbolName: report.currentWeather.symbolName,
                 lastUpdated: Date(),
-                hourly: Array(hourly)
+                hourly: Array(hourly),
+                daily: Array(daily)
             )
             weatherSnapshots[widget.id] = snapshot
         } catch {
@@ -326,7 +345,8 @@ final class WidgetManager: ObservableObject {
                 lowCelsius: stale.lowCelsius,
                 symbolName: stale.symbolName ?? "cloud.fill",
                 lastUpdated: Date(),
-                hourly: stale.hourly
+                hourly: stale.hourly,
+                daily: stale.daily
             )
         }
     }

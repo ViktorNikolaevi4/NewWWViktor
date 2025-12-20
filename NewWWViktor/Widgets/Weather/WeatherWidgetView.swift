@@ -512,7 +512,7 @@ private extension WeatherWidgetView {
                             .fill(primaryColor.opacity(0.12))
                             .frame(width: 1, height: 32)
                             .padding(.horizontal, 6)
-                        metricCell(row.last, alignment: .trailing)
+                        metricCell(row.last, alignment: .leading)
                     } else {
                         Spacer(minLength: 0)
                     }

@@ -37,6 +37,7 @@ struct WidgetPreviewCard: View {
                 #endif
 
             infoSection
+                .padding(.top, infoTopPadding)
 
             Divider()
                 .background(Color.white.opacity(0.08))
@@ -200,9 +201,31 @@ struct WidgetPreviewCard: View {
             }
         }()
         let size = previewSizeOption.dimensions
-        // Scale preview purely by width so пропорции совпадают с реальным виджетом.
+        // Scale purely by width so пропорции совпадают с реальным виджетом.
         let scale = targetWidth / size.width
         return CGSize(width: size.width * scale, height: size.height * scale)
+    }
+
+    private var infoTopPadding: CGFloat {
+        let isWeather = type == .weather
+        switch (isWeather, previewSizeOption) {
+        case (true, .small):
+            return 10
+        case (true, .medium):
+            return 16
+        case (true, .large):
+            return 28
+        case (true, .extraLarge):
+            return 36
+        case (false, .small):
+            return 6
+        case (false, .medium):
+            return 10
+        case (false, .large):
+            return 14
+        case (false, .extraLarge):
+            return 18
+        }
     }
 
 }

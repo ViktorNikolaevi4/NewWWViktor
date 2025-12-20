@@ -136,6 +136,10 @@
 "widgetSizeMedium" = "Средний";
 "widgetSizeSmallSubtitle" = "Компактный";
 "widgetSizeMediumSubtitle" = "Больше контента";
+"widgetSizeLarge" = "Большой";
+"widgetSizeExtraLarge" = "Огромный";
+"widgetSizeLargeSubtitle" = "Широкий макет";
+"widgetSizeExtraLargeSubtitle" = "Максимум места";
 "noColorSelected" = "Цвет не выбран.\nВыберите из палитры ниже.";
 "opacity" = "Прозрачность";
 "back" = "Назад";

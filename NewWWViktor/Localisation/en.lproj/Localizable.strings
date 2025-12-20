@@ -136,6 +136,10 @@
 "widgetSizeMedium" = "Medium";
 "widgetSizeSmallSubtitle" = "Compact";
 "widgetSizeMediumSubtitle" = "More content";
+"widgetSizeLarge" = "Large";
+"widgetSizeExtraLarge" = "Extra Large";
+"widgetSizeLargeSubtitle" = "Wide layout";
+"widgetSizeExtraLargeSubtitle" = "Maximum space";
 "noColorSelected" = "No color selected.\nUse the palette below to pick one.";
 "opacity" = "Opacity";
 "back" = "Back";

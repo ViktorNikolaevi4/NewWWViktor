@@ -583,6 +583,12 @@ final class WidgetManager: ObservableObject {
                 let frame = window.frame
                 updatedInstance.x = frame.origin.x
                 updatedInstance.y = frame.origin.y
+
+                // Anchor resize to the top edge: grow downward instead of upward.
+                let deltaHeight = updatedInstance.height - frame.height
+                if deltaHeight != 0 {
+                    updatedInstance.y -= deltaHeight
+                }
             }
 
             self.widgets[idx] = updatedInstance

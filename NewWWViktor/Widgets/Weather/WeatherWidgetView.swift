@@ -75,14 +75,14 @@ private extension WeatherWidgetView {
     var contentPadding: EdgeInsets {
         if isSmallWidget {
             return EdgeInsets(top: 6,
-                              leading: 8,
+                              leading: 6, // move content slightly left
                               bottom: 6,
-                              trailing: 6)
+                              trailing: 8)
         }
         return EdgeInsets(top: 6,
-                          leading: 10,
+                          leading: 6, // move content slightly left
                           bottom: 6,
-                          trailing: 8)
+                          trailing: 10)
     }
 
     var temperatureFont: Font {
@@ -123,6 +123,19 @@ private extension WeatherWidgetView {
         weather.hourly
     }
 
+    var hourlyDisplayLimit: Int {
+        switch widget.sizeOption {
+        case .small:
+            return 6
+        case .medium:
+            return 8
+        case .large:
+            return 10
+        case .extraLarge:
+            return 12
+        }
+    }
+
     var header: some View {
         Text(cityTitle)
             .font(cityFont)
@@ -150,7 +163,7 @@ private extension WeatherWidgetView {
         ScrollView(.horizontal, showsIndicators: false) {
 
             HStack(spacing: 14) {
-                ForEach(Array(hourlyItems.prefix(6)).enumerated(), id: \.offset) { item in
+                ForEach(Array(hourlyItems.prefix(hourlyDisplayLimit)).enumerated(), id: \.offset) { item in
                     let entry = item.element
 
                     VStack(spacing: 4) {

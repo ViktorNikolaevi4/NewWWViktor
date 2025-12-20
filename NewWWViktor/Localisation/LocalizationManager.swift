@@ -146,6 +146,10 @@ enum LocalizationKey: String {
     case widgetSizeMedium
     case widgetSizeSmallSubtitle
     case widgetSizeMediumSubtitle
+    case widgetSizeLarge
+    case widgetSizeExtraLarge
+    case widgetSizeLargeSubtitle
+    case widgetSizeExtraLargeSubtitle
 }
 
 final class LocalizationManager: ObservableObject {

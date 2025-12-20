@@ -701,6 +701,13 @@ final class WidgetManager: ObservableObject {
         window.contentView = hosting
         window.contentView?.wantsLayer = true  // Уже true для NSHostingView, но на всякий случай
         window.contentView?.layerContentsRedrawPolicy = .onSetNeedsDisplay
+        if let layer = window.contentView?.layer {
+            layer.cornerRadius = WidgetStyle.cornerRadius
+            layer.masksToBounds = true
+            if #available(macOS 12.0, *) {
+                layer.cornerCurve = .continuous
+            }
+        }
         window.orderFrontRegardless()
         applyVisibility(to: window)
 

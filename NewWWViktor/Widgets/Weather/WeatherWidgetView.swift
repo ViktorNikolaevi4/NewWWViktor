@@ -18,7 +18,10 @@ struct WeatherWidgetView: View {
         }
         .padding(contentPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .id(manager.globalColorsVersion) // refresh when palette changes
+        // Rebuild when palette or size changes to avoid keeping stale layout from previous size (e.g., XL -> L).
+        .id("\(widget.sizeOption.rawValue)-\(manager.globalColorsVersion)")
+        // Disable implicit animation on size switch to avoid transient layouts sticking around.
+        .animation(.none, value: widget.sizeOption)
         .task {
             manager.refreshWeather(for: widget)
         }
@@ -450,7 +453,7 @@ private extension WeatherWidgetView {
                             primaryColor.opacity(0.35),
                             .clear
                         ]), startPoint: .leading, endPoint: .trailing)
-                    )
+                   )
                     .padding(.horizontal, -4)
                     .opacity(0.85)
                 extraMetrics

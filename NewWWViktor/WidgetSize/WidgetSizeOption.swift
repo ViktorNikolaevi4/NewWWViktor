@@ -39,7 +39,7 @@ enum WidgetSizeOption: String, CaseIterable, Identifiable, Codable {
         case .small:
             return CGSize(width: 170, height: 170)
         case .medium:
-            return CGSize(width: 340, height: 170)
+            return CGSize(width: 340, height: 180)
         case .large:
             return CGSize(width: 340, height: 340) // square-like L
         case .extraLarge:

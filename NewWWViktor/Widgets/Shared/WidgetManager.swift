@@ -647,6 +647,9 @@ final class WidgetManager: ObservableObject {
                 // Закрепленные — над окнами, незакрепленные — в верхнем слое рабочего стола (statusBar), чтобы переживали «Показать рабочий стол» и перебивали чужие виджеты.
                 window.level = updatedInstance.isPinned ? .floating : .desktopWidgetTop
                 window.isMovableByWindowBackground = !updatedInstance.isPositionLocked
+                if let hosting = window.contentView as? NSHostingView<AnyView> {
+                    hosting.invalidateIntrinsicContentSize()
+                }
             }
 
             // Перезагрузим погоду, если локация изменилась.
@@ -689,7 +692,13 @@ final class WidgetManager: ObservableObject {
         window.isReleasedWhenClosed = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         window.isMovableByWindowBackground = !instance.isPositionLocked
-        window.contentView = NSHostingView(rootView: content)
+        let hosting = NSHostingView(rootView: content)
+        if #available(macOS 13.0, *) {
+            hosting.sizingOptions = [.intrinsicContentSize]
+        }
+        hosting.setContentHuggingPriority(.required, for: .vertical)
+        hosting.setContentCompressionResistancePriority(.required, for: .vertical)
+        window.contentView = hosting
         window.contentView?.wantsLayer = true  // Уже true для NSHostingView, но на всякий случай
         window.contentView?.layerContentsRedrawPolicy = .onSetNeedsDisplay
         window.orderFrontRegardless()

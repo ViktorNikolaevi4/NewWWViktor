@@ -42,7 +42,9 @@ struct WidgetHostView: View {
                         .padding(.top, 8)
                         .padding(.trailing, 8)
                 }
-            .id(manager.globalColorsVersion) // refresh on any appearance change
+            // Rebuild fully when size or palette changes to drop any cached layout from previous size.
+            .id("\(instance.id.uuidString)-\(instance.sizeOption.rawValue)-\(manager.globalColorsVersion)")
+            .animation(.none, value: instance.sizeOption)
             .contentShape(Rectangle())
             .onHover { hovering in
                 withAnimation(.snappy(duration: 0.16, extraBounce: 0.0)) {

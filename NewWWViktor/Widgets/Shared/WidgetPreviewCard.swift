@@ -191,12 +191,17 @@ struct WidgetPreviewCard: View {
     }
 
     private var previewDisplaySize: CGSize {
-        let maxWidth: CGFloat = 300
-        let maxHeight: CGFloat = 170
+        let targetWidth: CGFloat = {
+            switch previewSizeOption {
+            case .small:
+                return 180
+            case .medium, .large, .extraLarge:
+                return 300
+            }
+        }()
         let size = previewSizeOption.dimensions
-        let widthScale = maxWidth / size.width
-        let heightScale = maxHeight / size.height
-        let scale = min(widthScale, heightScale)
+        // Scale preview purely by width so пропорции совпадают с реальным виджетом.
+        let scale = targetWidth / size.width
         return CGSize(width: size.width * scale, height: size.height * scale)
     }
 

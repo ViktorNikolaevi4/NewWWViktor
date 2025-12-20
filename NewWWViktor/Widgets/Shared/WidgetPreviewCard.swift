@@ -210,13 +210,13 @@ struct WidgetPreviewCard: View {
         let isWeather = type == .weather
         switch (isWeather, previewSizeOption) {
         case (true, .small):
-            return 10
-        case (true, .medium):
-            return 16
-        case (true, .large):
             return 28
+        case (true, .medium):
+            return 42
+        case (true, .large):
+            return 68
         case (true, .extraLarge):
-            return 36
+            return 88
         case (false, .small):
             return 6
         case (false, .medium):

@@ -140,6 +140,11 @@
 "widgetSizeExtraLarge" = "Extra Large";
 "widgetSizeLargeSubtitle" = "Wide layout";
 "widgetSizeExtraLargeSubtitle" = "Maximum space";
+"widgetWeatherFeelsLike" = "Feels like";
+"widgetWeatherHumidity" = "Humidity";
+"widgetWeatherPressure" = "Pressure";
+"widgetWeatherSunrise" = "Sunrise";
+"widgetWeatherSunset" = "Sunset";
 "noColorSelected" = "No color selected.\nUse the palette below to pick one.";
 "opacity" = "Opacity";
 "back" = "Back";

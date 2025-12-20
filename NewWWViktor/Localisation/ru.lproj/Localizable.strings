@@ -140,6 +140,11 @@
 "widgetSizeExtraLarge" = "Огромный";
 "widgetSizeLargeSubtitle" = "Широкий макет";
 "widgetSizeExtraLargeSubtitle" = "Максимум места";
+"widgetWeatherFeelsLike" = "Ощущается";
+"widgetWeatherHumidity" = "Влажность";
+"widgetWeatherPressure" = "Давление";
+"widgetWeatherSunrise" = "Восход";
+"widgetWeatherSunset" = "Закат";
 "noColorSelected" = "Цвет не выбран.\nВыберите из палитры ниже.";
 "opacity" = "Прозрачность";
 "back" = "Назад";

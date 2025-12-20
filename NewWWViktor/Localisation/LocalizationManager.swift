@@ -150,6 +150,11 @@ enum LocalizationKey: String {
     case widgetSizeExtraLarge
     case widgetSizeLargeSubtitle
     case widgetSizeExtraLargeSubtitle
+    case widgetWeatherFeelsLike
+    case widgetWeatherHumidity
+    case widgetWeatherPressure
+    case widgetWeatherSunrise
+    case widgetWeatherSunset
 }
 
 final class LocalizationManager: ObservableObject {

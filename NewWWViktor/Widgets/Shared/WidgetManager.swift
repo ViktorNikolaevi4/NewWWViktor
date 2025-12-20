@@ -11,6 +11,11 @@ struct WeatherSnapshot: Equatable {
     let highCelsius: Int?
     let lowCelsius: Int?
     let symbolName: String?
+    let feelsLikeCelsius: Int?
+    let humidityPercent: Int?
+    let pressureHPa: Int?
+    let sunrise: Date?
+    let sunset: Date?
     let lastUpdated: Date?
     let hourly: [HourlyWeatherSnapshot]
     let daily: [DailyWeatherSnapshot]
@@ -22,6 +27,11 @@ struct WeatherSnapshot: Equatable {
                         highCelsius: nil,
                         lowCelsius: nil,
                         symbolName: "cloud.sun.fill",
+                        feelsLikeCelsius: nil,
+                        humidityPercent: nil,
+                        pressureHPa: nil,
+                        sunrise: nil,
+                        sunset: nil,
                         lastUpdated: nil,
                         hourly: [],
                         daily: [])
@@ -323,6 +333,8 @@ final class WidgetManager: ObservableObject {
                                          lowCelsius: $0.lowTemperature.roundedCelsiusInt,
                                          symbolName: $0.symbolName)
                 }
+            let today = report.dailyForecast.forecast.first
+
             let snapshot = WeatherSnapshot(
                 city: cityLabel,
                 temperatureCelsius: report.currentWeather.temperature.roundedCelsiusInt,
@@ -330,6 +342,11 @@ final class WidgetManager: ObservableObject {
                 highCelsius: report.dailyForecast.forecast.first?.highTemperature.roundedCelsiusInt,
                 lowCelsius: report.dailyForecast.forecast.first?.lowTemperature.roundedCelsiusInt,
                 symbolName: report.currentWeather.symbolName,
+                feelsLikeCelsius: report.currentWeather.apparentTemperature.roundedCelsiusInt,
+                humidityPercent: Int((report.currentWeather.humidity * 100).rounded()),
+                pressureHPa: Int(report.currentWeather.pressure.converted(to: .hectopascals).value.rounded()),
+                sunrise: today?.sun.sunrise,
+                sunset: today?.sun.sunset,
                 lastUpdated: Date(),
                 hourly: Array(hourly),
                 daily: Array(daily)
@@ -344,6 +361,11 @@ final class WidgetManager: ObservableObject {
                 highCelsius: stale.highCelsius,
                 lowCelsius: stale.lowCelsius,
                 symbolName: stale.symbolName ?? "cloud.fill",
+                feelsLikeCelsius: stale.feelsLikeCelsius,
+                humidityPercent: stale.humidityPercent,
+                pressureHPa: stale.pressureHPa,
+                sunrise: stale.sunrise,
+                sunset: stale.sunset,
                 lastUpdated: Date(),
                 hourly: stale.hourly,
                 daily: stale.daily

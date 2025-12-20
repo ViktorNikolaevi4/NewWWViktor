@@ -64,6 +64,70 @@ private extension WeatherWidgetView {
         (weather.highCelsius, weather.lowCelsius)
     }
 
+    var feelsLikeText: String {
+        displayTemperature(from: weather.feelsLikeCelsius)
+    }
+
+    var humidityText: String {
+        if let humidity = weather.humidityPercent {
+            return "\(humidity)%"
+        }
+        return "--"
+    }
+
+    var pressureText: String {
+        if let pressure = weather.pressureHPa {
+            return "\(pressure) hPa"
+        }
+        return "--"
+    }
+
+    func nextSunEventMetric() -> MetricItem? {
+        guard weather.sunrise != nil || weather.sunset != nil else { return nil }
+        let now = Date()
+        let day: TimeInterval = 24 * 60 * 60
+
+        if let sunrise = weather.sunrise, let sunset = weather.sunset {
+            if now < sunrise {
+                return MetricItem(title: localization.text(.widgetWeatherSunrise),
+                                  value: timeText(sunrise),
+                                  icon: "sunrise.fill")
+            } else if now < sunset {
+                return MetricItem(title: localization.text(.widgetWeatherSunset),
+                                  value: timeText(sunset),
+                                  icon: "sunset.fill")
+            } else {
+                return MetricItem(title: localization.text(.widgetWeatherSunrise),
+                                  value: timeText(sunrise.addingTimeInterval(day)),
+                                  icon: "sunrise.fill")
+            }
+        } else if let sunrise = weather.sunrise {
+            return MetricItem(title: localization.text(.widgetWeatherSunrise),
+                              value: timeText(sunrise),
+                              icon: "sunrise.fill")
+        } else if let sunset = weather.sunset {
+            if now < sunset {
+                return MetricItem(title: localization.text(.widgetWeatherSunset),
+                                  value: timeText(sunset),
+                                  icon: "sunset.fill")
+            } else {
+                return MetricItem(title: localization.text(.widgetWeatherSunrise),
+                                  value: timeText(sunset.addingTimeInterval(day)),
+                                  icon: "sunrise.fill")
+            }
+        }
+        return nil
+    }
+
+    func timeText(_ date: Date?) -> String {
+        guard let date else { return "--:--" }
+        let formatter = DateFormatter()
+        formatter.locale = localization.selectedLanguage.locale
+        formatter.timeZone = effectiveTimeZone
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+
     var highLowText: String {
         if let high = highLowPair.0, let low = highLowPair.1 {
             return "H: \(displayTemperatureValue(from: high))° · L: \(displayTemperatureValue(from: low))°"
@@ -135,6 +199,10 @@ private extension WeatherWidgetView {
 
     var isLargeWidget: Bool {
         widget.sizeOption == .large || widget.sizeOption == .extraLarge
+    }
+
+    var isExtraLarge: Bool {
+        widget.sizeOption == .extraLarge
     }
 
     var hourlyDisplayLimit: Int {
@@ -370,6 +438,23 @@ private extension WeatherWidgetView {
                     .opacity(0.85)
                 dailyForecast
             }
+
+            if isExtraLarge {
+                Spacer(minLength: 0) // push metrics closer to bottom in XL
+                Divider()
+                    .frame(height: 1)
+                    .background(primaryColor.opacity(0.20))
+                    .overlay(
+                        LinearGradient(gradient: Gradient(colors: [
+                            .clear,
+                            primaryColor.opacity(0.35),
+                            .clear
+                        ]), startPoint: .leading, endPoint: .trailing)
+                    )
+                    .padding(.horizontal, -4)
+                    .opacity(0.85)
+                extraMetrics
+            }
         }
     }
 
@@ -401,6 +486,80 @@ private extension WeatherWidgetView {
             }
         }
     }
+
+    var extraMetrics: some View {
+        var metrics: [MetricItem] = [
+            MetricItem(title: localization.text(.widgetWeatherFeelsLike), value: feelsLikeText, icon: "thermometer.medium"),
+            MetricItem(title: localization.text(.widgetWeatherPressure), value: pressureText, icon: "gauge.medium"),
+            MetricItem(title: localization.text(.widgetWeatherHumidity), value: humidityText, icon: "drop.fill")
+        ]
+        if let sun = nextSunEventMetric() {
+            metrics.append(sun)
+        }
+
+        let rows = stride(from: 0, to: metrics.count, by: 2).map { idx -> [MetricItem] in
+            Array(metrics[idx..<min(idx + 2, metrics.count)])
+        }
+
+        return VStack(spacing: 0) {
+            ForEach(rows.indices, id: \.self) { rowIndex in
+                let row = rows[rowIndex]
+                HStack(alignment: .center, spacing: 0) {
+                    metricCell(row.first, alignment: .leading)
+
+                    if row.count == 2 {
+                        Rectangle()
+                            .fill(primaryColor.opacity(0.12))
+                            .frame(width: 1, height: 32)
+                            .padding(.horizontal, 6)
+                        metricCell(row.last, alignment: .trailing)
+                    } else {
+                        Spacer(minLength: 0)
+                    }
+                }
+                .padding(.vertical, 8)
+
+                if rowIndex != rows.count - 1 {
+                    Divider()
+                        .frame(height: 1)
+                        .background(primaryColor.opacity(0.18))
+                        .padding(.vertical, 6)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func metricCell(_ metric: MetricItem?, alignment: Alignment = .leading) -> some View {
+        if let metric {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Image(systemName: metric.icon)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(primaryColor)
+                        .frame(width: 22, alignment: .leading)
+                    Text(metric.title)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(secondaryColor)
+                        .lineLimit(1)
+                }
+                Text(metric.value)
+                    .font(.system(size: 26, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, alignment: alignment)
+        } else {
+            Spacer()
+        }
+    }
+}
+
+private struct MetricItem {
+    let title: String
+    let value: String
+    let icon: String
 }
 
 private struct TemperatureValueView: View {

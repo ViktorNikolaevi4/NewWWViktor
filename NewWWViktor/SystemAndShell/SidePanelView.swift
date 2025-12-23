@@ -56,7 +56,13 @@ struct SidePanelView: View {
 
             // Widget preview list (WidgetWall style)
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
+                let gridSpacing: CGFloat = manager.isPanelFullscreen ? 64 : 24
+                let columns = [
+                    GridItem(.adaptive(minimum: 300, maximum: cardMaxWidth),
+                             spacing: gridSpacing,
+                             alignment: .leading)
+                ]
+                LazyVGrid(columns: columns, alignment: .leading, spacing: gridSpacing) {
                     ForEach(WidgetType.allCases) { type in
                         WidgetPreviewCard(type: type) { size in
                             manager.addWidget(type: type, size: size)
@@ -65,8 +71,8 @@ struct SidePanelView: View {
                     }
                 }
                 .padding(.top, 4)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
 
             Divider()
                 .padding(.top, 4)

@@ -333,7 +333,7 @@ private extension WeatherWidgetView {
     var header: some View {
         Text(cityTitle)
             .font(cityFont)
-            .foregroundStyle(.primary)
+            .foregroundStyle(primaryColor)
             .lineLimit(1)
             .truncationMode(.tail)
     }
@@ -360,10 +360,10 @@ private extension WeatherWidgetView {
                 ForEach(Array(hourlyItems.prefix(hourlyDisplayLimit)).enumerated(), id: \.offset) { item in
                     let entry = item.element
 
-                    VStack(spacing: 4) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(formattedHour(entry.date))
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(secondaryColor)
                         stylizedWeatherIcon(systemName: entry.symbolName ?? "cloud.fill",
                                             size: 16,
                                             background: 28)
@@ -371,7 +371,7 @@ private extension WeatherWidgetView {
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(secondaryColor)
                     }
-                    .frame(width: 38, alignment: .center)
+                    .frame(width: 38, alignment: .leading)
                 }
             }
             .padding(.top, 2)
@@ -381,11 +381,62 @@ private extension WeatherWidgetView {
 
     @ViewBuilder
     func stylizedWeatherIcon(systemName: String, size: CGFloat, background: CGFloat) -> some View {
-        Image(systemName: systemName)
+        let normalizedName = filledCloudSymbolName(systemName)
+        let palette = weatherIconPalette(for: normalizedName)
+        Image(systemName: normalizedName)
             .symbolRenderingMode(.palette)
-            .foregroundStyle(primaryColor, Color.white.opacity(0.9))
+            .foregroundStyle(palette[0], palette[1])
             .font(.system(size: size, weight: .semibold))
             .accessibilityHidden(true)
+    }
+
+    private func filledCloudSymbolName(_ systemName: String) -> String {
+        guard systemName.contains("cloud"), !systemName.contains(".fill") else {
+            return systemName
+        }
+        return systemName + ".fill"
+    }
+
+    private func weatherIconPalette(for systemName: String) -> [Color] {
+        let name = systemName.lowercased()
+        let cloud = Color.white
+        let sun = Color(red: 1.0, green: 0.82, blue: 0.2)
+        let moon = Color.white
+        let rain = Color(red: 0.35, green: 0.65, blue: 0.98)
+        let snow = Color(red: 0.75, green: 0.9, blue: 1.0)
+        let bolt = Color(red: 1.0, green: 0.8, blue: 0.2)
+        let fog = Color.white.opacity(0.7)
+        let wind = Color.white.opacity(0.75)
+
+        if name.contains("rain") || name.contains("drizzle") {
+            return [cloud, rain]
+        }
+        if name.contains("snow") || name.contains("sleet") || name.contains("hail") {
+            return [cloud, snow]
+        }
+        if name.contains("bolt") {
+            return [cloud, bolt]
+        }
+        if name.contains("cloud.sun") {
+            return [cloud, sun]
+        }
+        if name.contains("cloud.moon") {
+            return [cloud, moon]
+        }
+        if name.contains("sun") {
+            return [sun, sun]
+        }
+        if name.contains("moon") {
+            return [moon, moon]
+        }
+        if name.contains("fog") || name.contains("haze") || name.contains("smoke") {
+            return [fog, fog]
+        }
+        if name.contains("wind") || name.contains("tornado") {
+            return [wind, wind]
+        }
+
+        return [cloud, cloud]
     }
 
     func formattedHour(_ date: Date) -> String {
@@ -439,7 +490,7 @@ private extension WeatherWidgetView {
                                  baseSize: 26,
                                  digitWeight: .regular,
                                  design: .rounded,
-                                 digitColor: primaryColor)
+                                 digitColor: secondaryColor)
 
                 stylizedWeatherIcon(systemName: weatherSymbolName,
                                     size: 18,
@@ -455,7 +506,7 @@ private extension WeatherWidgetView {
 
                 Text(highLowText)
                     .font(highLowFont)
-                    .foregroundStyle(secondaryColor)
+                    .foregroundStyle(primaryColor)
                     .lineLimit(1)
                     .truncationMode(.tail)
             }
@@ -471,7 +522,7 @@ private extension WeatherWidgetView {
                                          baseSize: 26,
                                          digitWeight: .regular,
                                          design: .rounded,
-                                         digitColor: primaryColor)
+                                         digitColor: secondaryColor)
                 }
 
                 Spacer()
@@ -490,7 +541,7 @@ private extension WeatherWidgetView {
 
                         Text(highLowText)
                             .font(highLowFont)
-                            .foregroundStyle(secondaryColor)
+                            .foregroundStyle(primaryColor)
                             .lineLimit(1)
                             .truncationMode(.tail)
                     }
@@ -510,7 +561,7 @@ private extension WeatherWidgetView {
                                          baseSize: 28,
                                          digitWeight: .regular,
                                          design: .rounded,
-                                         digitColor: primaryColor)
+                                         digitColor: secondaryColor)
                 }
 
                 Spacer()
@@ -529,7 +580,7 @@ private extension WeatherWidgetView {
 
                         Text(highLowText)
                             .font(highLowFont)
-                            .foregroundStyle(secondaryColor)
+                            .foregroundStyle(primaryColor)
                             .lineLimit(1)
                             .truncationMode(.tail)
                     }
@@ -541,11 +592,11 @@ private extension WeatherWidgetView {
             if !dailyItems.isEmpty {
                 Divider()
                     .frame(height: 1)
-                    .background(primaryColor.opacity(0.20))
+                    .background(Color.white.opacity(0.18))
                     .overlay(
                         LinearGradient(gradient: Gradient(colors: [
                             .clear,
-                            primaryColor.opacity(0.35),
+                            Color.white.opacity(0.25),
                             .clear
                         ]), startPoint: .leading, endPoint: .trailing)
                     )
@@ -558,11 +609,11 @@ private extension WeatherWidgetView {
                 Spacer(minLength: 0) // push metrics closer to bottom in XL
                 Divider()
                     .frame(height: 1)
-                    .background(primaryColor.opacity(0.20))
+                    .background(Color.white.opacity(0.18))
                     .overlay(
                         LinearGradient(gradient: Gradient(colors: [
                             .clear,
-                            primaryColor.opacity(0.35),
+                            Color.white.opacity(0.25),
                             .clear
                         ]), startPoint: .leading, endPoint: .trailing)
                    )
@@ -580,7 +631,7 @@ private extension WeatherWidgetView {
                 HStack(spacing: 10) {
                     Text(formattedDay(entry.date))
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(secondaryColor)
                         .frame(width: 70, alignment: .leading)
                         .lineLimit(1)
 
@@ -592,7 +643,7 @@ private extension WeatherWidgetView {
 
                     Text(temperatureText(entry.highCelsius))
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(secondaryColor)
 
                     Text(temperatureText(entry.lowCelsius))
                         .font(.system(size: 12, weight: .regular))
@@ -633,7 +684,7 @@ private extension WeatherWidgetView {
 
                     if row.count == 2 {
                         Rectangle()
-                            .fill(primaryColor.opacity(0.12))
+                            .fill(Color.white.opacity(0.12))
                             .frame(width: 1, height: 32)
                             .padding(.horizontal, 6)
                         metricCell(row.last, alignment: .leading)
@@ -646,7 +697,7 @@ private extension WeatherWidgetView {
                 if rowIndex != rows.count - 1 {
                     Divider()
                         .frame(height: 1)
-                        .background(primaryColor.opacity(0.18))
+                        .background(Color.white.opacity(0.18))
                         .padding(.vertical, 6)
                 }
             }
@@ -661,21 +712,21 @@ private extension WeatherWidgetView {
                 HStack(spacing: 6) {
                     Image(systemName: metric.icon)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(primaryColor)
+                        .foregroundStyle(Color.white.opacity(0.9))
                         .frame(width: 22, alignment: .leading)
                     Text(metric.title)
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(secondaryColor)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(primaryColor)
                         .lineLimit(1)
                 }
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(metric.value)
                         .font(.system(size: 26, weight: .semibold))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(secondaryColor)
                     if let unit = metric.unit {
                         Text(unit)
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(secondaryColor)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .lineLimit(1)

@@ -103,6 +103,7 @@ final class WidgetManager: ObservableObject {
 
     private var windows: [UUID: NSWindow] = [:]
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
+    private var windowMoveObservers: [UUID: NSObjectProtocol] = [:]
     private var appearanceObserver: NSObjectProtocol?
     private let hideWidgetsKey = "miniww.widgets.hidden"
     private let safeInset: CGFloat = 4 // чуть ближе к краям, но не вылезая за visibleFrame
@@ -165,6 +166,7 @@ final class WidgetManager: ObservableObject {
 
     deinit {
         windowCloseObservers.values.forEach(NotificationCenter.default.removeObserver)
+        windowMoveObservers.values.forEach(NotificationCenter.default.removeObserver)
         appearanceObservers.forEach(NotificationCenter.default.removeObserver)
         if let cancellable = timerCancellable {
             cancellable.cancel()
@@ -193,6 +195,10 @@ final class WidgetManager: ObservableObject {
         } else if let observer = windowCloseObservers[id] {
             NotificationCenter.default.removeObserver(observer)
             windowCloseObservers[id] = nil
+        }
+        if let observer = windowMoveObservers[id] {
+            NotificationCenter.default.removeObserver(observer)
+            windowMoveObservers[id] = nil
         }
         weatherSnapshots[id] = nil
     }
@@ -462,6 +468,10 @@ final class WidgetManager: ObservableObject {
                 NotificationCenter.default.removeObserver(observer)
                 windowCloseObservers[instance.id] = nil
             }
+            if let observer = windowMoveObservers[instance.id] {
+                NotificationCenter.default.removeObserver(observer)
+                windowMoveObservers[instance.id] = nil
+            }
         }
         widgets.removeAll()
     }
@@ -544,6 +554,7 @@ final class WidgetManager: ObservableObject {
         windows.values.forEach { $0.close() }
         windows.removeAll()
         windowCloseObservers.removeAll()
+        windowMoveObservers.removeAll()
 
         widgets = snapshot.widgets
         widgets.forEach { attachWindow(for: $0) }
@@ -727,9 +738,28 @@ final class WidgetManager: ObservableObject {
                 NotificationCenter.default.removeObserver(existing)
                 self.windowCloseObservers[instance.id] = nil
             }
+            if let existing = self.windowMoveObservers[instance.id] {
+                NotificationCenter.default.removeObserver(existing)
+                self.windowMoveObservers[instance.id] = nil
+            }
             self.windows[instance.id] = nil
         }
         windowCloseObservers[instance.id] = observer
+
+        let moveObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.didMoveNotification,
+            object: window,
+            queue: .main
+        ) { [weak self, weak window] _ in
+            guard let self, let window else { return }
+            guard let idx = self.widgets.firstIndex(where: { $0.id == instance.id }) else { return }
+            let overflow = WidgetStyle.menuButtonOverflow
+            var updated = self.widgets[idx]
+            updated.x = window.frame.origin.x
+            updated.y = window.frame.origin.y + overflow
+            self.widgets[idx] = updated
+        }
+        windowMoveObservers[instance.id] = moveObserver
     }
 
     // MARK: - Persistence (very simple)

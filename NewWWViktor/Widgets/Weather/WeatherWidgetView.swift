@@ -792,9 +792,9 @@ private extension WeatherWidgetView {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Image(systemName: metric.icon)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Color.white.opacity(0.9))
-                        .frame(width: 26, alignment: .leading)
+                        .frame(width: 22, alignment: .leading)
                     Text(metric.title)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(primaryColor)

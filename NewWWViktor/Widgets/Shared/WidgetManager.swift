@@ -621,14 +621,15 @@ final class WidgetManager: ObservableObject {
             guard let self = self,
                   let idx = self.widgets.firstIndex(where: { $0.id == instance.id }) else { return }
 
+            let overflow = WidgetStyle.menuButtonOverflow
             var updatedInstance = instance
             if let window = self.windows[instance.id] {
                 let frame = window.frame
                 updatedInstance.x = frame.origin.x
-                updatedInstance.y = frame.origin.y
+                updatedInstance.y = frame.origin.y + overflow
 
                 // Anchor resize to the top edge: grow downward instead of upward.
-                let deltaHeight = updatedInstance.height - frame.height
+                let deltaHeight = updatedInstance.height - (frame.height - overflow)
                 if deltaHeight != 0 {
                     updatedInstance.y -= deltaHeight
                 }
@@ -638,9 +639,9 @@ final class WidgetManager: ObservableObject {
 
             if let window = self.windows[instance.id] {
                 let newFrame = NSRect(x: updatedInstance.x,
-                                      y: updatedInstance.y,
+                                      y: updatedInstance.y - overflow,
                                       width: updatedInstance.width,
-                                      height: updatedInstance.height)
+                                      height: updatedInstance.height + overflow)
                 let shouldAnimate = window.frame.size != newFrame.size
                 window.setFrame(newFrame,
                                 display: true,
@@ -673,9 +674,9 @@ final class WidgetManager: ObservableObject {
 
         let window = WidgetPanel(
             contentRect: NSRect(x: instance.x,
-                                y: instance.y,
+                                y: instance.y - WidgetStyle.menuButtonOverflow,
                                 width: instance.width,
-                                height: instance.height),
+                                height: instance.height + WidgetStyle.menuButtonOverflow),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false

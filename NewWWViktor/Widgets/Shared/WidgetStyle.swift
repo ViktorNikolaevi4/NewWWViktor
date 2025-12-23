@@ -2,6 +2,7 @@ import SwiftUI
 
 enum WidgetStyle {
     static let cornerRadius: CGFloat = 26
+    static let menuButtonOverflow: CGFloat = 16
 }
 
  enum AppIconMode: Int, CaseIterable, Identifiable {

@@ -21,27 +21,47 @@ struct WidgetHostView: View {
     @State private var windowMoveObserver: NSObjectProtocol?
 #endif
 
+    private var menuButtonOverflow: CGFloat {
+#if os(macOS)
+        return WidgetStyle.menuButtonOverflow
+#else
+        return 0
+#endif
+    }
+
+    private var menuButtonOffsetY: CGFloat {
+#if os(macOS)
+        return 0
+#else
+        return 0
+#endif
+    }
+
     var body: some View {
         if let instance = manager.widgets.first(where: { $0.id == instanceID }) {
-            widgetView(for: instance)
-                .padding(.horizontal, instance.sizeOption == .small ? 12 : 16)
-                .padding(.vertical, instance.sizeOption == .small ? 8 : 8)
-                .frame(maxWidth: .infinity,
-                       maxHeight: .infinity,
-                       alignment: .topLeading)
-                .background(widgetBackground)
-                .overlay(
-                    RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-                        .strokeBorder(Color.white.opacity(backgroundStrokeOpacity))
-                )
-                .clipShape(
-                    RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
-                )
-                .overlay(alignment: .topTrailing) {
-                    menuButton(for: instance)
-                        .padding(.top, 8)
-                        .padding(.trailing, 8)
+            ZStack(alignment: .topTrailing) {
+                VStack(spacing: 0) {
+                    Color.clear.frame(height: menuButtonOverflow)
+                    widgetView(for: instance)
+                        .padding(.horizontal, instance.sizeOption == .small ? 12 : 16)
+                        .padding(.vertical, instance.sizeOption == .small ? 8 : 8)
+                        .frame(maxWidth: .infinity,
+                               maxHeight: .infinity,
+                               alignment: .topLeading)
+                        .background(widgetBackground)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                                .strokeBorder(Color.white.opacity(backgroundStrokeOpacity))
+                        )
+                        .clipShape(
+                            RoundedRectangle(cornerRadius: WidgetStyle.cornerRadius, style: .continuous)
+                        )
                 }
+
+                menuButton(for: instance)
+                    .padding(.trailing, 2)
+                    .offset(y: menuButtonOffsetY)
+            }
             // Rebuild fully when size or palette changes to drop any cached layout from previous size.
             .id("\(instance.id.uuidString)-\(instance.sizeOption.rawValue)-\(manager.globalColorsVersion)")
             .animation(.none, value: instance.sizeOption)
@@ -116,10 +136,6 @@ struct WidgetHostView: View {
                     .font(.system(size: 22, weight: .bold))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 4)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(Color.black.opacity(0.22))
-                    )
             }
             .buttonStyle(.plain)
             .transition(.scale(scale: 0.6, anchor: .topTrailing).combined(with: .opacity))

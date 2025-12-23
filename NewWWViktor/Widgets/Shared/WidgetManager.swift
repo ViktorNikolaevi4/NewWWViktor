@@ -55,6 +55,7 @@ struct DailyWeatherSnapshot: Equatable {
     let highCelsius: Int?
     let lowCelsius: Int?
     let symbolName: String?
+    let conditionDescription: String?
 }
 
 private extension NSWindow.Level {
@@ -332,7 +333,8 @@ final class WidgetManager: ObservableObject {
                     DailyWeatherSnapshot(date: $0.date,
                                          highCelsius: $0.highTemperature.roundedCelsiusInt,
                                          lowCelsius: $0.lowTemperature.roundedCelsiusInt,
-                                         symbolName: $0.symbolName)
+                                         symbolName: $0.symbolName,
+                                         conditionDescription: $0.condition.description)
                 }
             let today = report.dailyForecast.forecast.first
 

@@ -134,6 +134,7 @@ struct WidgetHostView: View {
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(Color.white)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 4)
             }

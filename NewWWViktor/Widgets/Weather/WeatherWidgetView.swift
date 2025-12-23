@@ -186,6 +186,7 @@ private extension WeatherWidgetView {
                 if key.contains("гроза") { return "Thunderstorm" }
                 if key.contains("туман") { return "Fog" }
                 if key.contains("ветер") { return "Windy" }
+                if key.contains("изморос") { return "Drizzle" }
             }
             return raw
         }
@@ -239,6 +240,7 @@ private extension WeatherWidgetView {
             "дымка": "Haze",
             "дым": "Smoke",
             "ветрено": "Windy",
+            "изморось": "Drizzle",
             "небольшой дождь": "Light rain",
             "дождь": "Rain",
             "сильный дождь": "Heavy rain",
@@ -360,16 +362,19 @@ private extension WeatherWidgetView {
                 ForEach(Array(hourlyItems.prefix(hourlyDisplayLimit)).enumerated(), id: \.offset) { item in
                     let entry = item.element
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text(formattedHour(entry.date))
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(secondaryColor)
+                            .frame(height: 14, alignment: .leading)
                         stylizedWeatherIcon(systemName: entry.symbolName ?? "cloud.fill",
                                             size: 16,
                                             background: 28)
+                            .frame(height: 18, alignment: .center)
                         Text(displayTemperature(from: entry.temperatureCelsius))
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(secondaryColor)
+                            .frame(height: 14, alignment: .leading)
                     }
                     .frame(width: 38, alignment: .leading)
                 }
@@ -468,6 +473,48 @@ private extension WeatherWidgetView {
         return formatter.string(from: date)
     }
 
+    var todayDateText: (day: String, month: String) {
+        let formatter = DateFormatter()
+        formatter.locale = localization.selectedLanguage.locale
+        formatter.timeZone = effectiveTimeZone
+        formatter.dateFormat = "d"
+        let day = formatter.string(from: Date())
+        formatter.dateFormat = "MMM"
+        let month = formatter.string(from: Date())
+        return (day, month)
+    }
+
+    func dailyConditionText(for entry: DailyWeatherSnapshot) -> String? {
+        if let description = localizedCondition(from: entry.conditionDescription) {
+            return description
+        }
+        return conditionText(from: entry.symbolName)
+    }
+
+    func conditionText(from symbolName: String?) -> String? {
+        guard let name = symbolName?.lowercased() else { return nil }
+        let isRussian = localization.selectedLanguage == .russian
+        if name.contains("snow") || name.contains("sleet") || name.contains("hail") {
+            return isRussian ? "Снег" : "Snow"
+        }
+        if name.contains("rain") || name.contains("drizzle") {
+            return isRussian ? "Дождь" : "Rain"
+        }
+        if name.contains("thunder") || name.contains("bolt") {
+            return isRussian ? "Гроза" : "Thunderstorm"
+        }
+        if name.contains("fog") || name.contains("haze") || name.contains("smoke") {
+            return isRussian ? "Туман" : "Fog"
+        }
+        if name.contains("cloud") {
+            return isRussian ? "Облачно" : "Cloudy"
+        }
+        if name.contains("sun") || name.contains("moon") || name.contains("clear") {
+            return isRussian ? "Ясно" : "Clear"
+        }
+        return nil
+    }
+
     func temperatureText(_ value: Int?) -> String {
         guard let value else { return "--" }
         return displayTemperature(from: value)
@@ -527,6 +574,18 @@ private extension WeatherWidgetView {
 
                 Spacer()
 
+                VStack(spacing: 0) {
+                    Text(todayDateText.day)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(secondaryColor)
+                    Text(todayDateText.month)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(secondaryColor)
+                }
+                .padding(.top, 2)
+
+                Spacer()
+
                 VStack(alignment: .trailing, spacing: 2) {
                     stylizedWeatherIcon(systemName: weatherSymbolName,
                                         size: 20,
@@ -563,6 +622,18 @@ private extension WeatherWidgetView {
                                          design: .rounded,
                                          digitColor: secondaryColor)
                 }
+
+                Spacer()
+
+                VStack(spacing: 0) {
+                    Text(todayDateText.day)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(secondaryColor)
+                    Text(todayDateText.month)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(secondaryColor)
+                }
+                .padding(.top, 2)
 
                 Spacer()
 
@@ -628,26 +699,36 @@ private extension WeatherWidgetView {
         VStack(alignment: .leading, spacing: 8) {
             ForEach(Array(dailyItems.prefix(5)).enumerated(), id: \.offset) { item in
                 let entry = item.element
-                HStack(spacing: 10) {
+                HStack(spacing: 4) {
                     Text(formattedDay(entry.date))
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(secondaryColor)
-                        .frame(width: 70, alignment: .leading)
+                        .frame(width: 44, alignment: .leading)
                         .lineLimit(1)
 
                     stylizedWeatherIcon(systemName: entry.symbolName ?? "cloud.fill",
                                         size: 16,
                                         background: 0)
 
+                    if let condition = dailyConditionText(for: entry) {
+                        Text(condition)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.primary)
+                            .padding(.leading, 6)
+                            .lineLimit(1)
+                    }
+
                     Spacer()
 
                     Text(temperatureText(entry.highCelsius))
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(secondaryColor)
+                        .frame(width: 28, alignment: .trailing)
 
                     Text(temperatureText(entry.lowCelsius))
                         .font(.system(size: 12, weight: .regular))
                         .foregroundStyle(secondaryColor)
+                        .frame(width: 28, alignment: .trailing)
                 }
             }
         }
@@ -711,9 +792,9 @@ private extension WeatherWidgetView {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Image(systemName: metric.icon)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(Color.white.opacity(0.9))
-                        .frame(width: 22, alignment: .leading)
+                        .frame(width: 26, alignment: .leading)
                     Text(metric.title)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(primaryColor)

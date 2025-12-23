@@ -83,6 +83,7 @@ struct WidgetAppearanceSettingsSection: View {
                 ColorChip(colorName: widget.secondaryColorName,
                           intensity: widget.secondaryColorIntensity)
             }
+
             WidgetSettingsRowButton(title: localization.text(.appearanceBackgroundSection), action: onBackgroundPicker) {
                 ColorChip(colorName: widget.backgroundColorName ?? localization.text(.global),
                           intensity: widget.backgroundIntensity)
@@ -97,11 +98,12 @@ struct WidgetBehaviorSettingsSection: View {
     @Binding var sizeSelection: WidgetSizeOption
     @Binding var isPinnedTop: Bool
     @Binding var lockPosition: Bool
+    var availableSizes: [WidgetSizeOption]
 
     var body: some View {
         WidgetSettingsGroup(title: localization.text(.widgetBehaviorSection)) {
             WidgetSettingsRow(title: localization.text(.widgetSizeLabel)) {
-                WidgetSizePicker(selection: $sizeSelection)
+                WidgetSizePicker(selection: $sizeSelection, availableSizes: availableSizes)
             }
             ToggleRow(title: localization.text(.widgetPinToTop), isOn: $isPinnedTop)
             ToggleRow(title: localization.text(.widgetLockPosition), isOn: $lockPosition)

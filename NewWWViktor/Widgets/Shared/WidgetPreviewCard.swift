@@ -38,6 +38,7 @@ struct WidgetPreviewCard: View {
 
             infoSection
                 .padding(.top, infoTopPadding)
+                .animation(.spring(response: 0.32, dampingFraction: 0.82), value: previewSizeOption)
 
             Divider()
                 .background(Color.white.opacity(0.08))
@@ -116,7 +117,7 @@ struct WidgetPreviewCard: View {
 
     private var layoutControls: some View {
         HStack(spacing: 8) {
-            ForEach(WidgetSizeOption.allCases) { option in
+            ForEach(allowedSizes) { option in
                 let isSelected = previewSizeOption == option
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
@@ -179,6 +180,10 @@ struct WidgetPreviewCard: View {
         #else
         return true
         #endif
+    }
+
+    private var allowedSizes: [WidgetSizeOption] {
+        type.availableSizes
     }
 
     @ViewBuilder

@@ -41,6 +41,13 @@ struct WidgetSettingsMenuView: View {
                 // Оставляем фон без затемнения при показе оверлеев, чтобы не было темной подложки позади палитры.
                 .blur(radius: 0)
                 .opacity(1)
+                .onAppear {
+                    let allowed = workingWidget.type.availableSizes
+                    if !allowed.contains(workingWidget.sizeOption), let first = allowed.first {
+                        workingWidget.applySizeOption(first)
+                        onUpdate(workingWidget)
+                    }
+                }
 
             if showLocationPicker {
                 WidgetLocationPickerView(isPresented: $showLocationPicker,
@@ -75,16 +82,23 @@ struct WidgetSettingsMenuView: View {
                         get: { workingWidget.backgroundColorName },
                         set: { newValue in
                             workingWidget.backgroundColorName = newValue
-                            workingWidget.backgroundStyle = .palette
                             onUpdate(workingWidget)
                         }
                     ),
                     intensity: Binding(
                         get: { workingWidget.backgroundIntensity },
                         set: { workingWidget.backgroundIntensity = $0; onUpdate(workingWidget) }
-                    )
+                    ),
+                    backgroundStyle: backgroundStyleBinding,
+                    gradientColor1Name: $workingWidget.gradientColor1Name,
+                    gradientColor1Opacity: $workingWidget.gradientColor1Opacity,
+                    gradientColor2Name: $workingWidget.gradientColor2Name,
+                    gradientColor2Opacity: $workingWidget.gradientColor2Opacity,
+                    gradientColor1Position: $workingWidget.gradientColor1Position,
+                    gradientColor2Position: $workingWidget.gradientColor2Position,
+                    gradientType: gradientTypeBinding,
+                    gradientAngle: gradientAngleBinding
                 ) {
-                    workingWidget.backgroundStyle = .palette
                     onUpdate(workingWidget)
                 }
                 .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -133,9 +147,10 @@ struct WidgetSettingsMenuView: View {
                     WidgetAppearanceSettingsSection(widget: $workingWidget,
                                                     onColorPicker: { activeColorRole = $0 },
                                                     onBackgroundPicker: { showBackgroundPicker = true })
-                    WidgetBehaviorSettingsSection(sizeSelection: sizeSelectionBinding,
-                                                  isPinnedTop: pinnedBinding,
-                                                  lockPosition: lockedBinding)
+                                                    WidgetBehaviorSettingsSection(sizeSelection: sizeSelectionBinding,
+                                                                              isPinnedTop: pinnedBinding,
+                                                                              lockPosition: lockedBinding,
+                                                                              availableSizes: workingWidget.type.availableSizes)
                     WidgetManagementSettingsSection(onAddWidgets: openSidePanel,
                                                     onShowGeneralSettings: openGeneralSettings,
                                                     onDelete: deleteWidget)
@@ -208,6 +223,36 @@ struct WidgetSettingsMenuView: View {
         case .secondary:
             return $workingWidget.secondaryColorIntensity
         }
+    }
+
+    private var backgroundStyleBinding: Binding<BackgroundStyle> {
+        Binding(
+            get: { workingWidget.backgroundStyle ?? .palette },
+            set: { newValue in
+                workingWidget.backgroundStyle = newValue
+                onUpdate(workingWidget)
+            }
+        )
+    }
+
+    private var gradientTypeBinding: Binding<BackgroundGradientType> {
+        Binding(
+            get: { workingWidget.gradientType ?? .linear },
+            set: { newValue in
+                workingWidget.gradientType = newValue
+                onUpdate(workingWidget)
+            }
+        )
+    }
+
+    private var gradientAngleBinding: Binding<Double> {
+        Binding(
+            get: { workingWidget.gradientAngle ?? 0 },
+            set: { newValue in
+                workingWidget.gradientAngle = newValue
+                onUpdate(workingWidget)
+            }
+        )
     }
 
     private func openSidePanel() {

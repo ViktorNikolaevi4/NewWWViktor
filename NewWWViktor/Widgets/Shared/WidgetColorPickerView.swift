@@ -15,53 +15,97 @@ struct WidgetColorPickerView: View {
     @Binding var isPresented: Bool
     @Binding var selection: String?
     @Binding var intensity: Double
+    var backgroundStyle: Binding<BackgroundStyle>? = nil
+    var gradientColor1Name: Binding<String?>? = nil
+    var gradientColor1Opacity: Binding<Double>? = nil
+    var gradientColor2Name: Binding<String?>? = nil
+    var gradientColor2Opacity: Binding<Double>? = nil
+    var gradientColor1Position: Binding<Double>? = nil
+    var gradientColor2Position: Binding<Double>? = nil
+    var gradientType: Binding<BackgroundGradientType>? = nil
+    var gradientAngle: Binding<Double>? = nil
     let onChange: () -> Void
 
     @State private var tab: Tab = .palette
     @State private var customColorHex: String = "#FFFFFFFF"
+    @State private var activeGradientChannel: Int = 1
 
     // Более плотная сетка палитры: больше столбцов, меньше отступы.
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 4)
     private let palette = PaletteColorOption.defaultPalette
 
+    private var shouldShowColorTabs: Bool {
+        guard let style = backgroundStyle?.wrappedValue else { return true }
+        return style != .photo
+    }
+
     var body: some View {
         VStack(spacing: 16) {
             header
 
-            Picker("", selection: $tab) {
-                ForEach(Tab.allCases, id: \.self) { tab in
-                    Text(title(for: tab))
+            if let styleBinding = backgroundStyle {
+                Picker("", selection: styleBinding) {
+                    Text(localization.text(.appearanceBackgroundPalette)).tag(BackgroundStyle.palette)
+                    Text(localization.text(.appearanceBackgroundGradient)).tag(BackgroundStyle.gradient)
+                    Text(localization.text(.appearanceBackgroundPhoto)).tag(BackgroundStyle.photo)
                 }
+                .pickerStyle(.segmented)
             }
-            .pickerStyle(.segmented)
 
-            if tab == .palette {
-                paletteGrid
+            if shouldShowColorTabs {
+                Picker("", selection: $tab) {
+                    ForEach(Tab.allCases, id: \.self) { tab in
+                        Text(title(for: tab))
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
+            if isGradientMode {
+                gradientChannelSwitcher
+
+                if tab == .palette {
+                    paletteGrid
+                } else {
+                    ScrollView {
+                        selectedSection
+                            .padding(.bottom, 8)
+                    }
+                    .frame(maxHeight: .infinity)
+                }
+                intensitySection
+                positionSection
+                gradientTypeSection
+            } else if isPhotoMode {
+                photoPlaceholder
             } else {
-                ScrollView {
-                    selectedSection
-                        .padding(.bottom, 8)
+                if tab == .palette {
+                    paletteGrid
+                } else {
+                    ScrollView {
+                        selectedSection
+                            .padding(.bottom, 8)
+                    }
+                    .frame(maxHeight: .infinity)
                 }
-                .frame(maxHeight: .infinity)
-            }
 
-            intensitySection
+                intensitySection
 
-            Button {
-                select(nil)
-            } label: {
-                HStack {
-                    Image(systemName: selection == nil ? "checkmark.circle.fill" : "circle")
-                    Text(localization.text(.global))
-                        .font(.system(size: 13, weight: .semibold))
-                    Spacer()
+                Button {
+                    select(nil)
+                } label: {
+                    HStack {
+                        Image(systemName: selection == nil ? "checkmark.circle.fill" : "circle")
+                        Text(localization.text(.global))
+                            .font(.system(size: 13, weight: .semibold))
+                        Spacer()
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 10)
+                    .background(Color.white.opacity(0.12))
                 }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 10)
-                .background(Color.white.opacity(0.12))
-             //   .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 14)
@@ -70,10 +114,13 @@ struct WidgetColorPickerView: View {
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 36, style: .continuous))
         .mask(RoundedRectangle(cornerRadius: 36, style: .continuous))
         .onAppear {
-            syncCustomColorHex(with: selection)
+            syncCustomColorHex(with: effectiveSelection.wrappedValue)
         }
-        .onChange(of: selection) { _, newValue in
+        .onChange(of: effectiveSelection.wrappedValue) { _, newValue in
             syncCustomColorHex(with: newValue)
+        }
+        .onChange(of: backgroundStyle?.wrappedValue) { _, _ in
+            onChange()
         }
     }
 
@@ -122,8 +169,8 @@ struct WidgetColorPickerView: View {
                             .frame(height: 24)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                    .stroke(Color.white.opacity(selection == option.assetName ? 1 : 0.2),
-                                            lineWidth: selection == option.assetName ? 2 : 1)
+                                    .stroke(Color.white.opacity(effectiveSelection.wrappedValue == option.assetName ? 1 : 0.2),
+                                            lineWidth: effectiveSelection.wrappedValue == option.assetName ? 2 : 1)
                             )
                     }
                     .buttonStyle(.plain)
@@ -144,8 +191,8 @@ struct WidgetColorPickerView: View {
                 select(nil)
             }
             .buttonStyle(.plain)
-            .foregroundColor(.white.opacity(selection == nil ? 0.4 : 0.9))
-            .disabled(selection == nil)
+            .foregroundColor(.white.opacity(effectiveSelection.wrappedValue == nil ? 0.4 : 0.9))
+            .disabled(effectiveSelection.wrappedValue == nil)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
@@ -159,12 +206,58 @@ struct WidgetColorPickerView: View {
                 .foregroundColor(.white.opacity(0.7))
 
             GradientSlider(
-                value: $intensity,
+                value: effectiveIntensity,
                 gradient: opacityGradient,
                 thumbColor: .white,
                 height: 10,
                 onChange: onChange
             )
+        }
+    }
+
+    @ViewBuilder
+    private var positionSection: some View {
+        if let posBinding = activePositionBinding {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("Позиция")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.white.opacity(0.7))
+                    Spacer()
+                    Text("\(Int(posBinding.wrappedValue * 100))%")
+                        .font(.footnote)
+                        .foregroundColor(.white.opacity(0.6))
+                }
+                Slider(value: posBinding, in: 0...1, onEditingChanged: { _ in onChange() })
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var gradientTypeSection: some View {
+        if isGradientMode, let type = gradientType, let angle = gradientAngle {
+            VStack(alignment: .leading, spacing: 8) {
+                Picker("Тип", selection: type) {
+                    ForEach(BackgroundGradientType.allCases) { gType in
+                        Text(gType.localizedTitle).tag(gType)
+                    }
+                }
+                .pickerStyle(.menu)
+
+                if type.wrappedValue == .linear || type.wrappedValue == .angular {
+                    HStack {
+                        Text("Угол")
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.white.opacity(0.7))
+                        Spacer()
+                        Text("\(Int(angle.wrappedValue))°")
+                            .font(.footnote)
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    Slider(value: angle, in: 0...360, step: 1, onEditingChanged: { _ in onChange() })
+                }
+            }
+            .padding(.top, 8)
         }
     }
 
@@ -181,7 +274,7 @@ struct WidgetColorPickerView: View {
 
     private var opacityGradient: [Color] {
         let base = HexColor.color(from: customColorHex)
-        ?? WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .white)
+        ?? WidgetPaletteColor.color(named: effectiveSelection.wrappedValue, intensity: 1.0, fallback: .white)
         return [base.opacity(0), base.opacity(1)]
     }
 
@@ -189,19 +282,28 @@ struct WidgetColorPickerView: View {
         Binding(
             get: {
                 HexColor.color(from: customColorHex)
-                ?? WidgetPaletteColor.color(named: selection, intensity: 1.0, fallback: .white)
+                ?? WidgetPaletteColor.color(named: effectiveSelection.wrappedValue, intensity: 1.0, fallback: .white)
             },
             set: { newColor in
                 guard let hex = HexColor.hexString(from: newColor) else { return }
                 customColorHex = hex
-                selection = hex
+                effectiveSelection.wrappedValue = hex
                 onChange()
             }
         )
     }
 
     private func select(_ colorName: String?) {
-        selection = colorName
+        if let style = backgroundStyle {
+            if style.wrappedValue == .gradient {
+                effectiveSelection.wrappedValue = colorName
+            } else {
+                style.wrappedValue = .palette
+                selection = colorName
+            }
+        } else {
+            selection = colorName
+        }
         onChange()
         if colorName == nil {
             isPresented = false
@@ -219,6 +321,95 @@ struct WidgetColorPickerView: View {
         } else if let resolved = HexColor.hexStringForNamedColor(newValue) {
             customColorHex = resolved
         }
+    }
+
+    private var isGradientMode: Bool {
+        backgroundStyle?.wrappedValue == .gradient &&
+        gradientColor1Name != nil && gradientColor2Name != nil &&
+        gradientColor1Opacity != nil && gradientColor2Opacity != nil &&
+        gradientColor1Position != nil && gradientColor2Position != nil
+    }
+
+    private var isPhotoMode: Bool {
+        backgroundStyle?.wrappedValue == .photo
+    }
+
+    private var effectiveSelection: Binding<String?> {
+        if isGradientMode {
+            if activeGradientChannel == 1, let g1 = gradientColor1Name {
+                return g1
+            } else if activeGradientChannel == 2, let g2 = gradientColor2Name {
+                return g2
+            }
+        }
+        return $selection
+    }
+
+    private var effectiveIntensity: Binding<Double> {
+        if isGradientMode {
+            if activeGradientChannel == 1, let g1 = gradientColor1Opacity {
+                return g1
+            } else if activeGradientChannel == 2, let g2 = gradientColor2Opacity {
+                return g2
+            }
+        }
+        return $intensity
+    }
+
+    private var activePositionBinding: Binding<Double>? {
+        guard isGradientMode else { return nil }
+        if activeGradientChannel == 1 {
+            return gradientColor1Position
+        } else {
+            return gradientColor2Position
+        }
+    }
+
+    private var gradientChannelSwitcher: some View {
+        HStack(spacing: 8) {
+            gradientChip(title: "Цвет 1", isActive: activeGradientChannel == 1) { activeGradientChannel = 1 }
+            gradientChip(title: "Цвет 2", isActive: activeGradientChannel == 2) { activeGradientChannel = 2 }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func gradientChip(title: String, isActive: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(isActive ? .black : .white.opacity(0.8))
+                .padding(.vertical, 6)
+                .padding(.horizontal, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(isActive ? Color.white : Color.white.opacity(0.16))
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var photoPlaceholder: some View {
+        VStack(spacing: 12) {
+            Text(localization.text(.appearanceBackgroundPhoto))
+                .font(.headline)
+            Text(localization.text(.appearanceBackgroundPhoto))
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.7))
+            Button {
+                backgroundStyle?.wrappedValue = .photo
+                onChange()
+                isPresented = false
+            } label: {
+                Text(localization.text(.appearanceBackgroundPhoto))
+                    .font(.system(size: 14, weight: .semibold))
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 14)
+                    .background(Color.white.opacity(0.14))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
+        .frame(maxHeight: .infinity)
     }
 }
 

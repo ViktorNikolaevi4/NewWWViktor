@@ -2,10 +2,11 @@ import SwiftUI
 
 struct WidgetSizePicker: View {
     @Binding var selection: WidgetSizeOption
+    var availableSizes: [WidgetSizeOption] = WidgetSizeOption.allCases
 
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(WidgetSizeOption.allCases) { option in
+            ForEach(availableSizes) { option in
                 Button {
                     selection = option
                 } label: {

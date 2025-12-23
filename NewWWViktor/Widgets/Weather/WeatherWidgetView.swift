@@ -60,7 +60,7 @@ private extension WeatherWidgetView {
     }
 
     var conditionText: String {
-        weather.conditionDescription ?? localization.text(.widgetWeatherPlaceholderCondition)
+        localizedCondition(from: weather.conditionDescription) ?? localization.text(.widgetWeatherPlaceholderCondition)
     }
 
     var highLowPair: (Int?, Int?) {
@@ -80,6 +80,10 @@ private extension WeatherWidgetView {
 
     var pressureText: String {
         if let pressure = weather.pressureHPa {
+            if localization.selectedLanguage == .russian {
+                let mmHg = Int((Double(pressure) * 0.75006).rounded())
+                return "\(mmHg) мм рт. ст."
+            }
             return "\(pressure) hPa"
         }
         return "--"
@@ -143,6 +147,105 @@ private extension WeatherWidgetView {
             return celsius
         }
         return Int((Double(celsius) * 9.0 / 5.0 + 32.0).rounded())
+    }
+
+    private func localizedCondition(from raw: String?) -> String? {
+        guard let raw else { return nil }
+        let key = raw.lowercased()
+
+        switch localization.selectedLanguage {
+        case .russian:
+            if let mapped = conditionTranslationsEnToRu[key] { return mapped }
+            if key.contains("mostly") && key.contains("cloud") { return "В основном облачно" }
+            if key.contains("partly") && key.contains("cloud") { return "Переменная облачность" }
+            if key.contains("cloud") { return "Облачно" }
+            if key.contains("clear") || key.contains("sunny") { return "Ясно" }
+            if key.contains("rain") || key.contains("shower") { return "Дождь" }
+            if key.contains("snow") { return "Снег" }
+            if key.contains("sleet") { return "Мокрый снег" }
+            if key.contains("thunder") { return "Гроза" }
+            if key.contains("fog") { return "Туман" }
+            if key.contains("haze") { return "Дымка" }
+            if key.contains("wind") { return "Ветрено" }
+            return raw
+        case .english:
+            // Если API вернул русское описание — переведём в английский.
+            if containsCyrillic(key) {
+                if let mapped = conditionTranslationsRuToEn[key] { return mapped }
+                if key.contains("облачно") && key.contains("перем") { return "Partly cloudy" }
+                if key.contains("облачно") { return "Cloudy" }
+                if key.contains("ясно") { return "Clear" }
+                if key.contains("дожд") { return "Rain" }
+                if key.contains("снег") { return "Snow" }
+                if key.contains("гроза") { return "Thunderstorm" }
+                if key.contains("туман") { return "Fog" }
+                if key.contains("ветер") { return "Windy" }
+            }
+            return raw
+        }
+    }
+
+    private func containsCyrillic(_ text: String) -> Bool {
+        text.range(of: "\\p{Cyrillic}", options: .regularExpression) != nil
+    }
+
+    private var conditionTranslationsEnToRu: [String: String] {
+        [
+            "clear": "Ясно",
+            "sunny": "Солнечно",
+            "mostly clear": "Преимущественно ясно",
+            "partly cloudy": "Переменная облачность",
+            "mostly cloudy": "В основном облачно",
+            "cloudy": "Облачно",
+            "overcast": "Пасмурно",
+            "fog": "Туман",
+            "haze": "Дымка",
+            "smoky": "Дым",
+            "windy": "Ветрено",
+            "breezy": "Лёгкий ветер",
+            "drizzle": "Морось",
+            "rain": "Дождь",
+            "light rain": "Небольшой дождь",
+            "heavy rain": "Сильный дождь",
+            "showers": "Ливень",
+            "rain showers": "Дождевые ливни",
+            "snow": "Снег",
+            "light snow": "Небольшой снег",
+            "heavy snow": "Сильный снег",
+            "snow showers": "Снегопад",
+            "sleet": "Мокрый снег",
+            "freezing rain": "Ледяной дождь",
+            "thunderstorms": "Грозы",
+            "thunderstorm": "Гроза",
+            "isolated thunderstorms": "Местами гроза"
+        ]
+    }
+
+    private var conditionTranslationsRuToEn: [String: String] {
+        [
+            "ясно": "Clear",
+            "солнечно": "Sunny",
+            "в основном облачно": "Mostly cloudy",
+            "переменная облачность": "Partly cloudy",
+            "облачно": "Cloudy",
+            "пасмурно": "Overcast",
+            "туман": "Fog",
+            "дымка": "Haze",
+            "дым": "Smoke",
+            "ветрено": "Windy",
+            "небольшой дождь": "Light rain",
+            "дождь": "Rain",
+            "сильный дождь": "Heavy rain",
+            "ливень": "Showers",
+            "снег": "Snow",
+            "небольшой снег": "Light snow",
+            "сильный снег": "Heavy snow",
+            "снегопад": "Snow showers",
+            "мокрый снег": "Sleet",
+            "ледяной дождь": "Freezing rain",
+            "гроза": "Thunderstorm",
+            "местами гроза": "Isolated thunderstorms"
+        ]
     }
 
     var contentPadding: EdgeInsets {
@@ -332,16 +435,17 @@ private extension WeatherWidgetView {
                                  design: .rounded,
                                  digitColor: primaryColor)
 
-            stylizedWeatherIcon(systemName: weatherSymbolName,
-                                size: 18,
-                                background: 30)
+                stylizedWeatherIcon(systemName: weatherSymbolName,
+                                    size: 18,
+                                    background: 30)
 
             VStack(alignment: .leading, spacing: 0) {
                 Text(conditionText)
                     .font(conditionFont)
                     .foregroundStyle(.primary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text(highLowText)
                     .font(highLowFont)
@@ -374,8 +478,9 @@ private extension WeatherWidgetView {
                         Text(conditionText)
                             .font(conditionFont)
                             .foregroundStyle(.primary)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.trailing)
+                            .fixedSize(horizontal: false, vertical: true)
 
                         Text(highLowText)
                             .font(highLowFont)
@@ -412,8 +517,9 @@ private extension WeatherWidgetView {
                         Text(conditionText)
                             .font(conditionFont)
                             .foregroundStyle(.primary)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.trailing)
+                            .fixedSize(horizontal: false, vertical: true)
 
                         Text(highLowText)
                             .font(highLowFont)

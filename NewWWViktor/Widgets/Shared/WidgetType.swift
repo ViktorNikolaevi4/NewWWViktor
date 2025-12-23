@@ -42,4 +42,13 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
             return WidgetSizeOption.medium.dimensions
         }
     }
+
+    var availableSizes: [WidgetSizeOption] {
+        switch self {
+        case .clock:
+            return [.small, .medium]
+        case .weather:
+            return WidgetSizeOption.allCases
+        }
+    }
 }

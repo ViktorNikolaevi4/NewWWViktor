@@ -174,7 +174,8 @@ final class WidgetManager: ObservableObject {
 
     func addWidget(type: WidgetType, size: WidgetSizeOption = .medium) {
         var instance = WidgetInstance(type: type)
-        instance.applySizeOption(size)
+        let targetSize = type.availableSizes.contains(size) ? size : (type.availableSizes.first ?? .medium)
+        instance.applySizeOption(targetSize)
         // Place near the grid with the first free slot.
         let origin = nextGridOrigin(for: instance)
         instance.x = origin.x

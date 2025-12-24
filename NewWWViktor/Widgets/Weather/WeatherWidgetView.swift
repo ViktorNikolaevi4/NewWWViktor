@@ -5,6 +5,10 @@ struct WeatherWidgetView: View {
 
     @EnvironmentObject private var manager: WidgetManager
     @EnvironmentObject private var localization: LocalizationManager
+    @State private var hourKey: String = ""
+    @State private var hourlyAnchor: Date = Date()
+    @State private var dayKey: String = ""
+    @State private var dailyAnchor: Date = Date()
 
     var body: some View {
         Group {
@@ -24,6 +28,25 @@ struct WeatherWidgetView: View {
         .animation(.none, value: widget.sizeOption)
         .task {
             manager.refreshWeather(for: widget)
+        }
+        .onAppear {
+            let now = manager.sharedDate
+            hourlyAnchor = now
+            hourKey = hourKey(for: now)
+            dailyAnchor = now
+            dayKey = dayKey(for: now)
+        }
+        .onChange(of: manager.sharedDate) { _, newDate in
+            let nextKey = hourKey(for: newDate)
+            if nextKey != hourKey {
+                hourKey = nextKey
+                hourlyAnchor = newDate
+            }
+            let nextDayKey = dayKey(for: newDate)
+            if nextDayKey != dayKey {
+                dayKey = nextDayKey
+                dailyAnchor = newDate
+            }
         }
         .onReceive(manager.locationProvider.$currentCoordinate) { coord in
             guard coord != nil else { return }
@@ -91,7 +114,7 @@ private extension WeatherWidgetView {
 
     func nextSunEventMetric() -> MetricItem? {
         guard weather.sunrise != nil || weather.sunset != nil else { return nil }
-        let now = Date()
+        let now = currentDate
         let day: TimeInterval = 24 * 60 * 60
 
         if let sunrise = weather.sunrise, let sunset = weather.sunset {
@@ -303,8 +326,13 @@ private extension WeatherWidgetView {
         weather.symbolName ?? "cloud.sun.fill"
     }
 
+    var currentDate: Date {
+        hourlyAnchor
+    }
+
     var hourlyItems: [HourlyWeatherSnapshot] {
-        weather.hourly
+        let start = nextHourStart(from: currentDate) ?? currentDate
+        return weather.hourly.filter { $0.date >= start }
     }
 
     var dailyItems: [DailyWeatherSnapshot] {
@@ -478,10 +506,33 @@ private extension WeatherWidgetView {
         formatter.locale = localization.selectedLanguage.locale
         formatter.timeZone = effectiveTimeZone
         formatter.dateFormat = "d"
-        let day = formatter.string(from: Date())
+        let day = formatter.string(from: dailyAnchor)
         formatter.dateFormat = "MMM"
-        let month = formatter.string(from: Date())
+        let month = formatter.string(from: dailyAnchor)
         return (day, month)
+    }
+
+    func nextHourStart(from date: Date) -> Date? {
+        var calendar = Calendar.current
+        calendar.timeZone = effectiveTimeZone
+        return calendar.nextDate(after: date,
+                                 matching: DateComponents(minute: 0, second: 0),
+                                 matchingPolicy: .nextTime,
+                                 direction: .forward)
+    }
+
+    func hourKey(for date: Date) -> String {
+        var calendar = Calendar.current
+        calendar.timeZone = effectiveTimeZone
+        let parts = calendar.dateComponents([.year, .month, .day, .hour], from: date)
+        return "\(parts.year ?? 0)-\(parts.month ?? 0)-\(parts.day ?? 0)-\(parts.hour ?? 0)"
+    }
+
+    func dayKey(for date: Date) -> String {
+        var calendar = Calendar.current
+        calendar.timeZone = effectiveTimeZone
+        let parts = calendar.dateComponents([.year, .month, .day], from: date)
+        return "\(parts.year ?? 0)-\(parts.month ?? 0)-\(parts.day ?? 0)"
     }
 
     func dailyConditionText(for entry: DailyWeatherSnapshot) -> String? {

@@ -105,6 +105,10 @@ final class WidgetManager: ObservableObject {
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
     private var windowMoveObservers: [UUID: NSObjectProtocol] = [:]
     private var appearanceObserver: NSObjectProtocol?
+    private var wakeObserver: NSObjectProtocol?
+    private var activeObserver: NSObjectProtocol?
+    private var timeZoneObserver: NSObjectProtocol?
+    private var clockObserver: NSObjectProtocol?
     private let hideWidgetsKey = "miniww.widgets.hidden"
     private let safeInset: CGFloat = 4 // чуть ближе к краям, но не вылезая за visibleFrame
     // Global appearance keys (shared with AppearanceSettingsDetailView)
@@ -136,6 +140,7 @@ final class WidgetManager: ObservableObject {
     private var appearanceObservers: [NSObjectProtocol] = []
     private var timerCancellable: AnyCancellable?
     private var weatherTimerCancellable: AnyCancellable?
+    private var weatherAlignmentTimer: Timer?
     private var locationCancellable: AnyCancellable?
     private let defaultWeatherLocation = CLLocation(latitude: 43.5855, longitude: 39.7231)
 
@@ -153,6 +158,8 @@ final class WidgetManager: ObservableObject {
         startSharedTimer()
         startWeatherUpdates()
         installLocationObservers()
+        installLifecycleObservers()
+        installTimeObservers()
 
         let resetObserver = NotificationCenter.default.addObserver(
             forName: Notification.Name("widgets.reset.appearance"),
@@ -168,10 +175,23 @@ final class WidgetManager: ObservableObject {
         windowCloseObservers.values.forEach(NotificationCenter.default.removeObserver)
         windowMoveObservers.values.forEach(NotificationCenter.default.removeObserver)
         appearanceObservers.forEach(NotificationCenter.default.removeObserver)
+        if let wakeObserver {
+            NotificationCenter.default.removeObserver(wakeObserver)
+        }
+        if let activeObserver {
+            NotificationCenter.default.removeObserver(activeObserver)
+        }
+        if let timeZoneObserver {
+            NotificationCenter.default.removeObserver(timeZoneObserver)
+        }
+        if let clockObserver {
+            NotificationCenter.default.removeObserver(clockObserver)
+        }
         if let cancellable = timerCancellable {
             cancellable.cancel()
         }
         weatherTimerCancellable?.cancel()
+        weatherAlignmentTimer?.invalidate()
         locationCancellable?.cancel()
     }
 
@@ -291,6 +311,29 @@ final class WidgetManager: ObservableObject {
 
     private func startWeatherUpdates() {
         refreshWeatherForAllWidgets()
+        scheduleNextHourlyWeatherRefresh()
+    }
+
+    private func scheduleNextHourlyWeatherRefresh() {
+        weatherTimerCancellable?.cancel()
+        weatherAlignmentTimer?.invalidate()
+
+        let now = Date()
+        var calendar = Calendar.current
+        calendar.timeZone = .current
+        let nextHour = calendar.nextDate(after: now,
+                                         matching: DateComponents(minute: 0, second: 0),
+                                         matchingPolicy: .nextTime,
+                                         direction: .forward) ?? now.addingTimeInterval(3600)
+        let interval = max(1, nextHour.timeIntervalSince(now))
+        weatherAlignmentTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
+            self?.refreshWeatherForAllWidgets()
+            self?.startHourlyWeatherTimer()
+        }
+    }
+
+    private func startHourlyWeatherTimer() {
+        weatherTimerCancellable?.cancel()
         weatherTimerCancellable = Timer.publish(every: 3600, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
@@ -419,6 +462,46 @@ final class WidgetManager: ObservableObject {
                     .filter { $0.location.mode == .current }
                     .forEach { self.refreshWeather(for: $0) }
             }
+    }
+
+    private func installLifecycleObservers() {
+        wakeObserver = NotificationCenter.default.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.refreshWeatherForAllWidgets()
+            self?.scheduleNextHourlyWeatherRefresh()
+        }
+
+        activeObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.refreshWeatherForAllWidgets()
+            self?.scheduleNextHourlyWeatherRefresh()
+        }
+    }
+
+    private func installTimeObservers() {
+        timeZoneObserver = NotificationCenter.default.addObserver(
+            forName: Notification.Name.NSSystemTimeZoneDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.refreshWeatherForAllWidgets()
+            self?.scheduleNextHourlyWeatherRefresh()
+        }
+
+        clockObserver = NotificationCenter.default.addObserver(
+            forName: Notification.Name.NSSystemClockDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.refreshWeatherForAllWidgets()
+            self?.scheduleNextHourlyWeatherRefresh()
+        }
     }
 
     // Find the first free spot in a simple flowing layout, starting from top-left of visible screen.

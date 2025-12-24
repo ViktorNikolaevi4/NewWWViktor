@@ -65,6 +65,12 @@
 "widgetClockDetailDescription" = "One widget to see who’s asleep, who’s working, and who’s just running late.";
 "widgetWeatherDetailTitle" = "Weather";
 "widgetWeatherDetailDescription" = "Check current conditions and highs/lows at a glance.";
+"widgetPomodoroDetailTitle" = "Pomodoro";
+"widgetPomodoroDetailDescription" = "Run focused work sessions with a simple timer.";
+"widgetPomodoroFocusLabel" = "Focus";
+"widgetPomodoroTimeDefault" = "25:00";
+"widgetPomodoroStart" = "Start";
+"widgetPomodoroPause" = "Pause";
 "widgetWeatherPlaceholderCondition" = "Partly cloudy";
 "widgetWeatherPlaceholderHiLow" = "H: 26° · L: 18°";
 "appearanceSubtitle" = "Customize how MyWidgets looks.";

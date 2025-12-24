@@ -65,6 +65,12 @@
 "widgetClockDetailDescription" = "Один виджет — и вы знаете, кто уже спит, кто работает, а кто просто опаздывает.";
 "widgetWeatherDetailTitle" = "Погода";
 "widgetWeatherDetailDescription" = "Следите за погодой и температурой за день прямо на рабочем столе.";
+"widgetPomodoroDetailTitle" = "Помодоро";
+"widgetPomodoroDetailDescription" = "Запускайте фокус-сессии с простым таймером.";
+"widgetPomodoroFocusLabel" = "Фокус";
+"widgetPomodoroTimeDefault" = "25:00";
+"widgetPomodoroStart" = "Старт";
+"widgetPomodoroPause" = "Пауза";
 "widgetWeatherPlaceholderCondition" = "Переменная облачность";
 "widgetWeatherPlaceholderHiLow" = "Днём 26° · Ночью 18°";
 "appearanceSubtitle" = "Настройте внешний вид MyWidgets.";

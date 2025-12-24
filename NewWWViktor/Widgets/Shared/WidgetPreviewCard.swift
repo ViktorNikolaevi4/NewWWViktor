@@ -193,6 +193,8 @@ struct WidgetPreviewCard: View {
             ClockWidgetView(widget: previewInstance)
         case .weather:
             WeatherWidgetView(widget: previewInstance)
+        case .pomodoro:
+            PomodoroWidgetView(widget: previewInstance)
         }
     }
 

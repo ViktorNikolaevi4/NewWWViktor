@@ -8,27 +8,32 @@ struct WidgetGeneralSettingsSection: View {
 
     var body: some View {
         let isWeather = widget.type == .weather
-        WidgetSettingsGroup(title: localization.text(.locationTitle)) {
-            WidgetSettingsRowButton(title: localization.text(.widgetLocationSection)) {
-                isLocationPickerPresented = true
-            } content: {
-                ValuePill(text: widget.location.displayName,
-                          icon: widget.location.iconName)
-            }
+        let isClock = widget.type == .clock
+        let usesLocation = isWeather || isClock
 
-            if !isWeather {
-                WidgetSettingsRow(title: localization.text(.widgetNameLabel)) {
-                    ValuePill(text: widget.location.city ?? localization.text(.widgetPlaceholderDash))
+        if usesLocation {
+            WidgetSettingsGroup(title: localization.text(.locationTitle)) {
+                WidgetSettingsRowButton(title: localization.text(.widgetLocationSection)) {
+                    isLocationPickerPresented = true
+                } content: {
+                    ValuePill(text: widget.location.displayName,
+                              icon: widget.location.iconName)
                 }
 
-                ToggleRow(title: localization.text(.widgetShowDate), isOn: $widget.showsDate)
-                ToggleRow(title: localization.text(.widgetShowLocation), isOn: $widget.showsLocation)
-                ToggleRow(title: localization.text(.widgetShowWeather), isOn: $showWeather)
+                if isClock {
+                    WidgetSettingsRow(title: localization.text(.widgetNameLabel)) {
+                        ValuePill(text: widget.location.city ?? localization.text(.widgetPlaceholderDash))
+                    }
 
-                WidgetSettingsRow(title: localization.text(.widgetTimeLabel)) {
-                    SegmentedPill(options: [localization.text(.widgetTimeFormat12h),
-                                            localization.text(.widgetTimeFormat24h)],
-                                  selected: $widget.prefersTwelveHour)
+                    ToggleRow(title: localization.text(.widgetShowDate), isOn: $widget.showsDate)
+                    ToggleRow(title: localization.text(.widgetShowLocation), isOn: $widget.showsLocation)
+                    ToggleRow(title: localization.text(.widgetShowWeather), isOn: $showWeather)
+
+                    WidgetSettingsRow(title: localization.text(.widgetTimeLabel)) {
+                        SegmentedPill(options: [localization.text(.widgetTimeFormat12h),
+                                                localization.text(.widgetTimeFormat24h)],
+                                      selected: $widget.prefersTwelveHour)
+                    }
                 }
             }
         }

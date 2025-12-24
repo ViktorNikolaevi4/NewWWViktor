@@ -388,6 +388,8 @@ struct WidgetHostView: View {
             ClockWidgetView(widget: instance)
         case .weather:
             WeatherWidgetView(widget: instance)
+        case .pomodoro:
+            PomodoroWidgetView(widget: instance)
         }
     }
 

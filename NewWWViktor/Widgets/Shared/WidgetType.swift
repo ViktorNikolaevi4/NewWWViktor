@@ -3,6 +3,7 @@ import SwiftUI
 enum WidgetType: String, Codable, CaseIterable, Identifiable {
     case clock
     case weather
+    case pomodoro
 
     var id: String { rawValue }
 
@@ -10,6 +11,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .clock: return .widgetCategoryLabel
         case .weather: return .widgetCategoryLabel
+        case .pomodoro: return .widgetCategoryLabel
         }
     }
 
@@ -17,6 +19,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .clock: return .widgetClockDetailTitle
         case .weather: return .widgetWeatherDetailTitle
+        case .pomodoro: return .widgetPomodoroDetailTitle
         }
     }
 
@@ -24,6 +27,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .clock: return .widgetClockDetailDescription
         case .weather: return .widgetWeatherDetailDescription
+        case .pomodoro: return .widgetPomodoroDetailDescription
         }
     }
 
@@ -31,6 +35,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .clock: return nil
         case .weather: return nil
+        case .pomodoro: return nil
         }
     }
 
@@ -40,6 +45,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
             return WidgetSizeOption.medium.dimensions
         case .weather:
             return WidgetSizeOption.medium.dimensions
+        case .pomodoro:
+            return WidgetSizeOption.small.dimensions
         }
     }
 
@@ -49,6 +56,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
             return [.small, .medium]
         case .weather:
             return WidgetSizeOption.allCases
+        case .pomodoro:
+            return [.small]
         }
     }
 }

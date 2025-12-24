@@ -65,6 +65,12 @@ enum LocalizationKey: String {
     case widgetClockDetailDescription
     case widgetWeatherDetailTitle
     case widgetWeatherDetailDescription
+    case widgetPomodoroDetailTitle
+    case widgetPomodoroDetailDescription
+    case widgetPomodoroFocusLabel
+    case widgetPomodoroTimeDefault
+    case widgetPomodoroStart
+    case widgetPomodoroPause
     case widgetWeatherPlaceholderCondition
     case widgetWeatherPlaceholderHiLow
     case appearanceSubtitle

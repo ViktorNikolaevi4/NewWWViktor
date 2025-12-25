@@ -75,6 +75,13 @@
 "widgetPomodoroPause" = "Пауза";
 "widgetPomodoroRestart" = "Перезапуск";
 "widgetPomodoroNext" = "Далее";
+"widgetPomodoroSettingsTitle" = "Помодоро";
+"widgetPomodoroFocusDuration" = "Фокус";
+"widgetPomodoroShortBreakDuration" = "Короткий перерыв";
+"widgetPomodoroLongBreakDuration" = "Длинный перерыв";
+"widgetPomodoroRounds" = "Раунды";
+"widgetPomodoroMinutesUnit" = "м";
+"widgetPomodoroAutoStart" = "Автозапуск";
 "widgetWeatherPlaceholderCondition" = "Переменная облачность";
 "widgetWeatherPlaceholderHiLow" = "Днём 26° · Ночью 18°";
 "appearanceSubtitle" = "Настройте внешний вид MyWidgets.";

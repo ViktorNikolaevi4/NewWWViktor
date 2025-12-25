@@ -77,13 +77,14 @@ private extension PomodoroWidgetView {
 
             Spacer()
 
-            HStack(spacing: 6) {
-                ForEach(0..<4, id: \.self) { index in
+            HStack(spacing: dotSpacing) {
+                let count = max(1, min(10, totalRounds))
+                ForEach(0..<count, id: \.self) { index in
                     let completed = completedRounds
                     let isFilled = index < completed || (widget.pomodoroPhase == .focus && index == completed)
                     Circle()
                         .fill(isFilled ? primaryColor : secondaryColor.opacity(0.4))
-                        .frame(width: 8, height: 8)
+                        .frame(width: dotSize, height: dotSize)
                 }
             }
 
@@ -137,11 +138,11 @@ private extension PomodoroWidgetView {
     var phaseDuration: TimeInterval {
         switch widget.pomodoroPhase {
         case .focus:
-            return 25 * 60
+            return TimeInterval(focusMinutes * 60)
         case .shortBreak:
-            return 5 * 60
+            return TimeInterval(shortBreakMinutes * 60)
         case .longBreak:
-            return 20 * 60
+            return TimeInterval(longBreakMinutes * 60)
         }
     }
 
@@ -166,7 +167,7 @@ private extension PomodoroWidgetView {
         if widget.pomodoroPhase == .focus {
             return max(0, widget.pomodoroRound - 1)
         }
-        return min(4, widget.pomodoroRound)
+        return min(totalRounds, widget.pomodoroRound)
     }
 
     func toggleRun() {
@@ -202,7 +203,9 @@ private extension PomodoroWidgetView {
         var updated = widget
         let now = manager.sharedDate
         let wasRunning = updated.pomodoroIsRunning
-        let next = nextPhase(from: updated.pomodoroPhase, round: updated.pomodoroRound)
+        let next = nextPhase(from: updated.pomodoroPhase,
+                             round: updated.pomodoroRound,
+                             totalRounds: totalRounds)
         updated.pomodoroPhase = next.phase
         updated.pomodoroRound = next.round
         let duration = durationForPhase(next.phase)
@@ -224,17 +227,25 @@ private extension PomodoroWidgetView {
               endDate <= date else { return }
 
         var updated = widget
-        let next = nextPhase(from: updated.pomodoroPhase, round: updated.pomodoroRound)
+        let next = nextPhase(from: updated.pomodoroPhase,
+                             round: updated.pomodoroRound,
+                             totalRounds: totalRounds)
         updated.pomodoroPhase = next.phase
         updated.pomodoroRound = next.round
         let duration = durationForPhase(next.phase)
-        updated.pomodoroEndDate = date.addingTimeInterval(duration)
-        updated.pomodoroRemaining = nil
+        if updated.pomodoroAutoStart {
+            updated.pomodoroIsRunning = true
+            updated.pomodoroEndDate = date.addingTimeInterval(duration)
+            updated.pomodoroRemaining = nil
+        } else {
+            updated.pomodoroIsRunning = false
+            updated.pomodoroEndDate = nil
+            updated.pomodoroRemaining = duration
+        }
         manager.update(updated)
     }
 
-    func nextPhase(from phase: PomodoroPhase, round: Int) -> (phase: PomodoroPhase, round: Int) {
-        let totalRounds = 4
+    func nextPhase(from phase: PomodoroPhase, round: Int, totalRounds: Int) -> (phase: PomodoroPhase, round: Int) {
         switch phase {
         case .focus:
             if round >= totalRounds {
@@ -251,12 +262,42 @@ private extension PomodoroWidgetView {
     func durationForPhase(_ phase: PomodoroPhase) -> TimeInterval {
         switch phase {
         case .focus:
-            return 25 * 60
+            return TimeInterval(focusMinutes * 60)
         case .shortBreak:
-            return 5 * 60
+            return TimeInterval(shortBreakMinutes * 60)
         case .longBreak:
-            return 20 * 60
+            return TimeInterval(longBreakMinutes * 60)
         }
+    }
+
+    var focusMinutes: Int {
+        clamp(widget.pomodoroFocusMinutes, min: 5, max: 60)
+    }
+
+    var shortBreakMinutes: Int {
+        normalizeShortBreakMinutes(widget.pomodoroShortBreakMinutes)
+    }
+
+    var longBreakMinutes: Int {
+        clamp(widget.pomodoroLongBreakMinutes, min: 5, max: 60)
+    }
+
+    var totalRounds: Int {
+        clamp(widget.pomodoroTotalRounds, min: 1, max: 10)
+    }
+
+    func clamp(_ value: Int, min: Int, max: Int) -> Int {
+        Swift.max(min, Swift.min(max, value))
+    }
+
+    func normalizeShortBreakMinutes(_ value: Int) -> Int {
+        if value <= 1 { return 1 }
+        let clamped = clamp(value, min: 5, max: 60)
+        let remainder = clamped % 5
+        if remainder == 0 {
+            return clamped
+        }
+        return clamped + (5 - remainder)
     }
 
     var primaryColor: Color {
@@ -266,6 +307,16 @@ private extension PomodoroWidgetView {
         return WidgetPaletteColor.color(named: name,
                                         intensity: intensity,
                                         fallback: Color(red: 1.0, green: 0.84, blue: 0.25))
+    }
+
+    var dotSize: CGFloat {
+        let count = max(1, min(10, totalRounds))
+        return max(4, min(8, 32.0 / CGFloat(count)))
+    }
+
+    var dotSpacing: CGFloat {
+        let count = max(1, min(10, totalRounds))
+        return max(2, min(6, 18.0 / CGFloat(count)))
     }
 
     var secondaryColor: Color {

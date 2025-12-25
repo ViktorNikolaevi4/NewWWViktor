@@ -9,6 +9,7 @@ struct WidgetGeneralSettingsSection: View {
     var body: some View {
         let isWeather = widget.type == .weather
         let isClock = widget.type == .clock
+        let isPomodoro = widget.type == .pomodoro
         let usesLocation = isWeather || isClock
 
         if usesLocation {
@@ -51,6 +52,93 @@ struct WidgetGeneralSettingsSection: View {
                 }
             }
         }
+
+        if isPomodoro {
+            WidgetSettingsGroup(title: localization.text(.widgetPomodoroSettingsTitle)) {
+                PomodoroStepperRow(title: localization.text(.widgetPomodoroFocusDuration),
+                                   value: $widget.pomodoroFocusMinutes,
+                                   range: 5...60,
+                                   step: 5,
+                                   unit: localization.text(.widgetPomodoroMinutesUnit))
+                PomodoroStepperRow(title: localization.text(.widgetPomodoroShortBreakDuration),
+                                   value: $widget.pomodoroShortBreakMinutes,
+                                   range: 1...60,
+                                   step: 5,
+                                   unit: localization.text(.widgetPomodoroMinutesUnit),
+                                   increment: { value in
+                                       value <= 1 ? 5 : value + 5
+                                   },
+                                   decrement: { value in
+                                       value <= 5 ? 1 : value - 5
+                                   })
+                PomodoroStepperRow(title: localization.text(.widgetPomodoroLongBreakDuration),
+                                   value: $widget.pomodoroLongBreakMinutes,
+                                   range: 5...60,
+                                   step: 5,
+                                   unit: localization.text(.widgetPomodoroMinutesUnit))
+                PomodoroStepperRow(title: localization.text(.widgetPomodoroRounds),
+                                   value: $widget.pomodoroTotalRounds,
+                                   range: 1...10,
+                                   step: 1,
+                                   unit: nil)
+                ToggleRow(title: localization.text(.widgetPomodoroAutoStart),
+                          isOn: $widget.pomodoroAutoStart)
+            }
+        }
+    }
+}
+
+private struct PomodoroStepperRow: View {
+    let title: String
+    @Binding var value: Int
+    let range: ClosedRange<Int>
+    let step: Int
+    let unit: String?
+    var increment: ((Int) -> Int)?
+    var decrement: ((Int) -> Int)?
+
+    var body: some View {
+        WidgetSettingsRow(title: title) {
+            HStack(spacing: 6) {
+                Button {
+                    let next = decrement?(value) ?? (value - step)
+                    value = max(range.lowerBound, next)
+                } label: {
+                    Image(systemName: "minus")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 22, height: 22)
+                        .background(Color.white.opacity(0.12))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+
+                Text(valueText)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(minWidth: 40)
+
+                Button {
+                    let next = increment?(value) ?? (value + step)
+                    value = min(range.upperBound, next)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 22, height: 22)
+                        .background(Color.white.opacity(0.12))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private var valueText: String {
+        if let unit, !unit.isEmpty {
+            return "\(value)\(unit)"
+        }
+        return "\(value)"
     }
 }
 

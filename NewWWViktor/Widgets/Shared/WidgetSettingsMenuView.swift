@@ -128,6 +128,23 @@ struct WidgetSettingsMenuView: View {
         .onChange(of: workingWidget.isBackgroundHidden) { _, _ in
             onUpdate(workingWidget)
         }
+        .onChange(of: workingWidget.pomodoroFocusMinutes) { _, newValue in
+            applyPomodoroDurationChange(phase: .focus, minutes: newValue)
+        }
+        .onChange(of: workingWidget.pomodoroShortBreakMinutes) { _, newValue in
+            applyPomodoroDurationChange(phase: .shortBreak, minutes: newValue)
+        }
+        .onChange(of: workingWidget.pomodoroLongBreakMinutes) { _, newValue in
+            applyPomodoroDurationChange(phase: .longBreak, minutes: newValue)
+        }
+        .onChange(of: workingWidget.pomodoroTotalRounds) { _, _ in
+            guard workingWidget.type == .pomodoro else { return }
+            onUpdate(workingWidget)
+        }
+        .onChange(of: workingWidget.pomodoroAutoStart) { _, _ in
+            guard workingWidget.type == .pomodoro else { return }
+            onUpdate(workingWidget)
+        }
     }
 
     private func apply(location: WidgetLocation) {
@@ -265,6 +282,24 @@ struct WidgetSettingsMenuView: View {
 
     private func deleteWidget() {
         onDeleteCallback?(workingWidget.id)
+    }
+
+    private func applyPomodoroDurationChange(phase: PomodoroPhase, minutes: Int) {
+        guard workingWidget.type == .pomodoro else { return }
+        let duration = TimeInterval(minutes * 60)
+        let now = manager.sharedDate
+
+        if workingWidget.pomodoroPhase == phase {
+            if workingWidget.pomodoroIsRunning {
+                workingWidget.pomodoroEndDate = now.addingTimeInterval(duration)
+                workingWidget.pomodoroRemaining = nil
+            } else {
+                workingWidget.pomodoroEndDate = nil
+                workingWidget.pomodoroRemaining = duration
+            }
+        }
+
+        onUpdate(workingWidget)
     }
 }
 

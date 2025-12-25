@@ -75,6 +75,13 @@
 "widgetPomodoroPause" = "Pause";
 "widgetPomodoroRestart" = "Restart";
 "widgetPomodoroNext" = "Next";
+"widgetPomodoroSettingsTitle" = "Pomodoro";
+"widgetPomodoroFocusDuration" = "Focus";
+"widgetPomodoroShortBreakDuration" = "Short break";
+"widgetPomodoroLongBreakDuration" = "Long break";
+"widgetPomodoroRounds" = "Rounds";
+"widgetPomodoroMinutesUnit" = "m";
+"widgetPomodoroAutoStart" = "Auto-start";
 "widgetWeatherPlaceholderCondition" = "Partly cloudy";
 "widgetWeatherPlaceholderHiLow" = "H: 26° · L: 18°";
 "appearanceSubtitle" = "Customize how MyWidgets looks.";

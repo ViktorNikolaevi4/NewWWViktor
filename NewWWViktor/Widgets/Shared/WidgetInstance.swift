@@ -37,6 +37,11 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var pomodoroIsRunning: Bool
     var pomodoroEndDate: Date?
     var pomodoroRemaining: TimeInterval?
+    var pomodoroFocusMinutes: Int
+    var pomodoroShortBreakMinutes: Int
+    var pomodoroLongBreakMinutes: Int
+    var pomodoroTotalRounds: Int
+    var pomodoroAutoStart: Bool
 
     init(type: WidgetType,
          origin: CGPoint = CGPoint(x: 100, y: 100)) {
@@ -77,11 +82,16 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.pomodoroIsRunning = false
         self.pomodoroEndDate = nil
         self.pomodoroRemaining = nil
+        self.pomodoroFocusMinutes = 25
+        self.pomodoroShortBreakMinutes = 1
+        self.pomodoroLongBreakMinutes = 20
+        self.pomodoroTotalRounds = 4
+        self.pomodoroAutoStart = true
         applySizeOption(.medium)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining
+        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart
     }
 
     init(from decoder: Decoder) throws {
@@ -122,6 +132,11 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         pomodoroIsRunning = try container.decodeIfPresent(Bool.self, forKey: .pomodoroIsRunning) ?? false
         pomodoroEndDate = try container.decodeIfPresent(Date.self, forKey: .pomodoroEndDate)
         pomodoroRemaining = try container.decodeIfPresent(TimeInterval.self, forKey: .pomodoroRemaining)
+        pomodoroFocusMinutes = try container.decodeIfPresent(Int.self, forKey: .pomodoroFocusMinutes) ?? 25
+        pomodoroShortBreakMinutes = try container.decodeIfPresent(Int.self, forKey: .pomodoroShortBreakMinutes) ?? 1
+        pomodoroLongBreakMinutes = try container.decodeIfPresent(Int.self, forKey: .pomodoroLongBreakMinutes) ?? 20
+        pomodoroTotalRounds = try container.decodeIfPresent(Int.self, forKey: .pomodoroTotalRounds) ?? 4
+        pomodoroAutoStart = try container.decodeIfPresent(Bool.self, forKey: .pomodoroAutoStart) ?? true
         applySizeOption(sizeOption)
     }
 
@@ -163,6 +178,11 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(pomodoroIsRunning, forKey: .pomodoroIsRunning)
         try container.encodeIfPresent(pomodoroEndDate, forKey: .pomodoroEndDate)
         try container.encodeIfPresent(pomodoroRemaining, forKey: .pomodoroRemaining)
+        try container.encode(pomodoroFocusMinutes, forKey: .pomodoroFocusMinutes)
+        try container.encode(pomodoroShortBreakMinutes, forKey: .pomodoroShortBreakMinutes)
+        try container.encode(pomodoroLongBreakMinutes, forKey: .pomodoroLongBreakMinutes)
+        try container.encode(pomodoroTotalRounds, forKey: .pomodoroTotalRounds)
+        try container.encode(pomodoroAutoStart, forKey: .pomodoroAutoStart)
     }
 
     mutating func applySizeOption(_ option: WidgetSizeOption) {

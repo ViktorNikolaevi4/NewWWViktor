@@ -82,6 +82,7 @@
 "widgetPomodoroRounds" = "Rounds";
 "widgetPomodoroMinutesUnit" = "m";
 "widgetPomodoroAutoStart" = "Auto-start";
+"widgetPomodoroSoundLabel" = "Sound";
 "widgetWeatherPlaceholderCondition" = "Partly cloudy";
 "widgetWeatherPlaceholderHiLow" = "H: 26° · L: 18°";
 "appearanceSubtitle" = "Customize how MyWidgets looks.";

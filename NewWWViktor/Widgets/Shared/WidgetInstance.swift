@@ -42,6 +42,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var pomodoroLongBreakMinutes: Int
     var pomodoroTotalRounds: Int
     var pomodoroAutoStart: Bool
+    var pomodoroSoundName: String
 
     init(type: WidgetType,
          origin: CGPoint = CGPoint(x: 100, y: 100)) {
@@ -87,11 +88,12 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.pomodoroLongBreakMinutes = 20
         self.pomodoroTotalRounds = 4
         self.pomodoroAutoStart = true
+        self.pomodoroSoundName = "Glass"
         applySizeOption(.medium)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart
+        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName
     }
 
     init(from decoder: Decoder) throws {
@@ -137,6 +139,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         pomodoroLongBreakMinutes = try container.decodeIfPresent(Int.self, forKey: .pomodoroLongBreakMinutes) ?? 20
         pomodoroTotalRounds = try container.decodeIfPresent(Int.self, forKey: .pomodoroTotalRounds) ?? 4
         pomodoroAutoStart = try container.decodeIfPresent(Bool.self, forKey: .pomodoroAutoStart) ?? true
+        pomodoroSoundName = try container.decodeIfPresent(String.self, forKey: .pomodoroSoundName) ?? "Glass"
         applySizeOption(sizeOption)
     }
 
@@ -183,6 +186,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(pomodoroLongBreakMinutes, forKey: .pomodoroLongBreakMinutes)
         try container.encode(pomodoroTotalRounds, forKey: .pomodoroTotalRounds)
         try container.encode(pomodoroAutoStart, forKey: .pomodoroAutoStart)
+        try container.encode(pomodoroSoundName, forKey: .pomodoroSoundName)
     }
 
     mutating func applySizeOption(_ option: WidgetSizeOption) {

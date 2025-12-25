@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 struct WidgetGeneralSettingsSection: View {
     @EnvironmentObject private var localization: LocalizationManager
@@ -81,6 +84,20 @@ struct WidgetGeneralSettingsSection: View {
                                    range: 1...10,
                                    step: 1,
                                    unit: nil)
+                WidgetSettingsRow(title: localization.text(.widgetPomodoroSoundLabel)) {
+                    Menu {
+                        ForEach(pomodoroSoundOptions, id: \.self) { name in
+                            Button(name) {
+                                widget.pomodoroSoundName = name
+                                playPomodoroSound(name)
+                            }
+                        }
+                    } label: {
+                        ValuePill(text: widget.pomodoroSoundName)
+                    }
+                    .menuStyle(.borderlessButton)
+                    .buttonStyle(.plain)
+                }
                 ToggleRow(title: localization.text(.widgetPomodoroAutoStart),
                           isOn: $widget.pomodoroAutoStart)
             }
@@ -140,6 +157,31 @@ private struct PomodoroStepperRow: View {
         }
         return "\(value)"
     }
+}
+
+private let pomodoroSoundOptions: [String] = [
+    "Basso",
+    "Blow",
+    "Bottle",
+    "Frog",
+    "Funk",
+    "Glass",
+    "Hero",
+    "Morse",
+    "Ping",
+    "Pop",
+    "Purr",
+    "Sosumi",
+    "Submarine",
+    "Tink"
+]
+
+private func playPomodoroSound(_ name: String) {
+#if os(macOS)
+    let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return }
+    NSSound(named: NSSound.Name(trimmed))?.play()
+#endif
 }
 
 enum WidgetColorRole {

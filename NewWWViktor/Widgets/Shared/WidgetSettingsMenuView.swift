@@ -145,6 +145,10 @@ struct WidgetSettingsMenuView: View {
             guard workingWidget.type == .pomodoro else { return }
             onUpdate(workingWidget)
         }
+        .onChange(of: workingWidget.pomodoroSoundName) { _, _ in
+            guard workingWidget.type == .pomodoro else { return }
+            onUpdate(workingWidget)
+        }
     }
 
     private func apply(location: WidgetLocation) {

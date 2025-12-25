@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 struct PomodoroWidgetView: View {
     let widget: WidgetInstance
@@ -227,6 +230,7 @@ private extension PomodoroWidgetView {
               endDate <= date else { return }
 
         var updated = widget
+        playPhaseEndSound()
         let next = nextPhase(from: updated.pomodoroPhase,
                              round: updated.pomodoroRound,
                              totalRounds: totalRounds)
@@ -307,6 +311,14 @@ private extension PomodoroWidgetView {
         return WidgetPaletteColor.color(named: name,
                                         intensity: intensity,
                                         fallback: Color(red: 1.0, green: 0.84, blue: 0.25))
+    }
+
+    func playPhaseEndSound() {
+#if os(macOS)
+        let name = widget.pomodoroSoundName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return }
+        NSSound(named: NSSound.Name(name))?.play()
+#endif
     }
 
     var dotSize: CGFloat {

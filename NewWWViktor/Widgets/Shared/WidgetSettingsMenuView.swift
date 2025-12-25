@@ -1,5 +1,8 @@
 import SwiftUI
 #if os(macOS)
+import UserNotifications
+#endif
+#if os(macOS)
 import AppKit
 #else
 import UIKit
@@ -149,6 +152,13 @@ struct WidgetSettingsMenuView: View {
             guard workingWidget.type == .pomodoro else { return }
             onUpdate(workingWidget)
         }
+        .onChange(of: workingWidget.pomodoroNotificationsEnabled) { _, isEnabled in
+            guard workingWidget.type == .pomodoro else { return }
+            if isEnabled {
+                requestPomodoroNotificationAuthorization()
+            }
+            onUpdate(workingWidget)
+        }
     }
 
     private func apply(location: WidgetLocation) {
@@ -286,6 +296,12 @@ struct WidgetSettingsMenuView: View {
 
     private func deleteWidget() {
         onDeleteCallback?(workingWidget.id)
+    }
+
+    private func requestPomodoroNotificationAuthorization() {
+#if os(macOS)
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+#endif
     }
 
     private func applyPomodoroDurationChange(phase: PomodoroPhase, minutes: Int) {

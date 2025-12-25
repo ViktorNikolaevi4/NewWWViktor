@@ -98,6 +98,8 @@ struct WidgetGeneralSettingsSection: View {
                     .menuStyle(.borderlessButton)
                     .buttonStyle(.plain)
                 }
+                ToggleRow(title: localization.text(.widgetPomodoroNotificationsLabel),
+                          isOn: $widget.pomodoroNotificationsEnabled)
                 ToggleRow(title: localization.text(.widgetPomodoroAutoStart),
                           isOn: $widget.pomodoroAutoStart)
             }

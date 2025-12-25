@@ -83,6 +83,11 @@
 "widgetPomodoroMinutesUnit" = "m";
 "widgetPomodoroAutoStart" = "Auto-start";
 "widgetPomodoroSoundLabel" = "Sound";
+"widgetPomodoroNotificationsLabel" = "Notifications";
+"widgetPomodoroNotificationFocusComplete" = "Focus complete";
+"widgetPomodoroNotificationBreakComplete" = "Break complete";
+"widgetPomodoroNotificationFocusStart" = "Focus starts";
+"widgetPomodoroNotificationBreakStart" = "Break starts";
 "widgetWeatherPlaceholderCondition" = "Partly cloudy";
 "widgetWeatherPlaceholderHiLow" = "H: 26° · L: 18°";
 "appearanceSubtitle" = "Customize how MyWidgets looks.";

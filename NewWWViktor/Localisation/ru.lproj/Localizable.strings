@@ -83,6 +83,11 @@
 "widgetPomodoroMinutesUnit" = "м";
 "widgetPomodoroAutoStart" = "Автозапуск";
 "widgetPomodoroSoundLabel" = "Звук";
+"widgetPomodoroNotificationsLabel" = "Уведомления";
+"widgetPomodoroNotificationFocusComplete" = "Фокус завершен";
+"widgetPomodoroNotificationBreakComplete" = "Перерыв завершен";
+"widgetPomodoroNotificationFocusStart" = "Начинается фокус";
+"widgetPomodoroNotificationBreakStart" = "Начинается перерыв";
 "widgetWeatherPlaceholderCondition" = "Переменная облачность";
 "widgetWeatherPlaceholderHiLow" = "Днём 26° · Ночью 18°";
 "appearanceSubtitle" = "Настройте внешний вид MyWidgets.";

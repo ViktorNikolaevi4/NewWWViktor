@@ -83,6 +83,11 @@ enum LocalizationKey: String {
     case widgetPomodoroMinutesUnit
     case widgetPomodoroAutoStart
     case widgetPomodoroSoundLabel
+    case widgetPomodoroNotificationsLabel
+    case widgetPomodoroNotificationFocusComplete
+    case widgetPomodoroNotificationBreakComplete
+    case widgetPomodoroNotificationFocusStart
+    case widgetPomodoroNotificationBreakStart
     case widgetWeatherPlaceholderCondition
     case widgetWeatherPlaceholderHiLow
     case appearanceSubtitle

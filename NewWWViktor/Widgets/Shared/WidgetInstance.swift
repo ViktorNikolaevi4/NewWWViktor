@@ -32,6 +32,11 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var gradientAngle: Double?
     var isBackgroundHidden: Bool
     var sizeOption: WidgetSizeOption
+    var pomodoroPhase: PomodoroPhase
+    var pomodoroRound: Int
+    var pomodoroIsRunning: Bool
+    var pomodoroEndDate: Date?
+    var pomodoroRemaining: TimeInterval?
 
     init(type: WidgetType,
          origin: CGPoint = CGPoint(x: 100, y: 100)) {
@@ -67,11 +72,16 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.gradientAngle = nil
         self.isBackgroundHidden = false
         self.sizeOption = .medium
+        self.pomodoroPhase = .focus
+        self.pomodoroRound = 1
+        self.pomodoroIsRunning = false
+        self.pomodoroEndDate = nil
+        self.pomodoroRemaining = nil
         applySizeOption(.medium)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption
+        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining
     }
 
     init(from decoder: Decoder) throws {
@@ -107,6 +117,11 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         gradientAngle = try container.decodeIfPresent(Double.self, forKey: .gradientAngle)
         isBackgroundHidden = try container.decodeIfPresent(Bool.self, forKey: .isBackgroundHidden) ?? false
         sizeOption = try container.decodeIfPresent(WidgetSizeOption.self, forKey: .sizeOption) ?? .medium
+        pomodoroPhase = try container.decodeIfPresent(PomodoroPhase.self, forKey: .pomodoroPhase) ?? .focus
+        pomodoroRound = try container.decodeIfPresent(Int.self, forKey: .pomodoroRound) ?? 1
+        pomodoroIsRunning = try container.decodeIfPresent(Bool.self, forKey: .pomodoroIsRunning) ?? false
+        pomodoroEndDate = try container.decodeIfPresent(Date.self, forKey: .pomodoroEndDate)
+        pomodoroRemaining = try container.decodeIfPresent(TimeInterval.self, forKey: .pomodoroRemaining)
         applySizeOption(sizeOption)
     }
 
@@ -143,6 +158,11 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encodeIfPresent(gradientAngle, forKey: .gradientAngle)
         try container.encode(isBackgroundHidden, forKey: .isBackgroundHidden)
         try container.encode(sizeOption, forKey: .sizeOption)
+        try container.encode(pomodoroPhase, forKey: .pomodoroPhase)
+        try container.encode(pomodoroRound, forKey: .pomodoroRound)
+        try container.encode(pomodoroIsRunning, forKey: .pomodoroIsRunning)
+        try container.encodeIfPresent(pomodoroEndDate, forKey: .pomodoroEndDate)
+        try container.encodeIfPresent(pomodoroRemaining, forKey: .pomodoroRemaining)
     }
 
     mutating func applySizeOption(_ option: WidgetSizeOption) {

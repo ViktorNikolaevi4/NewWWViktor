@@ -68,9 +68,13 @@
 "widgetPomodoroDetailTitle" = "Pomodoro";
 "widgetPomodoroDetailDescription" = "Run focused work sessions with a simple timer.";
 "widgetPomodoroFocusLabel" = "Focus";
+"widgetPomodoroShortBreakLabel" = "Short break";
+"widgetPomodoroLongBreakLabel" = "Long break";
 "widgetPomodoroTimeDefault" = "25:00";
 "widgetPomodoroStart" = "Start";
 "widgetPomodoroPause" = "Pause";
+"widgetPomodoroRestart" = "Restart";
+"widgetPomodoroNext" = "Next";
 "widgetWeatherPlaceholderCondition" = "Partly cloudy";
 "widgetWeatherPlaceholderHiLow" = "H: 26° · L: 18°";
 "appearanceSubtitle" = "Customize how MyWidgets looks.";

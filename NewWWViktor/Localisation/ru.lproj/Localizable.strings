@@ -68,9 +68,13 @@
 "widgetPomodoroDetailTitle" = "Помодоро";
 "widgetPomodoroDetailDescription" = "Запускайте фокус-сессии с простым таймером.";
 "widgetPomodoroFocusLabel" = "Фокус";
+"widgetPomodoroShortBreakLabel" = "Короткий перерыв";
+"widgetPomodoroLongBreakLabel" = "Длинный перерыв";
 "widgetPomodoroTimeDefault" = "25:00";
 "widgetPomodoroStart" = "Старт";
 "widgetPomodoroPause" = "Пауза";
+"widgetPomodoroRestart" = "Перезапуск";
+"widgetPomodoroNext" = "Далее";
 "widgetWeatherPlaceholderCondition" = "Переменная облачность";
 "widgetWeatherPlaceholderHiLow" = "Днём 26° · Ночью 18°";
 "appearanceSubtitle" = "Настройте внешний вид MyWidgets.";

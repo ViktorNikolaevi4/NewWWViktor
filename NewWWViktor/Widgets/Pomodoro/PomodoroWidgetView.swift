@@ -8,14 +8,16 @@ struct PomodoroWidgetView: View {
     @State private var isRunning = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 5) {
+            Spacer(minLength: 0)
+
             ZStack {
                 Circle()
-                    .stroke(secondaryColor.opacity(0.25), lineWidth: 10)
+                    .stroke(secondaryColor.opacity(0.25), lineWidth: 8)
 
                 Circle()
                     .trim(from: 0, to: progress)
-                    .stroke(primaryColor, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                    .stroke(primaryColor, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                     .rotationEffect(.degrees(-90))
 
                 VStack(spacing: 6) {
@@ -41,17 +43,44 @@ struct PomodoroWidgetView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(6)
+            .padding(2)
             .animation(.easeInOut(duration: 0.2), value: isRunning)
+
+            controlsRow
+                .padding(.bottom, 2)
         }
-        .padding(12)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(6)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
     }
 }
 
 private extension PomodoroWidgetView {
     var progress: Double {
         isRunning ? 0.35 : 0.05
+    }
+
+    var controlsRow: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "arrow.trianglehead.clockwise")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(secondaryColor)
+
+            Spacer()
+
+            HStack(spacing: 6) {
+                ForEach(0..<4, id: \.self) { index in
+                    Circle()
+                        .fill(index == 0 ? primaryColor : secondaryColor.opacity(0.4))
+                        .frame(width: 8, height: 8)
+                }
+            }
+
+            Spacer()
+
+            Image(systemName: "playpause.fill")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(secondaryColor)
+        }
     }
 
     var primaryColor: Color {

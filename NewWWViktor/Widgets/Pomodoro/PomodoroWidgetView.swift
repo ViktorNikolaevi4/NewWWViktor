@@ -11,47 +11,13 @@ struct PomodoroWidgetView: View {
     @EnvironmentObject private var localization: LocalizationManager
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Spacer(minLength: 0)
-
-            ZStack {
-                Circle()
-                    .stroke(secondaryColor.opacity(0.25), lineWidth: 8)
-
-                Circle()
-                    .trim(from: 0, to: progress)
-                    .stroke(primaryColor, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-
-                VStack(spacing: 6) {
-                    phaseTitleView
-
-                    Text(timeText)
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundStyle(.primary)
-
-                    Button {
-                        toggleRun()
-                    } label: {
-                        Image(systemName: widget.pomodoroIsRunning ? "pause.fill" : "play.fill")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(Color.white)
-                            .padding(6)
-                            .background(Circle().fill(primaryColor))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(localization.text(widget.pomodoroIsRunning ? .widgetPomodoroPause : .widgetPomodoroStart))
-                }
+        Group {
+            if isMedium {
+                mediumLayout
+            } else {
+                smallLayout
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(2)
-            .animation(.easeInOut(duration: 0.2), value: widget.pomodoroIsRunning)
-
-            controlsRow
-                .padding(.bottom, 2)
         }
-        .padding(6)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
         .onChange(of: manager.sharedDate) { _, newDate in
             handleTick(at: newDate)
         }
@@ -59,6 +25,84 @@ struct PomodoroWidgetView: View {
 }
 
 private extension PomodoroWidgetView {
+    var smallLayout: some View {
+        VStack(alignment: .leading, spacing: layoutSpacing) {
+            Spacer(minLength: 0)
+
+            ringBase
+                .overlay(smallRingContent)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(ringPadding)
+                .animation(.easeInOut(duration: 0.2), value: widget.pomodoroIsRunning)
+
+            controlsRow
+                .padding(.bottom, controlsBottomPadding)
+        }
+        .padding(outerPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+    }
+
+    var mediumLayout: some View {
+        HStack(alignment: .center, spacing: 12) {
+            ringBase
+                .overlay(centerPlayButton)
+                .frame(width: ringSize, height: ringSize)
+
+            VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .trailing, spacing: 14) {
+                    mediumPhaseTitleView
+                    Text(timeText)
+                        .font(.system(size: mediumTimeFontSize, weight: .bold, design: .rounded))
+                        .foregroundStyle(.primary)
+
+                    controlsRow
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+        .padding(outerPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .animation(.easeInOut(duration: 0.2), value: widget.pomodoroIsRunning)
+    }
+
+    var ringBase: some View {
+        ZStack {
+            Circle()
+                .stroke(secondaryColor.opacity(0.25), lineWidth: ringLineWidth)
+
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(primaryColor, style: StrokeStyle(lineWidth: ringLineWidth, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+        }
+    }
+
+    var smallRingContent: some View {
+        VStack(spacing: 6) {
+            phaseTitleView
+
+            Text(timeText)
+                .font(.system(size: timeFontSize, weight: .bold, design: .rounded))
+                .foregroundStyle(.primary)
+
+            centerPlayButton
+        }
+    }
+
+    var centerPlayButton: some View {
+        Button {
+            toggleRun()
+        } label: {
+            Image(systemName: widget.pomodoroIsRunning ? "pause.fill" : "play.fill")
+                .font(.system(size: playIconSize, weight: .bold))
+                .foregroundStyle(Color.white)
+                .padding(playIconPadding)
+                .background(Circle().fill(primaryColor))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(localization.text(widget.pomodoroIsRunning ? .widgetPomodoroPause : .widgetPomodoroStart))
+    }
+
     var progress: Double {
         let duration = phaseDuration
         guard duration > 0 else { return 0 }
@@ -73,7 +117,7 @@ private extension PomodoroWidgetView {
                 restartPhase()
             } label: {
                 Image(systemName: "arrow.trianglehead.clockwise")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: controlIconSize, weight: .bold))
                     .foregroundStyle(secondaryColor)
             }
             .buttonStyle(.plain)
@@ -98,7 +142,7 @@ private extension PomodoroWidgetView {
                 advancePhase()
             } label: {
                 Image(systemName: "playpause.fill")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: controlIconSize - 1, weight: .bold))
                     .foregroundStyle(secondaryColor)
             }
             .buttonStyle(.plain)
@@ -129,12 +173,33 @@ private extension PomodoroWidgetView {
                     Text(second)
                 }
             }
-            .font(.system(size: 11, weight: .semibold))
+            .font(.system(size: labelFontSize, weight: .semibold))
             .foregroundStyle(secondaryColor)
             .multilineTextAlignment(.center)
         } else {
             Text(phaseLabel)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: labelFontSize, weight: .semibold))
+                .foregroundStyle(secondaryColor)
+        }
+    }
+
+    @ViewBuilder
+    var mediumPhaseTitleView: some View {
+        if widget.pomodoroPhase == .shortBreak || widget.pomodoroPhase == .longBreak {
+            let parts = phaseLabel.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+            let first = parts.first.map(String.init) ?? phaseLabel
+            let second = parts.dropFirst().joined(separator: " ")
+            VStack(alignment: .trailing, spacing: 3) {
+                Text(first)
+                if !second.isEmpty {
+                    Text(second)
+                }
+            }
+            .font(.system(size: labelFontSize * 2, weight: .semibold))
+            .foregroundStyle(secondaryColor)
+        } else {
+            Text(phaseLabel)
+                .font(.system(size: labelFontSize * 2, weight: .semibold))
                 .foregroundStyle(secondaryColor)
         }
     }
@@ -364,12 +429,70 @@ private extension PomodoroWidgetView {
 
     var dotSize: CGFloat {
         let count = max(1, min(10, totalRounds))
-        return max(4, min(8, 32.0 / CGFloat(count)))
+        let maxSize: CGFloat = isMedium ? 10 : 8
+        let minSize: CGFloat = isMedium ? 5 : 4
+        let base: CGFloat = isMedium ? 40 : 32
+        return max(minSize, min(maxSize, base / CGFloat(count)))
     }
 
     var dotSpacing: CGFloat {
         let count = max(1, min(10, totalRounds))
-        return max(2, min(6, 18.0 / CGFloat(count)))
+        let maxSpacing: CGFloat = isMedium ? 8 : 6
+        let minSpacing: CGFloat = isMedium ? 3 : 2
+        let base: CGFloat = isMedium ? 22 : 18
+        return max(minSpacing, min(maxSpacing, base / CGFloat(count)))
+    }
+
+    var isMedium: Bool {
+        widget.sizeOption == .medium
+    }
+
+    var outerPadding: CGFloat {
+        isMedium ? 10 : 6
+    }
+
+    var ringPadding: CGFloat {
+        isMedium ? 4 : 2
+    }
+
+    var controlsBottomPadding: CGFloat {
+        isMedium ? 4 : 2
+    }
+
+    var ringLineWidth: CGFloat {
+        isMedium ? 10 : 8
+    }
+
+    var labelFontSize: CGFloat {
+        isMedium ? 12 : 11
+    }
+
+    var timeFontSize: CGFloat {
+        isMedium ? 26 : 20
+    }
+
+    var mediumTimeFontSize: CGFloat {
+        timeFontSize * 1.625
+    }
+
+    var playIconSize: CGFloat {
+        isMedium ? 16 : 12
+    }
+
+    var playIconPadding: CGFloat {
+        isMedium ? 10 : 6
+    }
+
+    var controlIconSize: CGFloat {
+        isMedium ? 14 : 13
+    }
+
+    var layoutSpacing: CGFloat {
+        isMedium ? 8 : 5
+    }
+
+    var ringSize: CGFloat {
+        isMedium ? 110 : 92
     }
 
     var secondaryColor: Color {

@@ -57,7 +57,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .weather:
             return WidgetSizeOption.allCases
         case .pomodoro:
-            return [.small]
+            return [.small, .medium]
         }
     }
 }

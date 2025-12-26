@@ -1,8 +1,4 @@
 import SwiftUI
-#if os(macOS)
-import AppKit
-import UserNotifications
-#endif
 
 struct PomodoroWidgetView: View {
     let widget: WidgetInstance
@@ -25,90 +21,71 @@ struct PomodoroWidgetView: View {
 }
 
 private extension PomodoroWidgetView {
+    // MARK: - Layout
     var smallLayout: some View {
-        VStack(alignment: .leading, spacing: layoutSpacing) {
-            Spacer(minLength: 0)
-
-            ringBase
-                .overlay(smallRingContent)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(ringPadding)
-                .animation(.easeInOut(duration: 0.2), value: widget.pomodoroIsRunning)
-
-            controlsRow
-                .padding(.bottom, controlsBottomPadding)
-        }
-        .padding(outerPadding)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+        PomodoroSmallLayoutView(
+            ringBase: ringBase,
+            ringContent: smallRingContent,
+            controls: controlsRow,
+            style: style,
+            isRunning: widget.pomodoroIsRunning
+        )
     }
 
     var mediumLayout: some View {
-        HStack(alignment: .center, spacing: 12) {
-            ringBase
-                .overlay(centerPlayButton)
-                .frame(width: ringSize, height: ringSize)
-
-            VStack(alignment: .leading, spacing: 6) {
-                VStack(alignment: .trailing, spacing: 14) {
-                    mediumPhaseTitleView
-                    Text(timeText)
-                        .font(.system(size: mediumTimeFontSize, weight: .bold, design: .rounded))
-                        .foregroundStyle(.primary)
-
-                    controlsRow
-                }
-                .frame(maxWidth: .infinity, alignment: .trailing)
-            }
-        }
-        .padding(outerPadding)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .animation(.easeInOut(duration: 0.2), value: widget.pomodoroIsRunning)
+        PomodoroMediumLayoutView(
+            ringBase: ringBase,
+            centerButton: centerPlayButton,
+            phaseTitle: PomodoroPhaseTitleView(text: phaseLabel,
+                                               isBreak: isBreakPhase,
+                                               alignment: .trailing,
+                                               spacing: 3,
+                                               fontSize: style.labelFontSize * 2,
+                                               color: secondaryColor),
+            timeText: timeText,
+            controls: controlsRow,
+            style: style,
+            isRunning: widget.pomodoroIsRunning
+        )
     }
 
     var ringBase: some View {
-        ZStack {
-            Circle()
-                .stroke(secondaryColor.opacity(0.25), lineWidth: ringLineWidth)
-
-            Circle()
-                .trim(from: 0, to: progress)
-                .stroke(primaryColor, style: StrokeStyle(lineWidth: ringLineWidth, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-        }
+        PomodoroRingView(
+            progress: progress,
+            lineWidth: style.ringLineWidth,
+            primaryColor: primaryColor,
+            secondaryColor: secondaryColor
+        )
     }
 
     var smallRingContent: some View {
-        VStack(spacing: 6) {
-            phaseTitleView
-
-            Text(timeText)
-                .font(.system(size: timeFontSize, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
-
-            centerPlayButton
-        }
+        PomodoroRingContentView(
+            phaseTitle: PomodoroPhaseTitleView(text: phaseLabel,
+                                               isBreak: isBreakPhase,
+                                               alignment: .center,
+                                               spacing: 2,
+                                               fontSize: style.labelFontSize,
+                                               color: secondaryColor),
+            timeText: timeText,
+            timeFontSize: style.timeFontSize,
+            centerButton: centerPlayButton
+        )
     }
 
     var centerPlayButton: some View {
-        Button {
-            toggleRun()
-        } label: {
-            Image(systemName: widget.pomodoroIsRunning ? "pause.fill" : "play.fill")
-                .font(.system(size: playIconSize, weight: .bold))
-                .foregroundStyle(Color.white)
-                .padding(playIconPadding)
-                .background(Circle().fill(primaryColor))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(localization.text(widget.pomodoroIsRunning ? .widgetPomodoroPause : .widgetPomodoroStart))
+        PomodoroPlayPauseButton(
+            isRunning: widget.pomodoroIsRunning,
+            primaryColor: primaryColor,
+            iconSize: style.playIconSize,
+            iconPadding: style.playIconPadding,
+            onToggle: toggleRun,
+            accessibilityLabel: localization.text(widget.pomodoroIsRunning ? .widgetPomodoroPause : .widgetPomodoroStart)
+        )
     }
 
+    // MARK: - Progress
     var progress: Double {
-        let duration = phaseDuration
-        guard duration > 0 else { return 0 }
-        let remaining = remainingSeconds
-        let elapsed = max(0, duration - remaining)
-        return min(1, elapsed / duration)
+        progressCalculator.progress(duration: phaseDuration, remaining: remainingSeconds)
     }
 
     var controlsRow: some View {
@@ -117,7 +94,7 @@ private extension PomodoroWidgetView {
                 restartPhase()
             } label: {
                 Image(systemName: "arrow.trianglehead.clockwise")
-                    .font(.system(size: controlIconSize, weight: .bold))
+                    .font(.system(size: style.controlIconSize, weight: .bold))
                     .foregroundStyle(secondaryColor)
             }
             .buttonStyle(.plain)
@@ -125,16 +102,15 @@ private extension PomodoroWidgetView {
 
             Spacer()
 
-            HStack(spacing: dotSpacing) {
-                let count = max(1, min(10, totalRounds))
-                ForEach(0..<count, id: \.self) { index in
-                    let completed = completedRounds
-                    let isFilled = index < completed || (widget.pomodoroPhase == .focus && index == completed)
-                    Circle()
-                        .fill(isFilled ? primaryColor : secondaryColor.opacity(0.4))
-                        .frame(width: dotSize, height: dotSize)
-                }
-            }
+            PomodoroRoundDotsView(
+                totalRounds: totalRounds,
+                completedRounds: completedRounds,
+                isFocusPhase: widget.pomodoroPhase == .focus,
+                primaryColor: primaryColor,
+                secondaryColor: secondaryColor,
+                dotSize: style.dotSize(totalRounds: totalRounds),
+                dotSpacing: style.dotSpacing(totalRounds: totalRounds)
+            )
 
             Spacer()
 
@@ -142,7 +118,7 @@ private extension PomodoroWidgetView {
                 advancePhase()
             } label: {
                 Image(systemName: "playpause.fill")
-                    .font(.system(size: controlIconSize - 1, weight: .bold))
+                    .font(.system(size: style.controlIconSize - 1, weight: .bold))
                     .foregroundStyle(secondaryColor)
             }
             .buttonStyle(.plain)
@@ -150,6 +126,7 @@ private extension PomodoroWidgetView {
         }
     }
 
+    // MARK: - Labels
     var phaseLabel: String {
         switch widget.pomodoroPhase {
         case .focus:
@@ -161,58 +138,16 @@ private extension PomodoroWidgetView {
         }
     }
 
-    @ViewBuilder
-    var phaseTitleView: some View {
-        if widget.pomodoroPhase == .shortBreak || widget.pomodoroPhase == .longBreak {
-            let parts = phaseLabel.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
-            let first = parts.first.map(String.init) ?? phaseLabel
-            let second = parts.dropFirst().joined(separator: " ")
-            VStack(spacing: 2) {
-                Text(first)
-                if !second.isEmpty {
-                    Text(second)
-                }
-            }
-            .font(.system(size: labelFontSize, weight: .semibold))
-            .foregroundStyle(secondaryColor)
-            .multilineTextAlignment(.center)
-        } else {
-            Text(phaseLabel)
-                .font(.system(size: labelFontSize, weight: .semibold))
-                .foregroundStyle(secondaryColor)
-        }
+    var isBreakPhase: Bool {
+        widget.pomodoroPhase == .shortBreak || widget.pomodoroPhase == .longBreak
     }
 
-    @ViewBuilder
-    var mediumPhaseTitleView: some View {
-        if widget.pomodoroPhase == .shortBreak || widget.pomodoroPhase == .longBreak {
-            let parts = phaseLabel.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
-            let first = parts.first.map(String.init) ?? phaseLabel
-            let second = parts.dropFirst().joined(separator: " ")
-            VStack(alignment: .trailing, spacing: 3) {
-                Text(first)
-                if !second.isEmpty {
-                    Text(second)
-                }
-            }
-            .font(.system(size: labelFontSize * 2, weight: .semibold))
-            .foregroundStyle(secondaryColor)
-        } else {
-            Text(phaseLabel)
-                .font(.system(size: labelFontSize * 2, weight: .semibold))
-                .foregroundStyle(secondaryColor)
-        }
-    }
-
+    // MARK: - Timing
     var phaseDuration: TimeInterval {
-        switch widget.pomodoroPhase {
-        case .focus:
-            return TimeInterval(focusMinutes * 60)
-        case .shortBreak:
-            return TimeInterval(shortBreakMinutes * 60)
-        case .longBreak:
-            return TimeInterval(longBreakMinutes * 60)
-        }
+        coordinator.calculator.duration(for: widget.pomodoroPhase,
+                                        focusMinutes: focusMinutes,
+                                        shortBreakMinutes: shortBreakMinutes,
+                                        longBreakMinutes: longBreakMinutes)
     }
 
     var remainingSeconds: TimeInterval {
@@ -226,19 +161,16 @@ private extension PomodoroWidgetView {
     }
 
     var timeText: String {
-        let totalSeconds = max(0, Int(remainingSeconds.rounded()))
-        let minutes = totalSeconds / 60
-        let seconds = totalSeconds % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+        timeFormatter.string(from: remainingSeconds)
     }
 
     var completedRounds: Int {
-        if widget.pomodoroPhase == .focus {
-            return max(0, widget.pomodoroRound - 1)
-        }
-        return min(totalRounds, widget.pomodoroRound)
+        roundsCalculator.completedRounds(phase: widget.pomodoroPhase,
+                                         round: widget.pomodoroRound,
+                                         totalRounds: totalRounds)
     }
 
+    // MARK: - Actions
     func toggleRun() {
         var updated = widget
         let now = manager.sharedDate
@@ -255,7 +187,7 @@ private extension PomodoroWidgetView {
             updated.pomodoroRemaining = nil
         }
 
-        manager.update(updated)
+        updateWidget(updated)
     }
 
     func restartPhase() {
@@ -265,29 +197,23 @@ private extension PomodoroWidgetView {
         updated.pomodoroIsRunning = true
         updated.pomodoroEndDate = now.addingTimeInterval(duration)
         updated.pomodoroRemaining = nil
-        manager.update(updated)
+        updateWidget(updated)
     }
 
     func advancePhase() {
         var updated = widget
         let now = manager.sharedDate
-        let wasRunning = updated.pomodoroIsRunning
-        let next = nextPhase(from: updated.pomodoroPhase,
-                             round: updated.pomodoroRound,
-                             totalRounds: totalRounds)
-        updated.pomodoroPhase = next.phase
-        updated.pomodoroRound = next.round
-        let duration = durationForPhase(next.phase)
+        let transition = coordinator.advancePhase(
+            widget: updated,
+            now: now,
+            totalRounds: totalRounds,
+            focusMinutes: focusMinutes,
+            shortBreakMinutes: shortBreakMinutes,
+            longBreakMinutes: longBreakMinutes
+        )
+        updated = transition
 
-        if wasRunning {
-            updated.pomodoroEndDate = now.addingTimeInterval(duration)
-            updated.pomodoroRemaining = nil
-        } else {
-            updated.pomodoroEndDate = nil
-            updated.pomodoroRemaining = duration
-        }
-
-        manager.update(updated)
+        updateWidget(updated)
     }
 
     func handleTick(at date: Date) {
@@ -295,212 +221,77 @@ private extension PomodoroWidgetView {
               let endDate = widget.pomodoroEndDate,
               endDate <= date else { return }
 
-        var updated = widget
-        playPhaseEndSound()
-        sendPhaseEndNotification(for: updated.pomodoroPhase)
-        let next = nextPhase(from: updated.pomodoroPhase,
-                             round: updated.pomodoroRound,
-                             totalRounds: totalRounds)
-        updated.pomodoroPhase = next.phase
-        updated.pomodoroRound = next.round
-        let duration = durationForPhase(next.phase)
-        if updated.pomodoroAutoStart {
-            updated.pomodoroIsRunning = true
-            updated.pomodoroEndDate = date.addingTimeInterval(duration)
-            updated.pomodoroRemaining = nil
-            sendPhaseStartNotification(for: next.phase)
-        } else {
-            updated.pomodoroIsRunning = false
-            updated.pomodoroEndDate = nil
-            updated.pomodoroRemaining = duration
-        }
-        manager.update(updated)
+        let transition = coordinator.handleTick(
+            widget: widget,
+            at: date,
+            totalRounds: totalRounds,
+            focusMinutes: focusMinutes,
+            shortBreakMinutes: shortBreakMinutes,
+            longBreakMinutes: longBreakMinutes
+        )
+        guard var updated = transition.updated else { return }
+        transition.effects()
+        updateWidget(updated)
     }
 
-    func nextPhase(from phase: PomodoroPhase, round: Int, totalRounds: Int) -> (phase: PomodoroPhase, round: Int) {
-        switch phase {
-        case .focus:
-            if round >= totalRounds {
-                return (.longBreak, round)
-            }
-            return (.shortBreak, round)
-        case .shortBreak:
-            return (.focus, min(totalRounds, round + 1))
-        case .longBreak:
-            return (.focus, 1)
-        }
-    }
-
-    func durationForPhase(_ phase: PomodoroPhase) -> TimeInterval {
-        switch phase {
-        case .focus:
-            return TimeInterval(focusMinutes * 60)
-        case .shortBreak:
-            return TimeInterval(shortBreakMinutes * 60)
-        case .longBreak:
-            return TimeInterval(longBreakMinutes * 60)
-        }
-    }
-
+    // MARK: - Config
     var focusMinutes: Int {
-        clamp(widget.pomodoroFocusMinutes, min: 5, max: 60)
+        coordinator.calculator.clampedMinutes(widget.pomodoroFocusMinutes)
     }
 
     var shortBreakMinutes: Int {
-        normalizeShortBreakMinutes(widget.pomodoroShortBreakMinutes)
+        coordinator.calculator.normalizedShortBreakMinutes(widget.pomodoroShortBreakMinutes)
     }
 
     var longBreakMinutes: Int {
-        clamp(widget.pomodoroLongBreakMinutes, min: 5, max: 60)
+        coordinator.calculator.clampedMinutes(widget.pomodoroLongBreakMinutes)
     }
 
     var totalRounds: Int {
-        clamp(widget.pomodoroTotalRounds, min: 1, max: 10)
+        coordinator.calculator.clampedRounds(widget.pomodoroTotalRounds)
     }
 
-    func clamp(_ value: Int, min: Int, max: Int) -> Int {
-        Swift.max(min, Swift.min(max, value))
+    func updateWidget(_ updated: WidgetInstance) {
+        manager.update(updated)
     }
 
-    func normalizeShortBreakMinutes(_ value: Int) -> Int {
-        if value <= 1 { return 1 }
-        let clamped = clamp(value, min: 5, max: 60)
-        let remainder = clamped % 5
-        if remainder == 0 {
-            return clamped
-        }
-        return clamped + (5 - remainder)
-    }
-
+    // MARK: - Colors
     var primaryColor: Color {
-        let name = widget.mainColorName ?? manager.globalPrimaryColorName
-        let intensity = widget.mainColorName == nil ? manager.globalPrimaryIntensity : widget.mainColorIntensity
-        _ = manager.globalColorsVersion
-        return WidgetPaletteColor.color(named: name,
-                                        intensity: intensity,
-                                        fallback: Color(red: 1.0, green: 0.84, blue: 0.25))
+        colors.primaryColor
     }
 
-    func playPhaseEndSound() {
-#if os(macOS)
-        let name = widget.pomodoroSoundName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !name.isEmpty else { return }
-        NSSound(named: NSSound.Name(name))?.play()
-#endif
-    }
-
-    func sendPhaseEndNotification(for phase: PomodoroPhase) {
-#if os(macOS)
-        guard widget.pomodoroNotificationsEnabled else { return }
-        let content = UNMutableNotificationContent()
-        content.title = localization.text(.widgetPomodoroDetailTitle)
-        switch phase {
-        case .focus:
-            content.body = localization.text(.widgetPomodoroNotificationFocusComplete)
-        case .shortBreak, .longBreak:
-            content.body = localization.text(.widgetPomodoroNotificationBreakComplete)
-        }
-        content.sound = .default
-        let request = UNNotificationRequest(identifier: UUID().uuidString,
-                                            content: content,
-                                            trigger: nil)
-        UNUserNotificationCenter.current().add(request)
-#endif
-    }
-
-    func sendPhaseStartNotification(for phase: PomodoroPhase) {
-#if os(macOS)
-        guard widget.pomodoroNotificationsEnabled else { return }
-        let content = UNMutableNotificationContent()
-        content.title = localization.text(.widgetPomodoroDetailTitle)
-        switch phase {
-        case .focus:
-            content.body = localization.text(.widgetPomodoroNotificationFocusStart)
-        case .shortBreak, .longBreak:
-            content.body = localization.text(.widgetPomodoroNotificationBreakStart)
-        }
-        content.sound = .default
-        let request = UNNotificationRequest(identifier: UUID().uuidString,
-                                            content: content,
-                                            trigger: nil)
-        UNUserNotificationCenter.current().add(request)
-#endif
-    }
-
-    var dotSize: CGFloat {
-        let count = max(1, min(10, totalRounds))
-        let maxSize: CGFloat = isMedium ? 10 : 8
-        let minSize: CGFloat = isMedium ? 5 : 4
-        let base: CGFloat = isMedium ? 40 : 32
-        return max(minSize, min(maxSize, base / CGFloat(count)))
-    }
-
-    var dotSpacing: CGFloat {
-        let count = max(1, min(10, totalRounds))
-        let maxSpacing: CGFloat = isMedium ? 8 : 6
-        let minSpacing: CGFloat = isMedium ? 3 : 2
-        let base: CGFloat = isMedium ? 22 : 18
-        return max(minSpacing, min(maxSpacing, base / CGFloat(count)))
-    }
-
+    // MARK: - Sizing
     var isMedium: Bool {
         widget.sizeOption == .medium
     }
 
-    var outerPadding: CGFloat {
-        isMedium ? 10 : 6
-    }
-
-    var ringPadding: CGFloat {
-        isMedium ? 4 : 2
-    }
-
-    var controlsBottomPadding: CGFloat {
-        isMedium ? 4 : 2
-    }
-
-    var ringLineWidth: CGFloat {
-        isMedium ? 10 : 8
-    }
-
-    var labelFontSize: CGFloat {
-        isMedium ? 12 : 11
-    }
-
-    var timeFontSize: CGFloat {
-        isMedium ? 26 : 20
-    }
-
-    var mediumTimeFontSize: CGFloat {
-        timeFontSize * 1.625
-    }
-
-    var playIconSize: CGFloat {
-        isMedium ? 16 : 12
-    }
-
-    var playIconPadding: CGFloat {
-        isMedium ? 10 : 6
-    }
-
-    var controlIconSize: CGFloat {
-        isMedium ? 14 : 13
-    }
-
-    var layoutSpacing: CGFloat {
-        isMedium ? 8 : 5
-    }
-
-    var ringSize: CGFloat {
-        isMedium ? 110 : 92
-    }
-
     var secondaryColor: Color {
-        let name = widget.secondaryColorName ?? manager.globalSecondaryColorName
-        let intensity = widget.secondaryColorName == nil ? manager.globalSecondaryIntensity : widget.secondaryColorIntensity
-        _ = manager.globalColorsVersion
-        return WidgetPaletteColor.color(named: name,
-                                        intensity: intensity,
-                                        fallback: .secondary)
+        colors.secondaryColor
+    }
+
+    // MARK: - Helpers
+    var style: PomodoroWidgetStyle {
+        PomodoroWidgetStyle(isMedium: isMedium)
+    }
+
+    var colors: PomodoroWidgetColors {
+        PomodoroWidgetColors(widget: widget, manager: manager)
+    }
+
+    var coordinator: PomodoroCoordinator {
+        PomodoroCoordinator(calculator: PomodoroCalculator(),
+                            notifier: PomodoroNotifier(localization: localization))
+    }
+
+    var timeFormatter: PomodoroTimeFormatter {
+        PomodoroTimeFormatter()
+    }
+
+    var progressCalculator: PomodoroProgressCalculator {
+        PomodoroProgressCalculator()
+    }
+
+    var roundsCalculator: PomodoroRoundsCalculator {
+        PomodoroRoundsCalculator()
     }
 }

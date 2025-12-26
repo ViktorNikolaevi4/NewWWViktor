@@ -8,18 +8,36 @@ final class LocationProvider: NSObject, ObservableObject {
     @Published private(set) var currentTimeZone: TimeZone?
     @Published private(set) var currentCoordinate: CLLocationCoordinate2D?
 
-    private let manager = CLLocationManager()
-    private let geocoder = CLGeocoder()
+    private enum Constants {
+        static let refreshInterval: TimeInterval = 180
+        static let locationDisabledMessage = "Location disabled"
+        static let locationUnavailableMessage = "Location unavailable"
+        static let currentLocationMessage = "Current location"
+    }
+
+    private let locationManager: LocationManaging
+    private let geocoder: ReverseGeocoding
     private var lastRequestDate: Date?
     private var preferredLocale: Locale = .current
     private var lastKnownLocation: CLLocation?
 
     override init() {
+        self.locationManager = CLLocationManager()
+        self.geocoder = CLGeocoder()
         super.init()
-        manager.delegate = self
-        manager.desiredAccuracy = kCLLocationAccuracyKilometer
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
     }
 
+    init(locationManager: LocationManaging, geocoder: ReverseGeocoding) {
+        self.locationManager = locationManager
+        self.geocoder = geocoder
+        super.init()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
+    }
+
+    // MARK: - Public
     func requestLocationIfNeeded() {
         requestLocation(forced: false)
     }
@@ -36,18 +54,19 @@ final class LocationProvider: NSObject, ObservableObject {
         }
     }
 
+    // MARK: - Private
     private func requestLocation(forced: Bool) {
-        switch manager.authorizationStatus {
+        switch locationManager.authorizationStatus {
         case .notDetermined:
-            manager.requestWhenInUseAuthorization()
+            locationManager.requestWhenInUseAuthorization()
         case .authorizedWhenInUse, .authorizedAlways:
             if forced || shouldRequestLocation {
-                manager.requestLocation()
+                locationManager.requestLocation()
                 lastRequestDate = Date()
             }
         case .restricted, .denied:
             DispatchQueue.main.async {
-                self.cityName = "Location disabled"
+                self.cityName = Constants.locationDisabledMessage
                 self.regionName = nil
                 self.currentTimeZone = .current
             }
@@ -58,7 +77,7 @@ final class LocationProvider: NSObject, ObservableObject {
 
     private var shouldRequestLocation: Bool {
         guard let last = lastRequestDate else { return true }
-        return Date().timeIntervalSince(last) > 180 // refresh every 3 minutes max
+        return Date().timeIntervalSince(last) > Constants.refreshInterval // refresh every 3 minutes max
     }
 }
 
@@ -76,7 +95,7 @@ extension LocationProvider: CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         DispatchQueue.main.async {
-            self.cityName = "Location unavailable"
+            self.cityName = Constants.locationUnavailableMessage
             self.regionName = nil
             self.currentTimeZone = .current
         }
@@ -86,7 +105,7 @@ extension LocationProvider: CLLocationManagerDelegate {
         geocoder.reverseGeocodeLocation(location, preferredLocale: preferredLocale) { placemarks, error in
             if error != nil {
                 DispatchQueue.main.async {
-                    self.cityName = "Location unavailable"
+                    self.cityName = Constants.locationUnavailableMessage
                     self.currentTimeZone = .current
                 }
                 return
@@ -99,10 +118,12 @@ extension LocationProvider: CLLocationManagerDelegate {
             let region = bestMatch?.administrativeArea ?? bestMatch?.subAdministrativeArea
 
             DispatchQueue.main.async {
-                self.cityName = city ?? "Current location"
+                self.cityName = city ?? Constants.currentLocationMessage
                 self.regionName = region
                 self.currentTimeZone = bestMatch?.timeZone ?? .current
             }
         }
     }
 }
+
+extension LocationProvider: ClockLocationProviding {}

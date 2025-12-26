@@ -7,14 +7,38 @@ final class LocationSearchService: NSObject, ObservableObject {
     @Published var results: [LocationSearchResult] = []
     @Published var isSearching: Bool = false
 
-    private let completer = MKLocalSearchCompleter()
+    private enum Constants {
+        static let maxResults = 8
+        static let debounceInterval: TimeInterval = 0.25
+        static let collectionQueueLabel = "location.search.collect"
+    }
+
+    private let completer: LocalSearchCompleting
+    private let searchFactory: LocalSearchCreating
+    private let geocoderFactory: ReverseGeocodingFactory
     private var pendingWorkItem: DispatchWorkItem?
     private var currentLocale: Locale = .current
     private var searchToken = UUID()
-    private let collectQueue = DispatchQueue(label: "location.search.collect")
+    private let collectionQueue = DispatchQueue(label: Constants.collectionQueueLabel)
     private var lastQueryFragment: String?
 
     override init() {
+        self.completer = MKLocalSearchCompleter()
+        self.searchFactory = SystemLocalSearchFactory()
+        self.geocoderFactory = SystemGeocodingFactory()
+        super.init()
+        completer.delegate = self
+        completer.resultTypes = [.address]
+    }
+
+    init(
+        completer: LocalSearchCompleting,
+        searchFactory: LocalSearchCreating,
+        geocoderFactory: ReverseGeocodingFactory
+    ) {
+        self.completer = completer
+        self.searchFactory = searchFactory
+        self.geocoderFactory = geocoderFactory
         super.init()
         completer.delegate = self
         completer.resultTypes = [.address]
@@ -43,7 +67,7 @@ final class LocationSearchService: NSObject, ObservableObject {
             self.performDirectSearch(query: normalized, token: token)
         }
         pendingWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: workItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + Constants.debounceInterval, execute: workItem)
     }
 
     func reset() {
@@ -63,7 +87,7 @@ final class LocationSearchService: NSObject, ObservableObject {
 
     private func buildResults(from completions: [MKLocalSearchCompletion]) {
         let token = searchToken
-        let limited = Array(completions.prefix(8))
+        let limited = Array(completions.prefix(Constants.maxResults))
         guard !limited.isEmpty else { return }
 
         let group = DispatchGroup()
@@ -75,7 +99,7 @@ final class LocationSearchService: NSObject, ObservableObject {
             let request = MKLocalSearch.Request(completion: completion)
             request.resultTypes = .address
 
-            let search = MKLocalSearch(request: request)
+            let search = searchFactory.makeSearch(request: request)
             search.start { [weak self] response, _ in
                 guard let self else {
                     group.leave()
@@ -91,9 +115,9 @@ final class LocationSearchService: NSObject, ObservableObject {
                     return
                 }
 
-                let geocoder = CLGeocoder()
+                let geocoder = geocoderFactory.makeGeocoder()
                 geocoder.reverseGeocodeLocation(location, preferredLocale: locale) { placemarks, _ in
-                    self.collectQueue.async {
+                    self.collectionQueue.async {
                         if self.searchToken == token {
                             if let placemark = placemarks?.first,
                                let result = LocationSearchResult(placemark: placemark) {
@@ -120,13 +144,13 @@ final class LocationSearchService: NSObject, ObservableObject {
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = query
         request.resultTypes = .address
-        let search = MKLocalSearch(request: request)
+        let search = searchFactory.makeSearch(request: request)
 
         search.start { [weak self] response, _ in
             guard let self else { return }
             guard self.searchToken == token else { return }
 
-            let items = response?.mapItems.prefix(8) ?? []
+            let items = response?.mapItems.prefix(Constants.maxResults) ?? []
             let locale = currentLocale
             let group = DispatchGroup()
             var collected: [LocationSearchResult] = []
@@ -134,10 +158,10 @@ final class LocationSearchService: NSObject, ObservableObject {
             for item in items {
                 group.enter()
                 let location = item.placemark.location
-                let geocoder = CLGeocoder()
+                let geocoder = geocoderFactory.makeGeocoder()
                 if let location {
                     geocoder.reverseGeocodeLocation(location, preferredLocale: locale) { placemarks, _ in
-                        self.collectQueue.async {
+                        self.collectionQueue.async {
                             if self.searchToken == token {
                                 if let placemark = placemarks?.first,
                                    let result = LocationSearchResult(placemark: placemark) {
@@ -150,7 +174,7 @@ final class LocationSearchService: NSObject, ObservableObject {
                         }
                     }
                 } else {
-                    self.collectQueue.async {
+                    self.collectionQueue.async {
                         if let result = LocationSearchResult(placemark: item.placemark) {
                             collected.append(result)
                         }

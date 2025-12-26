@@ -6,6 +6,11 @@ struct WidgetLocation: Codable, Equatable {
         case custom
     }
 
+    private enum Constants {
+        static let currentLocationTitle = "Current location"
+        static let selectedCityTitle = "Selected city"
+    }
+
     var mode: Mode
     var city: String?
     var region: String?
@@ -31,12 +36,13 @@ struct WidgetLocation: Codable, Equatable {
         WidgetLocation(mode: .current)
     }
 
+    // MARK: - Display
     var displayName: String {
         switch mode {
         case .current:
-            return "Current location"
+            return Constants.currentLocationTitle
         case .custom:
-            return city ?? "Selected city"
+            return city ?? Constants.selectedCityTitle
         }
     }
 
@@ -49,6 +55,7 @@ struct WidgetLocation: Codable, Equatable {
         }
     }
 
+    // MARK: - System
     var iconName: String {
         switch mode {
         case .current:

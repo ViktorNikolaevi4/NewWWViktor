@@ -84,10 +84,10 @@
 "widgetPomodoroAutoStart" = "Auto-start";
 "widgetPomodoroSoundLabel" = "Sound";
 "widgetPomodoroNotificationsLabel" = "Notifications";
-"widgetPomodoroNotificationFocusComplete" = "Focus complete";
-"widgetPomodoroNotificationBreakComplete" = "Break complete";
-"widgetPomodoroNotificationFocusStart" = "Focus starts";
-"widgetPomodoroNotificationBreakStart" = "Break starts";
+"widgetPomodoroNotificationFocusComplete" = "Done. You're great. Officially.";
+"widgetPomodoroNotificationBreakComplete" = "Productive organism recovery…";
+"widgetPomodoroNotificationFocusStart" = "Pomodoro started. Yes, already. No, not later.";
+"widgetPomodoroNotificationBreakStart" = "Break time. Pretend you're resting mindfully.";
 "widgetWeatherPlaceholderCondition" = "Partly cloudy";
 "widgetWeatherPlaceholderHiLow" = "H: 26° · L: 18°";
 "appearanceSubtitle" = "Customize how MyWidgets looks.";

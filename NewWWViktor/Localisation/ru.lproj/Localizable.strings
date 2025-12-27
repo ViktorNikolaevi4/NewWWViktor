@@ -84,10 +84,10 @@
 "widgetPomodoroAutoStart" = "Автозапуск";
 "widgetPomodoroSoundLabel" = "Звук";
 "widgetPomodoroNotificationsLabel" = "Уведомления";
-"widgetPomodoroNotificationFocusComplete" = "Фокус завершен";
-"widgetPomodoroNotificationBreakComplete" = "Перерыв завершен";
-"widgetPomodoroNotificationFocusStart" = "Начинается фокус";
-"widgetPomodoroNotificationBreakStart" = "Начинается перерыв";
+"widgetPomodoroNotificationFocusComplete" = "Готово. Ты молодец. Да, официально";
+"widgetPomodoroNotificationBreakComplete" = "Восстановление продуктивного организма…";
+"widgetPomodoroNotificationFocusStart" = "Помодоро началось. Да, уже. Нет, потом нельзя";
+"widgetPomodoroNotificationBreakStart" = "Перерыв. Делай вид, что отдыхаешь осознанно";
 "widgetWeatherPlaceholderCondition" = "Переменная облачность";
 "widgetWeatherPlaceholderHiLow" = "Днём 26° · Ночью 18°";
 "appearanceSubtitle" = "Настройте внешний вид MyWidgets.";

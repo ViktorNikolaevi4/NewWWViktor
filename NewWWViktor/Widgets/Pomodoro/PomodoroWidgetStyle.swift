@@ -3,9 +3,9 @@ import SwiftUI
 struct PomodoroWidgetStyle {
     let isMedium: Bool
 
-    var outerPadding: CGFloat { isMedium ? 10 : 6 }
-    var ringPadding: CGFloat { isMedium ? 4 : 2 }
-    var controlsBottomPadding: CGFloat { isMedium ? 4 : 2 }
+    var outerPadding: CGFloat { isMedium ? 7 : 5 }
+    var ringPadding: CGFloat { isMedium ? 2 : 1 }
+    var controlsBottomPadding: CGFloat { isMedium ? 2 : 1 }
     var ringLineWidth: CGFloat { isMedium ? 10 : 8 }
     var labelFontSize: CGFloat { isMedium ? 12 : 11 }
     var timeFontSize: CGFloat { isMedium ? 26 : 20 }

@@ -70,6 +70,8 @@ enum LocalizationKey: String {
     case widgetBatteryDetailTitle
     case widgetBatteryDetailDescription
     case widgetBatteryLabel
+    case widgetBatteryRemainingLabel
+    case widgetBatteryEstimateUnavailable
     case widgetPomodoroFocusLabel
     case widgetPomodoroShortBreakLabel
     case widgetPomodoroLongBreakLabel

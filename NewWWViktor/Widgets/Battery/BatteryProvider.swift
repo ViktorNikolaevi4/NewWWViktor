@@ -9,6 +9,8 @@ import UIKit
 
 final class BatteryProvider: ObservableObject {
     @Published private(set) var batteryLevel: Int?
+    @Published private(set) var remainingTimeMinutes: Int?
+    @Published private(set) var remainingTimeProgress: Double?
 
     private enum Constants {
         static let refreshInterval: TimeInterval = 60
@@ -16,6 +18,8 @@ final class BatteryProvider: ObservableObject {
 
     private var lastRefreshDate: Date?
     private var observers: [NSObjectProtocol] = []
+    private var baselineRemainingMinutes: Int?
+    private var lastIsCharging: Bool?
 
     init() {
 #if os(iOS)
@@ -50,6 +54,11 @@ final class BatteryProvider: ObservableObject {
         }
         lastRefreshDate = now
         batteryLevel = fetchBatteryLevel()
+        let remainingInfo = fetchRemainingTimeInfo()
+        remainingTimeMinutes = remainingInfo.minutes
+        remainingTimeProgress = updateRemainingProgress(minutes: remainingInfo.minutes,
+                                                        isCharging: remainingInfo.isCharging,
+                                                        batteryLevel: batteryLevel)
     }
 
     private func fetchBatteryLevel() -> Int? {
@@ -73,5 +82,52 @@ final class BatteryProvider: ObservableObject {
 #else
         return nil
 #endif
+    }
+
+    private func fetchRemainingTimeInfo() -> (minutes: Int?, isCharging: Bool?) {
+#if os(macOS)
+        guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
+              let sources = IOPSCopyPowerSourcesList(snapshot)?.takeRetainedValue() as? [CFTypeRef],
+              let source = sources.first,
+              let description = IOPSGetPowerSourceDescription(snapshot, source)?.takeUnretainedValue() as? [String: Any] else {
+            return (nil, nil)
+        }
+
+        let isCharging = (description[kIOPSIsChargingKey] as? Bool) ?? false
+        let timeKey = isCharging ? kIOPSTimeToFullChargeKey : kIOPSTimeToEmptyKey
+        guard let minutes = description[timeKey] as? Int, minutes > 0 else {
+            return (nil, isCharging)
+        }
+        return (minutes, isCharging)
+#else
+        return (nil, nil)
+#endif
+    }
+
+    private func updateRemainingProgress(minutes: Int?, isCharging: Bool?, batteryLevel: Int?) -> Double? {
+        guard let minutes else {
+            baselineRemainingMinutes = nil
+            lastIsCharging = nil
+            return nil
+        }
+        guard let batteryLevel else { return nil }
+
+        if let isCharging {
+            if lastIsCharging == nil || lastIsCharging != isCharging || baselineRemainingMinutes == nil {
+                baselineRemainingMinutes = minutes
+            }
+            lastIsCharging = isCharging
+        } else if baselineRemainingMinutes == nil {
+            baselineRemainingMinutes = minutes
+        }
+
+        let level = Double(max(0, min(100, batteryLevel)))
+        if isCharging == true {
+            let remainingPercent = (100.0 - level) / 100.0
+            return min(1, max(0, remainingPercent))
+        } else {
+            let remainingPercent = level / 100.0
+            return min(1, max(0, remainingPercent))
+        }
     }
 }

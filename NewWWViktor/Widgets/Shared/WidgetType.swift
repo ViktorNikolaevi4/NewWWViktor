@@ -66,7 +66,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .pomodoro:
             return [.small, .medium]
         case .battery:
-            return [.small]
+            return [.small, .medium]
         }
     }
 }

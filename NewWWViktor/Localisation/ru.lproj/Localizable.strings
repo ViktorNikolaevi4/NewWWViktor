@@ -70,6 +70,8 @@
 "widgetBatteryDetailTitle" = "Батарея";
 "widgetBatteryDetailDescription" = "Текущий заряд батареи в компактном виде.";
 "widgetBatteryLabel" = "Батарея";
+"widgetBatteryRemainingLabel" = "Остаток заряда";
+"widgetBatteryEstimateUnavailable" = "Оценка недоступна";
 "widgetPomodoroFocusLabel" = "Фокус";
 "widgetPomodoroShortBreakLabel" = "Короткий перерыв";
 "widgetPomodoroLongBreakLabel" = "Длинный перерыв";

@@ -144,6 +144,7 @@ final class WidgetManager: ObservableObject {
     private var weatherAlignmentTimer: Timer?
     private var locationCancellable: AnyCancellable?
     private let defaultWeatherLocation = CLLocation(latitude: 43.5855, longitude: 39.7231)
+    private var resizedWidgetIDs: Set<UUID> = []
 
     init(localizationManager: LocalizationManager? = nil) {
         let hidden = UserDefaults.standard.object(forKey: hideWidgetsKey) as? Bool ?? false
@@ -739,15 +740,30 @@ final class WidgetManager: ObservableObject {
                                       y: updatedInstance.y - overflow,
                                       width: updatedInstance.width,
                                       height: updatedInstance.height + overflow)
-                let shouldAnimate = window.frame.size != newFrame.size
-                window.setFrame(newFrame,
-                                display: true,
-                                animate: shouldAnimate)
+                let sizeChanged = window.frame.size != newFrame.size
+                window.setFrame(newFrame, display: true, animate: sizeChanged)
                 // Закрепленные — над окнами, незакрепленные — в верхнем слое рабочего стола (statusBar), чтобы переживали «Показать рабочий стол» и перебивали чужие виджеты.
                 window.level = updatedInstance.isPinned ? .floating : .desktopWidgetTop
                 window.isMovableByWindowBackground = !updatedInstance.isPositionLocked
-                if let hosting = window.contentView as? NSHostingView<AnyView> {
+                if sizeChanged {
+                    let newHost: NSHostingView<AnyView>
+                    if let localizationManager {
+                        let baseView = WidgetHostView(instanceID: updatedInstance.id)
+                            .environmentObject(self)
+                            .environmentObject(localizationManager)
+                        newHost = NSHostingView(rootView: AnyView(baseView))
+                    } else {
+                        let baseView = WidgetHostView(instanceID: updatedInstance.id)
+                            .environmentObject(self)
+                        newHost = NSHostingView(rootView: AnyView(baseView))
+                    }
+                    newHost.frame = NSRect(origin: .zero, size: newFrame.size)
+                    window.contentView = newHost
+                } else if let hosting = window.contentView as? NSHostingView<AnyView> {
                     hosting.invalidateIntrinsicContentSize()
+                    hosting.frame = NSRect(origin: .zero, size: newFrame.size)
+                    hosting.layoutSubtreeIfNeeded()
+                    hosting.displayIfNeeded()
                 }
             }
 

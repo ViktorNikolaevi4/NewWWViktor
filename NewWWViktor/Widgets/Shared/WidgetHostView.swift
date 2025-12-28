@@ -13,6 +13,8 @@ struct WidgetHostView: View {
     let instanceID: UUID
     @State private var isMenuVisible = false
     @State private var showSettingsPanel = false
+    @State private var didResizeOnce = false
+    @State private var disableResizeAnimation = false
 #if os(macOS)
     @State private var settingsPanel: NSPanel?
     @State private var settingsPanelWidgetID: UUID?
@@ -62,9 +64,14 @@ struct WidgetHostView: View {
                     .padding(.trailing, 2)
                     .offset(y: menuButtonOffsetY)
             }
-            // Rebuild fully when size or palette changes to drop any cached layout from previous size.
-            .id("\(instance.id.uuidString)-\(instance.sizeOption.rawValue)-\(manager.globalColorsVersion)")
+            // Rebuild when palette changes; keep view identity stable for smoother resizing.
+            .id("\(instance.id.uuidString)-\(manager.globalColorsVersion)")
             .animation(.none, value: instance.sizeOption)
+            .transaction { transaction in
+                if disableResizeAnimation {
+                    transaction.animation = nil
+                }
+            }
             .contentShape(Rectangle())
             .onHover { hovering in
                 withAnimation(.snappy(duration: 0.16, extraBounce: 0.0)) {
@@ -84,28 +91,46 @@ struct WidgetHostView: View {
                     togglePanel(for: instance)
                 }
             )
-            .onDisappear {
-                closeSettingsPanel()
-                removeWindowMoveObserver()
-            }
             .onChange(of: instance.width) { _, _ in
                 repositionPanelIfNeeded(for: instance)
+                DispatchQueue.main.async {
+                    repositionPanelIfNeeded(for: instance)
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) {
+                    repositionPanelIfNeeded(for: instance)
+                }
             }
             .onChange(of: instance.height) { _, _ in
                 repositionPanelIfNeeded(for: instance)
+                DispatchQueue.main.async {
+                    repositionPanelIfNeeded(for: instance)
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) {
+                    repositionPanelIfNeeded(for: instance)
+                }
             }
             .onChange(of: instance.x) { _, _ in
                 repositionPanelIfNeeded(for: instance)
+                DispatchQueue.main.async {
+                    repositionPanelIfNeeded(for: instance)
+                }
             }
             .onChange(of: instance.y) { _, _ in
                 repositionPanelIfNeeded(for: instance)
+                DispatchQueue.main.async {
+                    repositionPanelIfNeeded(for: instance)
+                }
             }
             .onReceive(manager.$globalColorsVersion) { _ in
                 // Trigger view refresh when appearance changes (e.g., background image/palette)
             }
             .onReceive(manager.$widgets) { widgets in
                 // Если открыта панель настроек для этого виджета, держим её около виджета при любых изменениях размеров/позиции.
-                guard let updated = widgets.first(where: { $0.id == instance.id }) else { return }
+                guard let updated = widgets.first(where: { $0.id == instance.id }) else {
+                    closeSettingsPanel()
+                    removeWindowMoveObserver()
+                    return
+                }
                 repositionPanelIfNeeded(for: updated)
                 // Пересчёт через кадр — после того, как окно виджета применило новый frame (setFrame может быть анимирован).
                 DispatchQueue.main.async {
@@ -118,6 +143,15 @@ struct WidgetHostView: View {
                 }
             }
 #endif
+            .onChange(of: instance.sizeOption) { _, _ in
+                if !didResizeOnce {
+                    disableResizeAnimation = true
+                    didResizeOnce = true
+                    DispatchQueue.main.async {
+                        disableResizeAnimation = false
+                    }
+                }
+            }
         } else {
             EmptyView()
         }

@@ -4,6 +4,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
     case clock
     case weather
     case pomodoro
+    case battery
 
     var id: String { rawValue }
 
@@ -12,6 +13,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .clock: return .widgetCategoryLabel
         case .weather: return .widgetCategoryLabel
         case .pomodoro: return .widgetCategoryLabel
+        case .battery: return .widgetCategoryLabel
         }
     }
 
@@ -20,6 +22,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .clock: return .widgetClockDetailTitle
         case .weather: return .widgetWeatherDetailTitle
         case .pomodoro: return .widgetPomodoroDetailTitle
+        case .battery: return .widgetBatteryDetailTitle
         }
     }
 
@@ -28,6 +31,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .clock: return .widgetClockDetailDescription
         case .weather: return .widgetWeatherDetailDescription
         case .pomodoro: return .widgetPomodoroDetailDescription
+        case .battery: return .widgetBatteryDetailDescription
         }
     }
 
@@ -36,6 +40,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .clock: return nil
         case .weather: return nil
         case .pomodoro: return nil
+        case .battery: return nil
         }
     }
 
@@ -46,6 +51,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .weather:
             return WidgetSizeOption.medium.dimensions
         case .pomodoro:
+            return WidgetSizeOption.small.dimensions
+        case .battery:
             return WidgetSizeOption.small.dimensions
         }
     }
@@ -58,6 +65,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
             return WidgetSizeOption.allCases
         case .pomodoro:
             return [.small, .medium]
+        case .battery:
+            return [.small]
         }
     }
 }

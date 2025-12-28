@@ -67,6 +67,9 @@
 "widgetWeatherDetailDescription" = "Check current conditions and highs/lows at a glance.";
 "widgetPomodoroDetailTitle" = "Pomodoro";
 "widgetPomodoroDetailDescription" = "Run focused work sessions with a simple timer.";
+"widgetBatteryDetailTitle" = "Battery";
+"widgetBatteryDetailDescription" = "Current battery level in a compact glance.";
+"widgetBatteryLabel" = "Battery";
 "widgetPomodoroFocusLabel" = "Focus";
 "widgetPomodoroShortBreakLabel" = "Short break";
 "widgetPomodoroLongBreakLabel" = "Long break";

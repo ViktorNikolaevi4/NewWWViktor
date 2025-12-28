@@ -67,6 +67,9 @@
 "widgetWeatherDetailDescription" = "Следите за погодой и температурой за день прямо на рабочем столе.";
 "widgetPomodoroDetailTitle" = "Помодоро";
 "widgetPomodoroDetailDescription" = "Запускайте фокус-сессии с простым таймером.";
+"widgetBatteryDetailTitle" = "Батарея";
+"widgetBatteryDetailDescription" = "Текущий заряд батареи в компактном виде.";
+"widgetBatteryLabel" = "Батарея";
 "widgetPomodoroFocusLabel" = "Фокус";
 "widgetPomodoroShortBreakLabel" = "Короткий перерыв";
 "widgetPomodoroLongBreakLabel" = "Длинный перерыв";

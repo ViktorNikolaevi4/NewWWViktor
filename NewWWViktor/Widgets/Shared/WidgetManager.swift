@@ -745,21 +745,7 @@ final class WidgetManager: ObservableObject {
                 // Закрепленные — над окнами, незакрепленные — в верхнем слое рабочего стола (statusBar), чтобы переживали «Показать рабочий стол» и перебивали чужие виджеты.
                 window.level = updatedInstance.isPinned ? .floating : .desktopWidgetTop
                 window.isMovableByWindowBackground = !updatedInstance.isPositionLocked
-                if sizeChanged {
-                    let newHost: NSHostingView<AnyView>
-                    if let localizationManager {
-                        let baseView = WidgetHostView(instanceID: updatedInstance.id)
-                            .environmentObject(self)
-                            .environmentObject(localizationManager)
-                        newHost = NSHostingView(rootView: AnyView(baseView))
-                    } else {
-                        let baseView = WidgetHostView(instanceID: updatedInstance.id)
-                            .environmentObject(self)
-                        newHost = NSHostingView(rootView: AnyView(baseView))
-                    }
-                    newHost.frame = NSRect(origin: .zero, size: newFrame.size)
-                    window.contentView = newHost
-                } else if let hosting = window.contentView as? NSHostingView<AnyView> {
+                if let hosting = window.contentView as? NSHostingView<AnyView> {
                     hosting.invalidateIntrinsicContentSize()
                     hosting.frame = NSRect(origin: .zero, size: newFrame.size)
                     hosting.layoutSubtreeIfNeeded()

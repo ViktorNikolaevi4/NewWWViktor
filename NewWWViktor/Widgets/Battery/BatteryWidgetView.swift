@@ -47,7 +47,8 @@ struct BatteryWidgetView: View {
                      valueColor: secondaryColor,
                      progress: remainingProgress,
                      ringColor: primaryColor,
-                     titleParts: remainingTitleParts)
+                     titleParts: remainingTitleParts,
+                     showsChargingIndicator: isCharging)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .padding(.horizontal, 4)
@@ -67,7 +68,8 @@ struct BatteryWidgetView: View {
                          valueColor: secondaryColor,
                          progress: remainingProgress,
                          ringColor: primaryColor,
-                         titleParts: remainingTitleParts)
+                         titleParts: remainingTitleParts,
+                         showsChargingIndicator: isCharging)
             }
 
             BatteryHistoryChartView(samples: manager.batteryProvider.minuteHistory,
@@ -274,6 +276,7 @@ private struct BatteryHistoryChartView: View {
 
     @State private var isHovering = false
     @State private var hoverIndex: Int?
+    @State private var tooltipSize: CGSize = CGSize(width: 140, height: 40)
 
     var body: some View {
         GeometryReader { proxy in
@@ -281,12 +284,11 @@ private struct BatteryHistoryChartView: View {
             let barSpacing: CGFloat = 1
             let step = barWidth + barSpacing
             let maxBars = max(1, Int(proxy.size.width / step))
-            let tooltipWidth: CGFloat = 140
             let windowMinutes = maxBars
             let now = Date()
             let baseMinute = floor(now.timeIntervalSince1970 / 60) * 60
-            let windowDuration: TimeInterval = 30 * 60
-            let stepSeconds = windowMinutes > 1 ? windowDuration / Double(windowMinutes - 1) : windowDuration
+            let stepSeconds: TimeInterval = 60
+            let windowDuration: TimeInterval = Double(max(0, windowMinutes - 1)) * stepSeconds
             let startTime = baseMinute - windowDuration
             let visible = minuteWindowSamples(from: startTime,
                                               count: windowMinutes,
@@ -312,11 +314,18 @@ private struct BatteryHistoryChartView: View {
                 if let hoverIndex, hoverIndex < visible.count, let sample = visible[hoverIndex] {
                     BatteryHistoryTooltip(sample: sample,
                                           valueColor: valueColor)
-                        .offset(x: tooltipOffsetX(for: hoverIndex,
-                                                  step: step,
-                                                  maxWidth: proxy.size.width,
-                                                  tooltipWidth: tooltipWidth),
-                                y: 6)
+                        .background(
+                            GeometryReader { tooltipProxy in
+                                Color.clear
+                                    .preference(key: BatteryTooltipSizeKey.self,
+                                                value: tooltipProxy.size)
+                            }
+                        )
+                        .position(x: tooltipPositionX(for: hoverIndex,
+                                                      step: step,
+                                                      maxWidth: proxy.size.width,
+                                                      tooltipWidth: tooltipSize.width),
+                                  y: tooltipSize.height / 2 + 6)
                 }
             }
 
@@ -365,6 +374,11 @@ private struct BatteryHistoryChartView: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(Color.black.opacity(0.12))
         )
+        .onPreferenceChange(BatteryTooltipSizeKey.self) { size in
+            if size.width > 0 && size.height > 0 {
+                tooltipSize = size
+            }
+        }
     }
 
     private func barHeight(sample: BatteryProvider.BatteryMinuteSample, in availableHeight: CGFloat) -> CGFloat {
@@ -456,13 +470,13 @@ private struct BatteryHistoryChartView: View {
                                                    isCharging: charging)
     }
 
-    private func tooltipOffsetX(for index: Int,
+    private func tooltipPositionX(for index: Int,
                                 step: CGFloat,
                                 maxWidth: CGFloat,
                                 tooltipWidth: CGFloat) -> CGFloat {
-        let raw = CGFloat(index) * step
-        let clamped = min(max(0, raw - tooltipWidth * 0.5), max(0, maxWidth - tooltipWidth))
-        return clamped
+        let barCenter = CGFloat(index) * step + (step * 0.5)
+        let half = tooltipWidth * 0.5
+        return min(max(half, barCenter), maxWidth - half)
     }
 
     private func clamp(_ value: Int, min: Int, max: Int) -> Int {
@@ -502,5 +516,15 @@ private struct BatteryHistoryTooltip: View {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(Color.black.opacity(0.6))
         )
+    }
+}
+
+private struct BatteryTooltipSizeKey: PreferenceKey {
+    static var defaultValue: CGSize = CGSize(width: 140, height: 40)
+
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        let next = nextValue()
+        value = CGSize(width: max(value.width, next.width),
+                       height: max(value.height, next.height))
     }
 }

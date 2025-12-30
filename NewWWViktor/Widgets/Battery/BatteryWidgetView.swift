@@ -8,7 +8,9 @@ struct BatteryWidgetView: View {
 
     var body: some View {
         Group {
-            if widget.sizeOption == .large {
+            if widget.sizeOption == .extraLarge {
+                extraLargeLayout
+            } else if widget.sizeOption == .large {
                 largeLayout
             } else if widget.sizeOption == .medium {
                 mediumLayout
@@ -45,7 +47,7 @@ struct BatteryWidgetView: View {
             ringView(title: remainingTitleText,
                      valueText: remainingValueText,
                      valueColor: secondaryColor,
-                     progress: remainingProgress,
+                     progress: secondaryRingProgress,
                      ringColor: primaryColor,
                      titleParts: remainingTitleParts,
                      showsChargingIndicator: isCharging)
@@ -66,11 +68,13 @@ struct BatteryWidgetView: View {
                 ringView(title: remainingTitleText,
                          valueText: remainingValueText,
                          valueColor: secondaryColor,
-                         progress: remainingProgress,
+                         progress: secondaryRingProgress,
                          ringColor: primaryColor,
                          titleParts: remainingTitleParts,
                          showsChargingIndicator: isCharging)
             }
+
+            Spacer(minLength: 0)
 
             BatteryHistoryChartView(samples: manager.batteryProvider.minuteHistory,
                                     primaryColor: primaryColor,
@@ -81,6 +85,47 @@ struct BatteryWidgetView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(.horizontal, 10)
+        .padding(.vertical, 12)
+    }
+
+    private var extraLargeLayout: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 26) {
+                ringView(title: localization.text(.widgetBatteryLabel).uppercased(),
+                         valueText: batteryPercentText,
+                         valueColor: secondaryColor,
+                         showsChargingIndicator: isCharging)
+
+                ringView(title: remainingTitleText,
+                         valueText: remainingValueText,
+                         valueColor: secondaryColor,
+                         progress: secondaryRingProgress,
+                         ringColor: primaryColor,
+                         titleParts: remainingTitleParts,
+                         showsChargingIndicator: isCharging)
+            }
+
+            Spacer(minLength: 0)
+
+            BatteryHistoryChartView(samples: manager.batteryProvider.minuteHistory,
+                                    primaryColor: primaryColor,
+                                    secondaryColor: secondaryColor,
+                                    valueColor: secondaryColor)
+                .frame(maxWidth: .infinity)
+                .frame(height: 120)
+
+            BatteryDetailsView(
+                maximumCapacityText: maximumCapacityText,
+                designCapacityText: designCapacityText,
+                batteryHealthText: batteryHealthText,
+                optimizationText: optimizationText,
+                currentCapacityText: currentCapacityText,
+                localization: localization,
+                secondaryColor: secondaryColor
+            )
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(.horizontal, 12)
         .padding(.vertical, 12)
     }
 
@@ -155,6 +200,8 @@ struct BatteryWidgetView: View {
         let text: String
         if manager.batteryProvider.remainingTimeMinutes == nil {
             text = localization.text(.widgetBatteryEstimateUnavailable)
+        } else if isCharging {
+            text = localization.text(.widgetBatteryTimeToFull)
         } else {
             text = localization.text(.widgetBatteryRemainingLabel)
         }
@@ -179,6 +226,54 @@ struct BatteryWidgetView: View {
 
     private var remainingProgress: Double {
         manager.batteryProvider.remainingTimeProgress ?? 0
+    }
+
+    private var secondaryRingProgress: Double {
+        isCharging ? batteryProgress : remainingProgress
+    }
+
+    private var maximumCapacityText: String {
+        guard let percent = manager.batteryProvider.maximumCapacityPercent else {
+            return localization.text(.widgetBatteryEstimateUnavailable)
+        }
+        return "\(percent)%"
+    }
+
+    private var optimizationText: String {
+        guard let enabled = manager.batteryProvider.optimizedChargingEnabled else {
+            return localization.text(.widgetBatteryEstimateUnavailable)
+        }
+        return localization.text(enabled ? .widgetBatteryStatusOn : .widgetBatteryStatusOff)
+    }
+
+    private var currentCapacityText: String {
+        guard let current = manager.batteryProvider.currentCapacityMah,
+              let maxCapacity = manager.batteryProvider.maxCapacityMah else {
+            return localization.text(.widgetBatteryEstimateUnavailable)
+        }
+        return "\(formatMah(current)) / \(formatMah(maxCapacity)) mAh"
+    }
+
+    private var designCapacityText: String {
+        guard let design = manager.batteryProvider.designCapacityMah else {
+            return localization.text(.widgetBatteryEstimateUnavailable)
+        }
+        return "\(formatMah(design)) mAh"
+    }
+
+    private var batteryHealthText: String {
+        guard let percent = manager.batteryProvider.maximumCapacityPercent else {
+            return localization.text(.widgetBatteryHealthUnknown)
+        }
+        return "\(percent)%"
+    }
+
+    private func formatMah(_ value: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = " "
+        formatter.usesGroupingSeparator = true
+        return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
     }
 
     private var isCharging: Bool {
@@ -516,6 +611,52 @@ private struct BatteryHistoryTooltip: View {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(Color.black.opacity(0.6))
         )
+    }
+}
+
+private struct BatteryDetailsView: View {
+    let maximumCapacityText: String
+    let designCapacityText: String
+    let batteryHealthText: String
+    let optimizationText: String
+    let currentCapacityText: String
+    let localization: LocalizationManager
+    let secondaryColor: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            BatteryDetailRow(title: localization.text(.widgetBatteryMaximumCapacity),
+                             value: maximumCapacityText,
+                             color: secondaryColor)
+            BatteryDetailRow(title: localization.text(.widgetBatteryDesignCapacity),
+                             value: designCapacityText,
+                             color: secondaryColor)
+            BatteryDetailRow(title: localization.text(.widgetBatteryHealth),
+                             value: batteryHealthText,
+                             color: secondaryColor)
+            BatteryDetailRow(title: localization.text(.widgetBatteryCurrentCapacity),
+                             value: currentCapacityText,
+                             color: secondaryColor)
+        }
+        .font(.system(size: 12, weight: .medium))
+        .foregroundStyle(secondaryColor.opacity(0.9))
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct BatteryDetailRow: View {
+    let title: String
+    let value: String
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(title)
+                .foregroundStyle(color.opacity(0.75))
+            Spacer()
+            Text(value)
+                .foregroundStyle(color)
+        }
     }
 }
 

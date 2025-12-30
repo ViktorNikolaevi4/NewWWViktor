@@ -1,8 +1,8 @@
 import Foundation
 import Combine
 #if os(macOS)
+import IOKit
 import IOKit.ps
-import Combine
 #elseif os(iOS)
 import UIKit
 #endif
@@ -21,6 +21,11 @@ final class BatteryProvider: ObservableObject {
     @Published private(set) var remainingTimeProgress: Double?
     @Published private(set) var isCharging: Bool?
     @Published private(set) var minuteHistory: [BatteryMinuteSample] = []
+    @Published private(set) var maximumCapacityPercent: Int?
+    @Published private(set) var currentCapacityMah: Int?
+    @Published private(set) var maxCapacityMah: Int?
+    @Published private(set) var designCapacityMah: Int?
+    @Published private(set) var optimizedChargingEnabled: Bool?
 
     private enum Constants {
         static let refreshInterval: TimeInterval = 5
@@ -79,8 +84,32 @@ final class BatteryProvider: ObservableObject {
             return
         }
         lastRefreshDate = now
-        batteryLevel = fetchBatteryLevel()
-        let remainingInfo = fetchRemainingTimeInfo()
+        #if os(macOS)
+        let description = fetchPowerSourceDescription()
+        let smartBattery = fetchSmartBatteryInfo()
+        batteryLevel = fetchBatteryLevel(description: description)
+        let remainingInfo = fetchRemainingTimeInfo(description: description)
+        let capacityInfo = fetchCapacityInfo(description: description, smartBattery: smartBattery)
+        maximumCapacityPercent = capacityInfo.maximumCapacityPercent
+        currentCapacityMah = capacityInfo.currentCapacityMah
+        maxCapacityMah = capacityInfo.maxCapacityMah
+        designCapacityMah = capacityInfo.designCapacityMah
+        optimizedChargingEnabled = capacityInfo.optimizedChargingEnabled
+        #elseif os(iOS)
+        batteryLevel = fetchBatteryLevel(description: nil)
+        let remainingInfo = fetchRemainingTimeInfo(description: nil)
+        maximumCapacityPercent = nil
+        currentCapacityMah = nil
+        maxCapacityMah = nil
+        optimizedChargingEnabled = nil
+        #else
+        batteryLevel = nil
+        let remainingInfo = (minutes: nil, isCharging: nil)
+        maximumCapacityPercent = nil
+        currentCapacityMah = nil
+        maxCapacityMah = nil
+        optimizedChargingEnabled = nil
+        #endif
         remainingTimeMinutes = remainingInfo.minutes
         isCharging = remainingInfo.isCharging
         remainingTimeProgress = updateRemainingProgress(minutes: remainingInfo.minutes,
@@ -91,12 +120,9 @@ final class BatteryProvider: ObservableObject {
                            isCharging: remainingInfo.isCharging)
     }
 
-    private func fetchBatteryLevel() -> Int? {
+    private func fetchBatteryLevel(description: [String: Any]?) -> Int? {
 #if os(macOS)
-        guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
-              let sources = IOPSCopyPowerSourcesList(snapshot)?.takeRetainedValue() as? [CFTypeRef],
-              let source = sources.first,
-              let description = IOPSGetPowerSourceDescription(snapshot, source)?.takeUnretainedValue() as? [String: Any],
+        guard let description,
               let current = description[kIOPSCurrentCapacityKey] as? Int,
               let maxCapacity = description[kIOPSMaxCapacityKey] as? Int,
               maxCapacity > 0 else {
@@ -114,15 +140,9 @@ final class BatteryProvider: ObservableObject {
 #endif
     }
 
-    private func fetchRemainingTimeInfo() -> (minutes: Int?, isCharging: Bool?) {
+    private func fetchRemainingTimeInfo(description: [String: Any]?) -> (minutes: Int?, isCharging: Bool?) {
 #if os(macOS)
-        guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
-              let sources = IOPSCopyPowerSourcesList(snapshot)?.takeRetainedValue() as? [CFTypeRef],
-              let source = sources.first,
-              let description = IOPSGetPowerSourceDescription(snapshot, source)?.takeUnretainedValue() as? [String: Any] else {
-            return (nil, nil)
-        }
-
+        guard let description else { return (nil, nil) }
         let isCharging = (description[kIOPSIsChargingKey] as? Bool) ?? false
         let timeKey = isCharging ? kIOPSTimeToFullChargeKey : kIOPSTimeToEmptyKey
         guard let minutes = description[timeKey] as? Int, minutes > 0 else {
@@ -137,6 +157,156 @@ final class BatteryProvider: ObservableObject {
         return (nil, nil)
 #endif
     }
+
+    private func fetchPowerSourceDescription() -> [String: Any]? {
+#if os(macOS)
+        guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
+              let sources = IOPSCopyPowerSourcesList(snapshot)?.takeRetainedValue() as? [CFTypeRef],
+              let source = sources.first,
+              let description = IOPSGetPowerSourceDescription(snapshot, source)?.takeUnretainedValue() as? [String: Any] else {
+            return nil
+        }
+        return description
+#else
+        return nil
+#endif
+    }
+
+    private func fetchCapacityInfo(description: [String: Any]?,
+                                   smartBattery: [String: Any]?) -> (maximumCapacityPercent: Int?, currentCapacityMah: Int?, maxCapacityMah: Int?, designCapacityMah: Int?, optimizedChargingEnabled: Bool?) {
+#if os(macOS)
+        let current = intValue(from: smartBattery, keys: ["AppleRawCurrentCapacity", "CurrentCapacity", "ChargeCapacity"])
+        let maxCapacity = intValue(from: smartBattery, keys: ["AppleRawMaxCapacity", "MaxCapacity"])
+        let nominalCapacity = intValue(from: smartBattery, keys: ["NominalChargeCapacity"])
+        let designCapacity = intValue(from: smartBattery, keys: ["DesignCapacity", "AppleRawDesignCapacity"])
+
+        let maxMah = firstCapacityMah(nominalCapacity, maxCapacity)
+        var currentMah = firstCapacityMah(current)
+        if currentMah == nil, let maxMah, let percent = batteryLevel {
+            currentMah = Int((Double(maxMah) * Double(percent) / 100.0).rounded())
+        }
+        let designMah = firstCapacityMah(designCapacity)
+
+        let reportedPercent = intValue(from: smartBattery,
+                                       keys: ["MaximumCapacityPercent", "MaxCapacityPercent", "BatteryHealthPercent"])
+
+        let percent: Int?
+        if let reportedPercent, (1...100).contains(reportedPercent) {
+            percent = reportedPercent
+        } else if let maxMah, let designMah {
+            percent = Int((Double(maxMah) / Double(designMah) * 100).rounded())
+        } else if let maxCapacity, maxCapacity <= 100 {
+            percent = maxCapacity
+        } else if let maxCapacity, let designCapacity, designCapacity > 0 {
+            percent = Int((Double(maxCapacity) / Double(designCapacity) * 100).rounded())
+        } else {
+            percent = nil
+        }
+
+        let optimized = optimizedChargingFlag(from: smartBattery ?? description ?? [:])
+        return (percent, currentMah, maxMah, designMah, optimized)
+#else
+        return (nil, nil, nil, nil, nil)
+#endif
+    }
+
+#if os(macOS)
+    private func fetchSmartBatteryInfo() -> [String: Any]? {
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSmartBattery"))
+        guard service != 0 else { return nil }
+        defer { IOObjectRelease(service) }
+        var properties: Unmanaged<CFMutableDictionary>?
+        let result = IORegistryEntryCreateCFProperties(service, &properties, kCFAllocatorDefault, 0)
+        guard result == KERN_SUCCESS,
+              let dict = properties?.takeRetainedValue() as? [String: Any] else {
+            return nil
+        }
+        return dict
+    }
+
+    private func intValue(from dict: [String: Any]?, keys: [String]) -> Int? {
+        guard let dict else { return nil }
+        for key in keys {
+            if let value = dict[key] as? Int {
+                return value
+            }
+            if let value = dict[key] as? NSNumber {
+                return value.intValue
+            }
+            if let value = dict[key] as? String, let intValue = Int(value) {
+                return intValue
+            }
+        }
+        return nil
+    }
+
+    private func firstCapacityMah(_ values: Int?...) -> Int? {
+        for value in values {
+            if let value, value >= 500 {
+                return value
+            }
+        }
+        return nil
+    }
+
+    private func optimizedChargingFlag(from description: [String: Any]) -> Bool? {
+        let keys = [
+            "Optimized Battery Charging Engaged",
+            "Optimized Battery Charging",
+            "Battery Charging Optimization",
+            "OptimizedBatteryChargingEngaged",
+            "OptimizedBatteryChargingEnabled"
+        ]
+        for key in keys {
+            if let value = description[key] as? Bool {
+                return value
+            }
+            if let value = description[key] as? Int {
+                return value != 0
+            }
+            if let value = description[key] as? String {
+                let lower = value.lowercased()
+                if lower == "on" || lower == "yes" || lower == "true" {
+                    return true
+                }
+                if lower == "off" || lower == "no" || lower == "false" {
+                    return false
+                }
+            }
+        }
+        return pmsetOptimizedChargingFlag()
+    }
+
+    private func pmsetOptimizedChargingFlag() -> Bool? {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
+        process.arguments = ["-g"]
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = Pipe()
+
+        do {
+            try process.run()
+        } catch {
+            return nil
+        }
+
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        guard let output = String(data: data, encoding: .utf8) else { return nil }
+        for line in output.split(separator: "\n") {
+            if line.lowercased().contains("optimized battery charging") {
+                if line.lowercased().contains("on") {
+                    return true
+                }
+                if line.lowercased().contains("off") {
+                    return false
+                }
+            }
+        }
+        return nil
+    }
+#endif
 
     private func updateRemainingProgress(minutes: Int?, isCharging: Bool?, batteryLevel: Int?) -> Double? {
         guard let minutes else {

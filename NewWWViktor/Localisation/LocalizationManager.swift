@@ -71,6 +71,18 @@ enum LocalizationKey: String {
     case widgetBatteryDetailDescription
     case widgetBatteryLabel
     case widgetBatteryRemainingLabel
+    case widgetBatteryTimeToFull
+    case widgetBatteryMaximumCapacity
+    case widgetBatteryDesignCapacity
+    case widgetBatteryOptimization
+    case widgetBatteryCurrentCapacity
+    case widgetBatteryHealth
+    case widgetBatteryHealthGood
+    case widgetBatteryHealthFair
+    case widgetBatteryHealthPoor
+    case widgetBatteryHealthUnknown
+    case widgetBatteryStatusOn
+    case widgetBatteryStatusOff
     case widgetBatteryEstimateUnavailable
     case widgetPomodoroFocusLabel
     case widgetPomodoroShortBreakLabel

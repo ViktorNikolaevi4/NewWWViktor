@@ -3,6 +3,7 @@ import SwiftData
 
 @Model
 final class EisenhowerTask {
+    var uuid: UUID
     var title: String
     var quadrantRawValue: String
     var isDone: Bool
@@ -12,6 +13,7 @@ final class EisenhowerTask {
          quadrant: EisenhowerQuadrant,
          isDone: Bool = false,
          createdAt: Date = Date()) {
+        self.uuid = UUID()
         self.title = title
         quadrantRawValue = quadrant.rawValue
         self.isDone = isDone
@@ -29,4 +31,6 @@ enum EisenhowerQuadrant: String, CaseIterable, Codable {
     case importantNotUrgent
     case notImportantUrgent
     case notImportantNotUrgent
+
+    var id: String { rawValue }
 }

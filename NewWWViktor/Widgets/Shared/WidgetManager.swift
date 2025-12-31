@@ -100,6 +100,7 @@ final class WidgetManager: ObservableObject {
     weak var settingsCoordinator: SettingsCoordinator?
     weak var localizationManager: LocalizationManager?
     let modelContainer: ModelContainer
+    private let eisenhowerTasksCoordinator: EisenhowerTasksCoordinator?
     @Published private(set) var globalBackgroundHidden: Bool = false
     @Published private(set) var weatherSnapshots: [UUID: WeatherSnapshot] = [:]
 
@@ -153,6 +154,12 @@ final class WidgetManager: ObservableObject {
         _areWidgetsHidden = Published(initialValue: hidden)
         self.localizationManager = localizationManager
         self.modelContainer = EisenhowerDataStore.sharedContainer
+        if let localizationManager {
+            self.eisenhowerTasksCoordinator = EisenhowerTasksCoordinator(modelContainer: modelContainer,
+                                                                         localizationManager: localizationManager)
+        } else {
+            self.eisenhowerTasksCoordinator = nil
+        }
         loadGlobalColors()
         loadGlobalBackground()
         load()
@@ -904,5 +911,9 @@ final class WidgetManager: ObservableObject {
 
     func showGeneralSettings() {
         settingsCoordinator?.show(.general)
+    }
+
+    func showEisenhowerTasks() {
+        eisenhowerTasksCoordinator?.show()
     }
 }

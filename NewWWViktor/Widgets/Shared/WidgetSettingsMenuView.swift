@@ -185,6 +185,13 @@ struct WidgetSettingsMenuView: View {
                     WidgetManagementSettingsSection(onAddWidgets: openSidePanel,
                                                     onShowGeneralSettings: openGeneralSettings,
                                                     onDelete: deleteWidget)
+                    if workingWidget.type == .eisenhower {
+                        WidgetSettingsGroup(title: localization.text(.widgetActionsSection)) {
+                            WidgetSettingsRowButton(title: localization.text(.widgetEisenhowerManageTasks), action: openEisenhowerTasks) {
+                                IconButton(systemName: "checklist", isSelected: true)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -292,6 +299,10 @@ struct WidgetSettingsMenuView: View {
 
     private func openGeneralSettings() {
         manager.showGeneralSettings()
+    }
+
+    private func openEisenhowerTasks() {
+        manager.showEisenhowerTasks()
     }
 
     private func deleteWidget() {

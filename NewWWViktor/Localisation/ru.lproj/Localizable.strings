@@ -92,6 +92,16 @@
 "widgetEisenhowerNotImportantNotUrgent" = "Не важно\nНе срочно";
 "widgetEisenhowerTasksTitle" = "Задачи";
 "widgetEisenhowerEmpty" = "Пока нет задач";
+"widgetEisenhowerManageTasks" = "Управлять задачами";
+"widgetEisenhowerShowCompleted" = "Показать выполненные";
+"widgetEisenhowerAddTask" = "Добавить задачу";
+"widgetEisenhowerEditTask" = "Редактировать задачу";
+"widgetEisenhowerDeleteTask" = "Удалить задачу";
+"widgetEisenhowerTaskTitlePlaceholder" = "Название задачи";
+"widgetEisenhowerQuadrantLabel" = "Квадрант";
+"widgetEisenhowerDone" = "Выполнено";
+"widgetEisenhowerSave" = "Сохранить";
+"widgetEisenhowerCancel" = "Отмена";
 "widgetPomodoroFocusLabel" = "Фокус";
 "widgetPomodoroShortBreakLabel" = "Короткий перерыв";
 "widgetPomodoroLongBreakLabel" = "Длинный перерыв";

@@ -92,6 +92,16 @@
 "widgetEisenhowerNotImportantNotUrgent" = "Not important\nNot urgent";
 "widgetEisenhowerTasksTitle" = "Tasks";
 "widgetEisenhowerEmpty" = "No tasks yet";
+"widgetEisenhowerManageTasks" = "Manage tasks";
+"widgetEisenhowerShowCompleted" = "Show completed";
+"widgetEisenhowerAddTask" = "Add task";
+"widgetEisenhowerEditTask" = "Edit task";
+"widgetEisenhowerDeleteTask" = "Delete task";
+"widgetEisenhowerTaskTitlePlaceholder" = "Task title";
+"widgetEisenhowerQuadrantLabel" = "Quadrant";
+"widgetEisenhowerDone" = "Done";
+"widgetEisenhowerSave" = "Save";
+"widgetEisenhowerCancel" = "Cancel";
 "widgetPomodoroFocusLabel" = "Focus";
 "widgetPomodoroShortBreakLabel" = "Short break";
 "widgetPomodoroLongBreakLabel" = "Long break";

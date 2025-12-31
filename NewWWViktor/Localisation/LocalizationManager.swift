@@ -92,6 +92,16 @@ enum LocalizationKey: String {
     case widgetEisenhowerNotImportantNotUrgent
     case widgetEisenhowerTasksTitle
     case widgetEisenhowerEmpty
+    case widgetEisenhowerManageTasks
+    case widgetEisenhowerShowCompleted
+    case widgetEisenhowerAddTask
+    case widgetEisenhowerEditTask
+    case widgetEisenhowerDeleteTask
+    case widgetEisenhowerTaskTitlePlaceholder
+    case widgetEisenhowerQuadrantLabel
+    case widgetEisenhowerDone
+    case widgetEisenhowerSave
+    case widgetEisenhowerCancel
     case widgetPomodoroFocusLabel
     case widgetPomodoroShortBreakLabel
     case widgetPomodoroLongBreakLabel

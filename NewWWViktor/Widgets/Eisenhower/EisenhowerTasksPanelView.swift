@@ -9,6 +9,7 @@ struct EisenhowerTasksPanelView: View {
 
     @State private var editorState: EisenhowerTaskEditorState?
     @State private var showCompleted = false
+    @State private var collapsedQuadrants: Set<EisenhowerQuadrant> = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,25 +20,27 @@ struct EisenhowerTasksPanelView: View {
                 SwiftUI.ForEach(quadrants, id: \EisenhowerQuadrant.id) { (quadrant: EisenhowerQuadrant) in
                     let items = tasksForQuadrant(quadrant)
                     if !items.isEmpty {
-                        Section(header: Text(quadrantLabel(quadrant))) {
-                            ForEach(items, id: \.uuid) { task in
-                                EisenhowerTaskRow(task: task,
-                                                  accent: quadrantColor(quadrant),
-                                                  onEdit: { editorState = .edit(task) },
-                                                  onDelete: { modelContext.delete(task) })
-                                    .contextMenu {
-                                        Button(localization.text(.widgetEisenhowerEditTask)) {
-                                            editorState = .edit(task)
+                        Section(header: quadrantHeader(quadrant, count: items.count)) {
+                            if !collapsedQuadrants.contains(quadrant) {
+                                ForEach(items, id: \.uuid) { task in
+                                    EisenhowerTaskRow(task: task,
+                                                      accent: quadrantColor(quadrant),
+                                                      onEdit: { editorState = .edit(task) },
+                                                      onDelete: { modelContext.delete(task) })
+                                        .contextMenu {
+                                            Button(localization.text(.widgetEisenhowerEditTask)) {
+                                                editorState = .edit(task)
+                                            }
+                                            Button(role: .destructive) {
+                                                modelContext.delete(task)
+                                            } label: {
+                                                Text(localization.text(.widgetEisenhowerDeleteTask))
+                                            }
                                         }
-                                        Button(role: .destructive) {
-                                            modelContext.delete(task)
-                                        } label: {
-                                            Text(localization.text(.widgetEisenhowerDeleteTask))
-                                        }
-                                    }
-                            }
-                            .onDelete { indexSet in
-                                deleteItems(indexSet, quadrant: quadrant)
+                                }
+                                .onDelete { indexSet in
+                                    deleteItems(indexSet, quadrant: quadrant)
+                                }
                             }
                         }
                     }
@@ -109,6 +112,51 @@ struct EisenhowerTasksPanelView: View {
         }
     }
 
+    private func quadrantHeader(_ quadrant: EisenhowerQuadrant, count: Int) -> some View {
+        HStack(spacing: 8) {
+            Text(quadrantLabel(quadrant))
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("\(count)")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(
+                    Capsule()
+                        .fill(Color.white.opacity(0.06))
+                )
+
+            Spacer(minLength: 0)
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    toggleQuadrant(quadrant)
+                }
+            } label: {
+                Image(systemName: collapsedQuadrants.contains(quadrant) ? "chevron.down" : "chevron.up")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(4)
+                    .background(Circle().fill(Color.white.opacity(0.06)))
+            }
+            .buttonStyle(.plain)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 2)
+    }
+
+    private func toggleQuadrant(_ quadrant: EisenhowerQuadrant) {
+        if collapsedQuadrants.contains(quadrant) {
+            collapsedQuadrants.remove(quadrant)
+        } else {
+            collapsedQuadrants.insert(quadrant)
+        }
+    }
+
     private func quadrantColor(_ quadrant: EisenhowerQuadrant) -> Color {
         switch quadrant {
         case .importantUrgent:
@@ -165,6 +213,8 @@ private struct EisenhowerTaskRow: View {
             ))
             .labelsHidden()
             .toggleStyle(.checkbox)
+            .frame(width: 18, height: 18)
+            .contentShape(Rectangle())
 
             Button {
                 onEdit()
@@ -172,6 +222,7 @@ private struct EisenhowerTaskRow: View {
                 Image(systemName: "pencil")
                     .font(.system(size: 12, weight: .semibold))
             }
+            .padding(4)
             .buttonStyle(.plain)
 
             Button(role: .destructive) {
@@ -180,6 +231,7 @@ private struct EisenhowerTaskRow: View {
                 Image(systemName: "trash")
                     .font(.system(size: 12, weight: .semibold))
             }
+            .padding(4)
             .buttonStyle(.plain)
         }
         .padding(.vertical, 4)

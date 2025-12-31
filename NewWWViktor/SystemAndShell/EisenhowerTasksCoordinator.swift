@@ -5,7 +5,7 @@ import SwiftData
 final class EisenhowerTasksCoordinator {
     private let modelContainer: ModelContainer
     private let localizationManager: LocalizationManager
-    private var window: NSPanel?
+    private var window: TasksPanel?
     private var lastAnchorWidgetID: UUID?
 
     init(modelContainer: ModelContainer, localizationManager: LocalizationManager) {
@@ -20,6 +20,7 @@ final class EisenhowerTasksCoordinator {
         guard let window else { return }
         applyPosition(for: window, widgetWindow: widgetWindow, widget: widget)
         window.orderFrontRegardless()
+        window.makeKey()
     }
 
     private func createWindow() {
@@ -27,9 +28,9 @@ final class EisenhowerTasksCoordinator {
             .environmentObject(localizationManager)
             .modelContainer(modelContainer)
 
-        let hosting = NSHostingController(rootView: content)
+        let hosting = TasksHostingView(rootView: content)
 
-        let window = NSPanel(
+        let window = TasksPanel(
             contentRect: NSRect(x: 0, y: 0, width: 460, height: 520),
             styleMask: [.titled, .closable, .fullSizeContentView, .nonactivatingPanel],
             backing: .buffered,
@@ -47,7 +48,7 @@ final class EisenhowerTasksCoordinator {
         window.level = .floating
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle, .stationary]
         window.isMovableByWindowBackground = true
-        window.contentViewController = hosting
+        window.contentView = hosting
         self.window = window
     }
 
@@ -100,4 +101,13 @@ final class EisenhowerTasksCoordinator {
         y = min(max(y, minY), maxY)
         return CGPoint(x: widget.x + widget.width + spacing, y: y)
     }
+}
+
+private final class TasksPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+}
+
+private final class TasksHostingView<Content: View>: NSHostingView<Content> {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 }

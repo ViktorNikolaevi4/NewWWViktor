@@ -12,6 +12,9 @@ struct EisenhowerWidgetView: View {
 
     private let gridSpacing: CGFloat = 6
     private let cellCornerRadius: CGFloat = 14
+    private var showAllTasksInCells: Bool {
+        widget.sizeOption == .extraLarge
+    }
 
     var body: some View {
         Group {
@@ -35,14 +38,6 @@ struct EisenhowerWidgetView: View {
         VStack(alignment: .leading, spacing: 12) {
             matrixGrid
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            if !recentTasks.isEmpty {
-                VStack(spacing: 8) {
-                    ForEach(recentTasks) { task in
-                        taskRow(task)
-                    }
-                }
-            }
         }
         .padding(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -62,7 +57,8 @@ struct EisenhowerWidgetView: View {
     }
 
     private func quadrantCell(_ quadrant: EisenhowerQuadrant) -> some View {
-        let count = tasks.filter { $0.quadrant == quadrant }.count
+        let quadrantTasks = tasks.filter { $0.quadrant == quadrant }
+        let count = quadrantTasks.count
         return ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: cellCornerRadius, style: .continuous)
                 .fill(Color.white.opacity(0.08))
@@ -86,30 +82,36 @@ struct EisenhowerWidgetView: View {
                 Text("\(count)")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(.white)
+
+                if !quadrantTasks.isEmpty {
+                    if showAllTasksInCells {
+                        ScrollView(.vertical, showsIndicators: false) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                ForEach(quadrantTasks) { task in
+                                    Text(task.title)
+                                        .font(.system(size: 9, weight: .medium))
+                                        .foregroundStyle(.white.opacity(0.9))
+                                        .lineLimit(1)
+                                }
+                            }
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 3) {
+                            ForEach(Array(quadrantTasks.prefix(1))) { task in
+                                Text(task.title)
+                                    .font(.system(size: 9, weight: .medium))
+                                    .foregroundStyle(.white.opacity(0.9))
+                                    .lineLimit(1)
+                            }
+                        }
+                    }
+                }
             }
             .padding(8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func taskRow(_ task: EisenhowerTask) -> some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(quadrantColor(task.quadrant))
-                .frame(width: 6, height: 6)
-            Text(task.title)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-            Spacer(minLength: 0)
-        }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.white.opacity(0.06))
-        )
-    }
 
     private func quadrantLabel(_ quadrant: EisenhowerQuadrant) -> String {
         switch quadrant {
@@ -135,10 +137,6 @@ struct EisenhowerWidgetView: View {
         case .notImportantNotUrgent:
             return Color.gray.opacity(0.7)
         }
-    }
-
-    private var recentTasks: [EisenhowerTask] {
-        Array(tasks.prefix(6))
     }
 
     private var accessibilityLabel: String {

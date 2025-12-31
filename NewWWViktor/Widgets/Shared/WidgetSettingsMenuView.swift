@@ -172,9 +172,16 @@ struct WidgetSettingsMenuView: View {
 
             ScrollView {
                 VStack(spacing: 12) {
-            WidgetGeneralSettingsSection(widget: $workingWidget,
-                                         isLocationPickerPresented: $showLocationPicker,
-                                         showWeather: $showWeather)
+                    if workingWidget.type == .eisenhower {
+                        WidgetSettingsGroup(title: localization.text(.widgetActionsSection)) {
+                            WidgetSettingsRowButton(title: localization.text(.widgetEisenhowerManageTasks), action: openEisenhowerTasks) {
+                                IconButton(systemName: "checklist", isSelected: true)
+                            }
+                        }
+                    }
+                    WidgetGeneralSettingsSection(widget: $workingWidget,
+                                                 isLocationPickerPresented: $showLocationPicker,
+                                                 showWeather: $showWeather)
                     WidgetAppearanceSettingsSection(widget: $workingWidget,
                                                     onColorPicker: { activeColorRole = $0 },
                                                     onBackgroundPicker: { showBackgroundPicker = true })
@@ -185,13 +192,6 @@ struct WidgetSettingsMenuView: View {
                     WidgetManagementSettingsSection(onAddWidgets: openSidePanel,
                                                     onShowGeneralSettings: openGeneralSettings,
                                                     onDelete: deleteWidget)
-                    if workingWidget.type == .eisenhower {
-                        WidgetSettingsGroup(title: localization.text(.widgetActionsSection)) {
-                            WidgetSettingsRowButton(title: localization.text(.widgetEisenhowerManageTasks), action: openEisenhowerTasks) {
-                                IconButton(systemName: "checklist", isSelected: true)
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -302,7 +302,7 @@ struct WidgetSettingsMenuView: View {
     }
 
     private func openEisenhowerTasks() {
-        manager.showEisenhowerTasks()
+        manager.showEisenhowerTasks(for: workingWidget.id)
     }
 
     private func deleteWidget() {

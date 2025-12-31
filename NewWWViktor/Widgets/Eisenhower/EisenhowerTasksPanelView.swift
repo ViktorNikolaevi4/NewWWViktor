@@ -154,6 +154,8 @@ private struct EisenhowerTaskRow: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
+                .strikethrough(task.isDone, color: .primary.opacity(0.7))
+                .opacity(task.isDone ? 0.6 : 1)
 
             Spacer()
 

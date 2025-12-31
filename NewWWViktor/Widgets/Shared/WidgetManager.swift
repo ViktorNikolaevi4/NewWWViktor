@@ -913,7 +913,9 @@ final class WidgetManager: ObservableObject {
         settingsCoordinator?.show(.general)
     }
 
-    func showEisenhowerTasks() {
-        eisenhowerTasksCoordinator?.show()
+    func showEisenhowerTasks(for widgetID: UUID) {
+        let widgetWindow = window(for: widgetID)
+        let widget = widgets.first { $0.id == widgetID }
+        eisenhowerTasksCoordinator?.show(near: widgetWindow, widget: widget)
     }
 }

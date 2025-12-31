@@ -5,6 +5,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
     case weather
     case pomodoro
     case battery
+    case eisenhower
 
     var id: String { rawValue }
 
@@ -14,6 +15,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .weather: return .widgetCategoryLabel
         case .pomodoro: return .widgetCategoryLabel
         case .battery: return .widgetCategoryLabel
+        case .eisenhower: return .widgetCategoryLabel
         }
     }
 
@@ -23,6 +25,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .weather: return .widgetWeatherDetailTitle
         case .pomodoro: return .widgetPomodoroDetailTitle
         case .battery: return .widgetBatteryDetailTitle
+        case .eisenhower: return .widgetEisenhowerDetailTitle
         }
     }
 
@@ -32,6 +35,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .weather: return .widgetWeatherDetailDescription
         case .pomodoro: return .widgetPomodoroDetailDescription
         case .battery: return .widgetBatteryDetailDescription
+        case .eisenhower: return .widgetEisenhowerDetailDescription
         }
     }
 
@@ -41,6 +45,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .weather: return nil
         case .pomodoro: return nil
         case .battery: return nil
+        case .eisenhower: return nil
         }
     }
 
@@ -53,6 +58,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .pomodoro:
             return WidgetSizeOption.small.dimensions
         case .battery:
+            return WidgetSizeOption.small.dimensions
+        case .eisenhower:
             return WidgetSizeOption.small.dimensions
         }
     }
@@ -67,6 +74,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
             return [.small, .medium]
         case .battery:
             return [.small, .medium, .large, .extraLarge]
+        case .eisenhower:
+            return [.small, .extraLarge]
         }
     }
 }

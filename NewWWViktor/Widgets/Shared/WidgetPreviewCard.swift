@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import SwiftData
 
 struct WidgetPreviewCard: View {
     let type: WidgetType
@@ -9,16 +10,18 @@ struct WidgetPreviewCard: View {
     @EnvironmentObject private var manager: WidgetManager
     @State private var isHovered = false
     @State private var isPressed = false
-    @State private var previewSizeOption: WidgetSizeOption = .medium
+    @State private var previewSizeOption: WidgetSizeOption
     @State private var previewInstance: WidgetInstance
 
     init(type: WidgetType, onAdd: @escaping (WidgetSizeOption) -> Void) {
         self.type = type
         self.onAdd = onAdd
+        let initialSize = type.availableSizes.first ?? .medium
+        _previewSizeOption = State(initialValue: initialSize)
         _previewInstance = State(initialValue: {
             var instance = WidgetInstance(type: type)
             instance.location = .current
-            instance.applySizeOption(.medium)
+            instance.applySizeOption(initialSize)
             return instance
         }())
     }
@@ -197,6 +200,9 @@ struct WidgetPreviewCard: View {
             PomodoroWidgetView(widget: previewInstance)
         case .battery:
             BatteryWidgetView(widget: previewInstance)
+        case .eisenhower:
+            EisenhowerWidgetView(widget: previewInstance)
+                .modelContainer(EisenhowerDataStore.previewContainer)
         }
     }
 

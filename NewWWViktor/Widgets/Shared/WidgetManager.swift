@@ -3,6 +3,7 @@ import SwiftUI
 import Combine
 import CoreLocation
 import WeatherKit
+import SwiftData
 
 struct WeatherSnapshot: Equatable {
     let city: String
@@ -98,6 +99,7 @@ final class WidgetManager: ObservableObject {
     weak var panelController: SidePanelWindowController?
     weak var settingsCoordinator: SettingsCoordinator?
     weak var localizationManager: LocalizationManager?
+    let modelContainer: ModelContainer
     @Published private(set) var globalBackgroundHidden: Bool = false
     @Published private(set) var weatherSnapshots: [UUID: WeatherSnapshot] = [:]
 
@@ -150,6 +152,7 @@ final class WidgetManager: ObservableObject {
         let hidden = UserDefaults.standard.object(forKey: hideWidgetsKey) as? Bool ?? false
         _areWidgetsHidden = Published(initialValue: hidden)
         self.localizationManager = localizationManager
+        self.modelContainer = EisenhowerDataStore.sharedContainer
         loadGlobalColors()
         loadGlobalBackground()
         load()
@@ -766,9 +769,10 @@ final class WidgetManager: ObservableObject {
 
         let content: AnyView
         if let localizationManager {
-            content = AnyView(baseView.environmentObject(localizationManager))
+            content = AnyView(baseView.environmentObject(localizationManager)
+                .modelContainer(modelContainer))
         } else {
-            content = AnyView(baseView)
+            content = AnyView(baseView.modelContainer(modelContainer))
         }
 
         let window = WidgetPanel(

@@ -426,6 +426,8 @@ struct WidgetHostView: View {
             PomodoroWidgetView(widget: instance)
         case .battery:
             BatteryWidgetView(widget: instance)
+        case .eisenhower:
+            EisenhowerWidgetView(widget: instance)
         }
     }
 

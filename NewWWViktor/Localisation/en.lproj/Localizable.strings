@@ -69,6 +69,8 @@
 "widgetPomodoroDetailDescription" = "Run focused work sessions with a simple timer.";
 "widgetBatteryDetailTitle" = "Battery";
 "widgetBatteryDetailDescription" = "Current battery level in a compact glance.";
+"widgetEisenhowerDetailTitle" = "Eisenhower Matrix";
+"widgetEisenhowerDetailDescription" = "Focus on tasks that matter, sorted by priority.";
 "widgetBatteryLabel" = "Battery";
 "widgetBatteryRemainingLabel" = "Remaining charge";
 "widgetBatteryTimeToFull" = "Time to full";
@@ -84,6 +86,12 @@
 "widgetBatteryStatusOn" = "On";
 "widgetBatteryStatusOff" = "Off";
 "widgetBatteryEstimateUnavailable" = "Estimate unavailable";
+"widgetEisenhowerImportantUrgent" = "Important\nUrgent";
+"widgetEisenhowerImportantNotUrgent" = "Important\nNot urgent";
+"widgetEisenhowerNotImportantUrgent" = "Not important\nUrgent";
+"widgetEisenhowerNotImportantNotUrgent" = "Not important\nNot urgent";
+"widgetEisenhowerTasksTitle" = "Tasks";
+"widgetEisenhowerEmpty" = "No tasks yet";
 "widgetPomodoroFocusLabel" = "Focus";
 "widgetPomodoroShortBreakLabel" = "Short break";
 "widgetPomodoroLongBreakLabel" = "Long break";

@@ -69,6 +69,8 @@
 "widgetPomodoroDetailDescription" = "Запускайте фокус-сессии с простым таймером.";
 "widgetBatteryDetailTitle" = "Батарея";
 "widgetBatteryDetailDescription" = "Текущий заряд батареи в компактном виде.";
+"widgetEisenhowerDetailTitle" = "Матрица Эйзенхауэра";
+"widgetEisenhowerDetailDescription" = "Фокус на важном, разложенном по приоритетам.";
 "widgetBatteryLabel" = "Батарея";
 "widgetBatteryRemainingLabel" = "Остаток заряда";
 "widgetBatteryTimeToFull" = "До полной зарядки";
@@ -84,6 +86,12 @@
 "widgetBatteryStatusOn" = "Включено";
 "widgetBatteryStatusOff" = "Выключено";
 "widgetBatteryEstimateUnavailable" = "Оценка недоступна";
+"widgetEisenhowerImportantUrgent" = "Важно\nСрочно";
+"widgetEisenhowerImportantNotUrgent" = "Важно\nНе срочно";
+"widgetEisenhowerNotImportantUrgent" = "Не важно\nСрочно";
+"widgetEisenhowerNotImportantNotUrgent" = "Не важно\nНе срочно";
+"widgetEisenhowerTasksTitle" = "Задачи";
+"widgetEisenhowerEmpty" = "Пока нет задач";
 "widgetPomodoroFocusLabel" = "Фокус";
 "widgetPomodoroShortBreakLabel" = "Короткий перерыв";
 "widgetPomodoroLongBreakLabel" = "Длинный перерыв";

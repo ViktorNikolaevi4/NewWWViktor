@@ -69,6 +69,8 @@ enum LocalizationKey: String {
     case widgetPomodoroDetailDescription
     case widgetBatteryDetailTitle
     case widgetBatteryDetailDescription
+    case widgetEisenhowerDetailTitle
+    case widgetEisenhowerDetailDescription
     case widgetBatteryLabel
     case widgetBatteryRemainingLabel
     case widgetBatteryTimeToFull
@@ -84,6 +86,12 @@ enum LocalizationKey: String {
     case widgetBatteryStatusOn
     case widgetBatteryStatusOff
     case widgetBatteryEstimateUnavailable
+    case widgetEisenhowerImportantUrgent
+    case widgetEisenhowerImportantNotUrgent
+    case widgetEisenhowerNotImportantUrgent
+    case widgetEisenhowerNotImportantNotUrgent
+    case widgetEisenhowerTasksTitle
+    case widgetEisenhowerEmpty
     case widgetPomodoroFocusLabel
     case widgetPomodoroShortBreakLabel
     case widgetPomodoroLongBreakLabel

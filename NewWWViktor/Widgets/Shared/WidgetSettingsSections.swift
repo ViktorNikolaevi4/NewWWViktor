@@ -227,7 +227,8 @@ private struct HabitSettingsSection: View {
     private func habitSelectionBinding(_ entry: HabitEntry) -> Binding<String> {
         Binding(
             get: {
-                if let customID = entry.customHabitID {
+                if let customID = entry.customHabitID,
+                   customHabits.contains(where: { $0.id == customID }) {
                     return "custom:\(customID.uuidString)"
                 }
                 return "preset:\(entry.habitKind.rawValue)"

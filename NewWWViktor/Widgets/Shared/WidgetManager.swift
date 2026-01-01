@@ -103,6 +103,7 @@ final class WidgetManager: ObservableObject {
     private let eisenhowerTasksCoordinator: EisenhowerTasksCoordinator?
     @Published private(set) var globalBackgroundHidden: Bool = false
     @Published private(set) var weatherSnapshots: [UUID: WeatherSnapshot] = [:]
+    @Published var cryptoProvider: CryptoPriceProvider = CryptoPriceProvider()
 
     private var windows: [UUID: NSWindow] = [:]
     private var windowCloseObservers: [UUID: NSObjectProtocol] = [:]
@@ -166,6 +167,7 @@ final class WidgetManager: ObservableObject {
         ensureHabitEntries()
         widgets.forEach { attachWindow(for: $0) }
         widgets.forEach { refreshWeather(for: $0) }
+        startCryptoUpdates()
 
         installAppearanceObservers()
         startSharedTimer()
@@ -220,6 +222,7 @@ final class WidgetManager: ObservableObject {
         if instance.type == .habits {
             insertHabitEntryIfNeeded(for: instance)
         }
+        updateCryptoSymbols()
         attachWindow(for: instance)
         refreshWeather(for: instance)
     }
@@ -227,6 +230,7 @@ final class WidgetManager: ObservableObject {
     func removeWidget(id: UUID) {
         widgets.removeAll { $0.id == id }
         removeHabitEntry(for: id)
+        updateCryptoSymbols()
         if let window = windows[id] {
             window.close()
         } else if let observer = windowCloseObservers[id] {
@@ -575,6 +579,7 @@ final class WidgetManager: ObservableObject {
         }
         removeAllHabitEntries()
         widgets.removeAll()
+        updateCryptoSymbols()
     }
 
     func resetAllWidgetAppearances() {
@@ -815,7 +820,22 @@ final class WidgetManager: ObservableObject {
 
             // Перезагрузим погоду, если локация изменилась.
             refreshWeather(for: updatedInstance)
+            updateCryptoSymbols()
         }
+    }
+
+    private func startCryptoUpdates() {
+        cryptoProvider.start(interval: 60, symbols: cryptoSymbolsToTrack())
+    }
+
+    private func updateCryptoSymbols() {
+        cryptoProvider.updateSymbols(cryptoSymbolsToTrack())
+    }
+
+    private func cryptoSymbolsToTrack() -> [String] {
+        widgets
+            .filter { $0.type == .crypto }
+            .map { $0.cryptoSymbol }
     }
 
     // MARK: - Windows

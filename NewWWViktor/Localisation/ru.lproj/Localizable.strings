@@ -133,6 +133,9 @@
 "widgetHabitsVitamins" = "Витамины";
 "widgetHabitsStretch" = "Растяжка";
 "widgetHabitsLanguage" = "Язык";
+"widgetCryptoDetailTitle" = "Крипта";
+"widgetCryptoDetailDescription" = "Цены в реальном времени от Binance.";
+"widgetCryptoTitle" = "Цена";
 "widgetPomodoroFocusLabel" = "Фокус";
 "widgetPomodoroShortBreakLabel" = "Короткий перерыв";
 "widgetPomodoroLongBreakLabel" = "Длинный перерыв";

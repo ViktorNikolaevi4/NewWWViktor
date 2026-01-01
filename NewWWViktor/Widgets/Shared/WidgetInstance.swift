@@ -3,6 +3,7 @@ import Foundation
 struct WidgetInstance: Identifiable, Codable, Equatable {
     let id: UUID
     var type: WidgetType
+    var cryptoSymbol: String
     var x: CGFloat
     var y: CGFloat
     var width: CGFloat
@@ -49,6 +50,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
          origin: CGPoint = CGPoint(x: 100, y: 100)) {
         self.id = UUID()
         self.type = type
+        self.cryptoSymbol = "BTCUSDT"
         self.x = origin.x
         self.y = origin.y
         let size = type.defaultSize
@@ -95,13 +97,14 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
+        case id, type, cryptoSymbol, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
         type = try container.decode(WidgetType.self, forKey: .type)
+        cryptoSymbol = try container.decodeIfPresent(String.self, forKey: .cryptoSymbol) ?? "BTCUSDT"
         x = try container.decode(CGFloat.self, forKey: .x)
         y = try container.decode(CGFloat.self, forKey: .y)
         width = try container.decode(CGFloat.self, forKey: .width)
@@ -150,6 +153,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(type, forKey: .type)
+        try container.encode(cryptoSymbol, forKey: .cryptoSymbol)
         try container.encode(x, forKey: .x)
         try container.encode(y, forKey: .y)
         try container.encode(width, forKey: .width)

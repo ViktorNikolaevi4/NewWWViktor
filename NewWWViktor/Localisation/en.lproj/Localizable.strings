@@ -133,6 +133,9 @@
 "widgetHabitsVitamins" = "Vitamins";
 "widgetHabitsStretch" = "Stretch";
 "widgetHabitsLanguage" = "Language";
+"widgetCryptoDetailTitle" = "Crypto";
+"widgetCryptoDetailDescription" = "Live prices from Binance.";
+"widgetCryptoTitle" = "Price";
 "widgetPomodoroFocusLabel" = "Focus";
 "widgetPomodoroShortBreakLabel" = "Short break";
 "widgetPomodoroLongBreakLabel" = "Long break";

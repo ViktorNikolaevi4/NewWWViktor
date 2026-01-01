@@ -6,6 +6,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
     case pomodoro
     case battery
     case eisenhower
+    case habits
 
     var id: String { rawValue }
 
@@ -16,6 +17,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .pomodoro: return .widgetCategoryLabel
         case .battery: return .widgetCategoryLabel
         case .eisenhower: return .widgetCategoryLabel
+        case .habits: return .widgetCategoryLabel
         }
     }
 
@@ -26,6 +28,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .pomodoro: return .widgetPomodoroDetailTitle
         case .battery: return .widgetBatteryDetailTitle
         case .eisenhower: return .widgetEisenhowerDetailTitle
+        case .habits: return .widgetHabitsDetailTitle
         }
     }
 
@@ -36,6 +39,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .pomodoro: return .widgetPomodoroDetailDescription
         case .battery: return .widgetBatteryDetailDescription
         case .eisenhower: return .widgetEisenhowerDetailDescription
+        case .habits: return .widgetHabitsDetailDescription
         }
     }
 
@@ -46,6 +50,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .pomodoro: return nil
         case .battery: return nil
         case .eisenhower: return nil
+        case .habits: return nil
         }
     }
 
@@ -60,6 +65,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .battery:
             return WidgetSizeOption.small.dimensions
         case .eisenhower:
+            return WidgetSizeOption.small.dimensions
+        case .habits:
             return WidgetSizeOption.small.dimensions
         }
     }
@@ -76,6 +83,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
             return [.small, .medium, .large, .extraLarge]
         case .eisenhower:
             return [.small, .extraLarge]
+        case .habits:
+            return [.small]
         }
     }
 }

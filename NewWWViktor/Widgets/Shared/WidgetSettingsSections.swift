@@ -104,6 +104,36 @@ struct WidgetGeneralSettingsSection: View {
                           isOn: $widget.pomodoroAutoStart)
             }
         }
+
+        if widget.type == .habits {
+            WidgetSettingsGroup(title: localization.text(.widgetHabitsSectionTitle)) {
+                WidgetSettingsRow(title: localization.text(.widgetHabitsHabitLabel)) {
+                    Picker("", selection: $widget.habitKind) {
+                        ForEach(HabitKind.allCases) { habit in
+                            Text(localization.text(habit.titleKey))
+                                .tag(habit)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+
+                WidgetSettingsRow(title: localization.text(.widgetHabitsStreakDaysLabel)) {
+                    Stepper(value: $widget.habitStreakDays, in: 0...999) {
+                        Text("\(widget.habitStreakDays)")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(minWidth: 36, alignment: .trailing)
+                    }
+                    .labelsHidden()
+                }
+
+                WidgetSettingsRowButton(title: localization.text(.widgetHabitsResetProgress)) {
+                    widget.habitProgressDays = 0
+                } content: {
+                    IconButton(systemName: "arrow.counterclockwise", isSelected: true)
+                }
+            }
+        }
     }
 }
 

@@ -428,6 +428,8 @@ struct WidgetHostView: View {
             BatteryWidgetView(widget: instance)
         case .eisenhower:
             EisenhowerWidgetView(widget: instance)
+        case .habits:
+            HabitsWidgetView(widget: instance)
         }
     }
 

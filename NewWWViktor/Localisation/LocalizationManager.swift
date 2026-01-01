@@ -102,6 +102,21 @@ enum LocalizationKey: String {
     case widgetEisenhowerDone
     case widgetEisenhowerSave
     case widgetEisenhowerCancel
+    case widgetHabitsDetailTitle
+    case widgetHabitsDetailDescription
+    case widgetHabitsTitle
+    case widgetHabitsDaysLabel
+    case widgetHabitsDoneLabel
+    case widgetHabitsStreakLabel
+    case widgetHabitsSectionTitle
+    case widgetHabitsHabitLabel
+    case widgetHabitsStreakDaysLabel
+    case widgetHabitsResetProgress
+    case widgetHabitsWater
+    case widgetHabitsWorkout
+    case widgetHabitsReading
+    case widgetHabitsMeditation
+    case widgetHabitsSleep
     case widgetPomodoroFocusLabel
     case widgetPomodoroShortBreakLabel
     case widgetPomodoroLongBreakLabel

@@ -3,6 +3,9 @@ import Foundation
 struct WidgetInstance: Identifiable, Codable, Equatable {
     let id: UUID
     var type: WidgetType
+    var habitKind: HabitKind
+    var habitStreakDays: Int
+    var habitProgressDays: Int
     var x: CGFloat
     var y: CGFloat
     var width: CGFloat
@@ -49,6 +52,9 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
          origin: CGPoint = CGPoint(x: 100, y: 100)) {
         self.id = UUID()
         self.type = type
+        self.habitKind = .drinkWater
+        self.habitStreakDays = 0
+        self.habitProgressDays = 0
         self.x = origin.x
         self.y = origin.y
         let size = type.defaultSize
@@ -95,13 +101,16 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
+        case id, type, habitKind, habitStreakDays, habitProgressDays, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
         type = try container.decode(WidgetType.self, forKey: .type)
+        habitKind = try container.decodeIfPresent(HabitKind.self, forKey: .habitKind) ?? .drinkWater
+        habitStreakDays = try container.decodeIfPresent(Int.self, forKey: .habitStreakDays) ?? 0
+        habitProgressDays = try container.decodeIfPresent(Int.self, forKey: .habitProgressDays) ?? 0
         x = try container.decode(CGFloat.self, forKey: .x)
         y = try container.decode(CGFloat.self, forKey: .y)
         width = try container.decode(CGFloat.self, forKey: .width)
@@ -150,6 +159,9 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(type, forKey: .type)
+        try container.encode(habitKind, forKey: .habitKind)
+        try container.encode(habitStreakDays, forKey: .habitStreakDays)
+        try container.encode(habitProgressDays, forKey: .habitProgressDays)
         try container.encode(x, forKey: .x)
         try container.encode(y, forKey: .y)
         try container.encode(width, forKey: .width)

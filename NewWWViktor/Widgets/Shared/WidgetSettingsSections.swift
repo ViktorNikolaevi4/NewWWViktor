@@ -116,34 +116,78 @@ private struct HabitSettingsSection: View {
     @EnvironmentObject private var localization: LocalizationManager
     @Environment(\.modelContext) private var modelContext
     @Query private var entries: [HabitEntry]
+    @Query private var customHabits: [CustomHabit]
     let widgetID: UUID
+    @State private var newHabitTitle = ""
 
     init(widgetID: UUID) {
         self.widgetID = widgetID
         _entries = Query(filter: #Predicate<HabitEntry> { $0.widgetID == widgetID })
+        _customHabits = Query()
     }
 
     var body: some View {
         WidgetSettingsGroup(title: localization.text(.widgetHabitsSectionTitle)) {
             if let entry = entries.first {
                 WidgetSettingsRow(title: localization.text(.widgetHabitsHabitLabel)) {
-                    Picker("", selection: habitKindBinding(entry)) {
-                        ForEach(HabitKind.allCases) { habit in
-                            Text(localization.text(habit.titleKey))
-                                .tag(habit)
+                    Picker("", selection: habitSelectionBinding(entry)) {
+                        Section(localization.text(.widgetHabitsDefaultSection)) {
+                            ForEach(HabitKind.allCases) { habit in
+                                Text(localization.text(habit.titleKey))
+                                    .tag(presetTag(for: habit))
+                            }
+                        }
+                        if !customHabits.isEmpty {
+                            Section(localization.text(.widgetHabitsCustomSection)) {
+                                ForEach(sortedCustomHabits) { habit in
+                                    Text(habit.title)
+                                        .tag(customTag(for: habit))
+                                }
+                            }
                         }
                     }
                     .pickerStyle(.menu)
                 }
 
+                WidgetSettingsRow(title: localization.text(.widgetHabitsNewHabitLabel)) {
+                    HStack(spacing: 8) {
+                        TextField(localization.text(.widgetHabitsNewHabitPlaceholder), text: $newHabitTitle)
+                            .textFieldStyle(.roundedBorder)
+
+                        Button(localization.text(.widgetHabitsAddCustom)) {
+                            addCustomHabit(for: entry)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(newHabitTitle.trimmed.isEmpty)
+                    }
+                }
+
+                if !customHabits.isEmpty {
+                    WidgetSettingsGroup(title: localization.text(.widgetHabitsCustomSection)) {
+                        ForEach(sortedCustomHabits) { habit in
+                            WidgetSettingsRow(title: habit.title) {
+                                Button(role: .destructive) {
+                                    deleteCustomHabit(habit)
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
+                                .buttonStyle(.plain)
+                                .help(localization.text(.widgetHabitsDeleteCustom))
+                            }
+                        }
+                    }
+                }
+
                 WidgetSettingsRow(title: localization.text(.widgetHabitsStreakDaysLabel)) {
-                    Stepper(value: streakDaysBinding(entry), in: 0...999) {
+                    HStack(spacing: 8) {
                         Text("\(entry.streakDays)")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(.white)
                             .frame(minWidth: 36, alignment: .trailing)
+
+                        Stepper("", value: streakDaysBinding(entry), in: 0...999)
+                            .labelsHidden()
                     }
-                    .labelsHidden()
                 }
 
                 WidgetSettingsRowButton(title: localization.text(.widgetHabitsResetProgress)) {
@@ -168,11 +212,35 @@ private struct HabitSettingsSection: View {
         modelContext.insert(entry)
     }
 
-    private func habitKindBinding(_ entry: HabitEntry) -> Binding<HabitKind> {
+    private var sortedCustomHabits: [CustomHabit] {
+        customHabits.sorted { $0.createdAt < $1.createdAt }
+    }
+
+    private func presetTag(for habit: HabitKind) -> String {
+        "preset:\(habit.rawValue)"
+    }
+
+    private func customTag(for habit: CustomHabit) -> String {
+        "custom:\(habit.id.uuidString)"
+    }
+
+    private func habitSelectionBinding(_ entry: HabitEntry) -> Binding<String> {
         Binding(
-            get: { entry.habitKind },
+            get: {
+                if let customID = entry.customHabitID {
+                    return "custom:\(customID.uuidString)"
+                }
+                return "preset:\(entry.habitKind.rawValue)"
+            },
             set: { newValue in
-                entry.habitKind = newValue
+                if newValue.hasPrefix("custom:") {
+                    let raw = newValue.replacingOccurrences(of: "custom:", with: "")
+                    entry.customHabitID = UUID(uuidString: raw)
+                } else if newValue.hasPrefix("preset:") {
+                    let raw = newValue.replacingOccurrences(of: "preset:", with: "")
+                    entry.customHabitID = nil
+                    entry.habitKind = HabitKind(rawValue: raw) ?? .drinkWater
+                }
                 entry.updatedAt = Date()
             }
         )
@@ -189,6 +257,36 @@ private struct HabitSettingsSection: View {
                 entry.updatedAt = Date()
             }
         )
+    }
+
+    private func addCustomHabit(for entry: HabitEntry) {
+        let trimmed = newHabitTitle.trimmed
+        guard !trimmed.isEmpty else { return }
+        let existing = customHabits.contains { $0.title.compare(trimmed, options: .caseInsensitive) == .orderedSame }
+        guard !existing else { return }
+        let habit = CustomHabit(title: trimmed)
+        modelContext.insert(habit)
+        entry.customHabitID = habit.id
+        entry.updatedAt = Date()
+        newHabitTitle = ""
+    }
+
+    private func deleteCustomHabit(_ habit: CustomHabit) {
+        let descriptor = FetchDescriptor<HabitEntry>()
+        let linked = (try? modelContext.fetch(descriptor)) ?? []
+        let affected = linked.filter { $0.customHabitID == habit.id }
+        affected.forEach { entry in
+            entry.customHabitID = nil
+            entry.habitKind = .drinkWater
+            entry.updatedAt = Date()
+        }
+        modelContext.delete(habit)
+    }
+}
+
+private extension String {
+    var trimmed: String {
+        trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 

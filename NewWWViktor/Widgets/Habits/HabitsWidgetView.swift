@@ -7,21 +7,23 @@ struct HabitsWidgetView: View {
     @EnvironmentObject private var localization: LocalizationManager
     @Environment(\.modelContext) private var modelContext
     @Query private var entries: [HabitEntry]
+    @Query private var customHabits: [CustomHabit]
 
     init(widget: WidgetInstance) {
         self.widget = widget
         _entries = Query(filter: #Predicate<HabitEntry> { $0.widgetID == widget.id })
+        _customHabits = Query()
     }
 
     private var habitEntry: HabitEntry? { entries.first }
-    private var habitKind: HabitKind { habitEntry?.habitKind ?? widget.habitKind }
-    private var streakDays: Int { habitEntry?.streakDays ?? widget.habitStreakDays }
-    private var progressDays: Int { habitEntry?.progressDays ?? widget.habitProgressDays }
+    private var habitKind: HabitKind { habitEntry?.habitKind ?? .drinkWater }
+    private var streakDays: Int { habitEntry?.streakDays ?? 0 }
+    private var progressDays: Int { habitEntry?.progressDays ?? 0 }
     private let ringLineWidth: CGFloat = 10
 
     var body: some View {
         VStack(spacing: 8) {
-            Text(localization.text(habitKind.titleKey))
+            Text(habitTitle)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.primary)
 
@@ -116,11 +118,16 @@ struct HabitsWidgetView: View {
 
     private func ensureHabitEntry() {
         guard habitEntry == nil else { return }
-        let entry = HabitEntry(widgetID: widget.id,
-                               habitKind: widget.habitKind,
-                               streakDays: widget.habitStreakDays,
-                               progressDays: widget.habitProgressDays)
+        let entry = HabitEntry(widgetID: widget.id)
         modelContext.insert(entry)
+    }
+
+    private var habitTitle: String {
+        if let customID = habitEntry?.customHabitID,
+           let custom = customHabits.first(where: { $0.id == customID }) {
+            return custom.title
+        }
+        return localization.text(habitKind.titleKey)
     }
 
     private var ringGradient: LinearGradient {

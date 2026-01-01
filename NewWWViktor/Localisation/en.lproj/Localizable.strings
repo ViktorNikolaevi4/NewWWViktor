@@ -110,6 +110,12 @@
 "widgetHabitsStreakLabel" = "Streak:";
 "widgetHabitsSectionTitle" = "Habit";
 "widgetHabitsHabitLabel" = "Choose habit";
+"widgetHabitsNewHabitLabel" = "New habit";
+"widgetHabitsNewHabitPlaceholder" = "Type a habit name";
+"widgetHabitsAddCustom" = "Add";
+"widgetHabitsDefaultSection" = "Defaults";
+"widgetHabitsCustomSection" = "Custom";
+"widgetHabitsDeleteCustom" = "Delete habit";
 "widgetHabitsStreakDaysLabel" = "Days in a row";
 "widgetHabitsResetProgress" = "Reset progress";
 "widgetHabitsLoading" = "Loading…";
@@ -118,6 +124,11 @@
 "widgetHabitsReading" = "Reading";
 "widgetHabitsMeditation" = "Meditation";
 "widgetHabitsSleep" = "Sleep";
+"widgetHabitsWalk" = "Walk";
+"widgetHabitsJournal" = "Journal";
+"widgetHabitsVitamins" = "Vitamins";
+"widgetHabitsStretch" = "Stretch";
+"widgetHabitsLanguage" = "Language";
 "widgetPomodoroFocusLabel" = "Focus";
 "widgetPomodoroShortBreakLabel" = "Short break";
 "widgetPomodoroLongBreakLabel" = "Long break";

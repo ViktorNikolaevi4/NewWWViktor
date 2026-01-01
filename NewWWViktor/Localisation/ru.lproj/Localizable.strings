@@ -110,6 +110,12 @@
 "widgetHabitsStreakLabel" = "Серия:";
 "widgetHabitsSectionTitle" = "Привычка";
 "widgetHabitsHabitLabel" = "Выбрать привычку";
+"widgetHabitsNewHabitLabel" = "Новая привычка";
+"widgetHabitsNewHabitPlaceholder" = "Введите название";
+"widgetHabitsAddCustom" = "Добавить";
+"widgetHabitsDefaultSection" = "Стандартные";
+"widgetHabitsCustomSection" = "Мои";
+"widgetHabitsDeleteCustom" = "Удалить привычку";
 "widgetHabitsStreakDaysLabel" = "Дней подряд";
 "widgetHabitsResetProgress" = "Сбросить прогресс";
 "widgetHabitsLoading" = "Загрузка…";
@@ -118,6 +124,11 @@
 "widgetHabitsReading" = "Чтение";
 "widgetHabitsMeditation" = "Медитация";
 "widgetHabitsSleep" = "Сон";
+"widgetHabitsWalk" = "Прогулка";
+"widgetHabitsJournal" = "Дневник";
+"widgetHabitsVitamins" = "Витамины";
+"widgetHabitsStretch" = "Растяжка";
+"widgetHabitsLanguage" = "Язык";
 "widgetPomodoroFocusLabel" = "Фокус";
 "widgetPomodoroShortBreakLabel" = "Короткий перерыв";
 "widgetPomodoroLongBreakLabel" = "Длинный перерыв";

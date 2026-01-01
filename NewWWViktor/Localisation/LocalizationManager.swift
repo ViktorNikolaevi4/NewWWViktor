@@ -110,6 +110,12 @@ enum LocalizationKey: String {
     case widgetHabitsStreakLabel
     case widgetHabitsSectionTitle
     case widgetHabitsHabitLabel
+    case widgetHabitsNewHabitLabel
+    case widgetHabitsNewHabitPlaceholder
+    case widgetHabitsAddCustom
+    case widgetHabitsDefaultSection
+    case widgetHabitsCustomSection
+    case widgetHabitsDeleteCustom
     case widgetHabitsStreakDaysLabel
     case widgetHabitsResetProgress
     case widgetHabitsLoading
@@ -118,6 +124,11 @@ enum LocalizationKey: String {
     case widgetHabitsReading
     case widgetHabitsMeditation
     case widgetHabitsSleep
+    case widgetHabitsWalk
+    case widgetHabitsJournal
+    case widgetHabitsVitamins
+    case widgetHabitsStretch
+    case widgetHabitsLanguage
     case widgetPomodoroFocusLabel
     case widgetPomodoroShortBreakLabel
     case widgetPomodoroLongBreakLabel

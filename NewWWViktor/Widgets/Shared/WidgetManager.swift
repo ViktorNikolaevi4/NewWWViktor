@@ -611,10 +611,7 @@ final class WidgetManager: ObservableObject {
             )
             let existing = (try? context.fetch(descriptor)) ?? []
             if existing.isEmpty {
-                let entry = HabitEntry(widgetID: widget.id,
-                                       habitKind: widget.habitKind,
-                                       streakDays: widget.habitStreakDays,
-                                       progressDays: widget.habitProgressDays)
+                let entry = HabitEntry(widgetID: widget.id)
                 context.insert(entry)
             }
         }
@@ -627,10 +624,7 @@ final class WidgetManager: ObservableObject {
         )
         let existing = (try? context.fetch(descriptor)) ?? []
         if existing.isEmpty {
-            let entry = HabitEntry(widgetID: widget.id,
-                                   habitKind: widget.habitKind,
-                                   streakDays: widget.habitStreakDays,
-                                   progressDays: widget.habitProgressDays)
+            let entry = HabitEntry(widgetID: widget.id)
             context.insert(entry)
         }
     }

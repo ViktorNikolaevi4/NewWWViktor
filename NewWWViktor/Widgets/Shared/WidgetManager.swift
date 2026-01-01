@@ -163,6 +163,7 @@ final class WidgetManager: ObservableObject {
         loadGlobalColors()
         loadGlobalBackground()
         load()
+        ensureHabitEntries()
         widgets.forEach { attachWindow(for: $0) }
         widgets.forEach { refreshWeather(for: $0) }
 
@@ -216,12 +217,16 @@ final class WidgetManager: ObservableObject {
         instance.x = origin.x
         instance.y = origin.y
         widgets.append(instance)
+        if instance.type == .habits {
+            insertHabitEntryIfNeeded(for: instance)
+        }
         attachWindow(for: instance)
         refreshWeather(for: instance)
     }
 
     func removeWidget(id: UUID) {
         widgets.removeAll { $0.id == id }
+        removeHabitEntry(for: id)
         if let window = windows[id] {
             window.close()
         } else if let observer = windowCloseObservers[id] {
@@ -568,6 +573,7 @@ final class WidgetManager: ObservableObject {
                 windowMoveObservers[instance.id] = nil
             }
         }
+        removeAllHabitEntries()
         widgets.removeAll()
     }
 
@@ -593,6 +599,56 @@ final class WidgetManager: ObservableObject {
             return w
         }
         refreshWidgetWindows()
+    }
+
+    // MARK: - Habits (SwiftData)
+
+    private func ensureHabitEntries() {
+        let context = modelContainer.mainContext
+        for widget in widgets where widget.type == .habits {
+            let descriptor = FetchDescriptor<HabitEntry>(
+                predicate: #Predicate { $0.widgetID == widget.id }
+            )
+            let existing = (try? context.fetch(descriptor)) ?? []
+            if existing.isEmpty {
+                let entry = HabitEntry(widgetID: widget.id,
+                                       habitKind: widget.habitKind,
+                                       streakDays: widget.habitStreakDays,
+                                       progressDays: widget.habitProgressDays)
+                context.insert(entry)
+            }
+        }
+    }
+
+    private func insertHabitEntryIfNeeded(for widget: WidgetInstance) {
+        let context = modelContainer.mainContext
+        let descriptor = FetchDescriptor<HabitEntry>(
+            predicate: #Predicate { $0.widgetID == widget.id }
+        )
+        let existing = (try? context.fetch(descriptor)) ?? []
+        if existing.isEmpty {
+            let entry = HabitEntry(widgetID: widget.id,
+                                   habitKind: widget.habitKind,
+                                   streakDays: widget.habitStreakDays,
+                                   progressDays: widget.habitProgressDays)
+            context.insert(entry)
+        }
+    }
+
+    private func removeHabitEntry(for widgetID: UUID) {
+        let context = modelContainer.mainContext
+        let descriptor = FetchDescriptor<HabitEntry>(
+            predicate: #Predicate { $0.widgetID == widgetID }
+        )
+        let existing = (try? context.fetch(descriptor)) ?? []
+        existing.forEach { context.delete($0) }
+    }
+
+    private func removeAllHabitEntries() {
+        let context = modelContainer.mainContext
+        let descriptor = FetchDescriptor<HabitEntry>()
+        let existing = (try? context.fetch(descriptor)) ?? []
+        existing.forEach { context.delete($0) }
     }
 
     // MARK: - Backups (export/import)

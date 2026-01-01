@@ -131,18 +131,6 @@ struct WidgetSettingsMenuView: View {
         .onChange(of: workingWidget.isBackgroundHidden) { _, _ in
             onUpdate(workingWidget)
         }
-        .onChange(of: workingWidget.habitKind) { _, _ in
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.habitStreakDays) { _, _ in
-            if workingWidget.habitProgressDays > workingWidget.habitStreakDays {
-                workingWidget.habitProgressDays = workingWidget.habitStreakDays
-            }
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.habitProgressDays) { _, _ in
-            onUpdate(workingWidget)
-        }
         .onChange(of: workingWidget.pomodoroFocusMinutes) { _, newValue in
             applyPomodoroDurationChange(phase: .focus, minutes: newValue)
         }

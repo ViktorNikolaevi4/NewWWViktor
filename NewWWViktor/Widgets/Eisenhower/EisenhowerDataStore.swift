@@ -3,16 +3,16 @@ import SwiftData
 enum EisenhowerDataStore {
     static let sharedContainer: ModelContainer = {
         do {
-            return try ModelContainer(for: EisenhowerTask.self)
+            return try ModelContainer(for: EisenhowerTask.self, HabitEntry.self)
         } catch {
             let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-            return try! ModelContainer(for: EisenhowerTask.self, configurations: configuration)
+            return try! ModelContainer(for: EisenhowerTask.self, HabitEntry.self, configurations: configuration)
         }
     }()
 
     static let previewContainer: ModelContainer = {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: EisenhowerTask.self, configurations: configuration)
+        let container = try! ModelContainer(for: EisenhowerTask.self, HabitEntry.self, configurations: configuration)
         let context = container.mainContext
         let tasks = [
             EisenhowerTask(title: "Call client", quadrant: .importantUrgent),

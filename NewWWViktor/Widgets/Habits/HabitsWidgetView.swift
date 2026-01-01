@@ -1,18 +1,27 @@
 import SwiftUI
+import SwiftData
 
 struct HabitsWidgetView: View {
     let widget: WidgetInstance
 
-    @EnvironmentObject private var manager: WidgetManager
     @EnvironmentObject private var localization: LocalizationManager
+    @Environment(\.modelContext) private var modelContext
+    @Query private var entries: [HabitEntry]
 
-    private var streakDays: Int { widget.habitStreakDays }
-    private var progressDays: Int { widget.habitProgressDays }
+    init(widget: WidgetInstance) {
+        self.widget = widget
+        _entries = Query(filter: #Predicate<HabitEntry> { $0.widgetID == widget.id })
+    }
+
+    private var habitEntry: HabitEntry? { entries.first }
+    private var habitKind: HabitKind { habitEntry?.habitKind ?? widget.habitKind }
+    private var streakDays: Int { habitEntry?.streakDays ?? widget.habitStreakDays }
+    private var progressDays: Int { habitEntry?.progressDays ?? widget.habitProgressDays }
     private let ringLineWidth: CGFloat = 10
 
     var body: some View {
         VStack(spacing: 8) {
-            Text(localization.text(widget.habitKind.titleKey))
+            Text(localization.text(habitKind.titleKey))
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.primary)
 
@@ -26,6 +35,7 @@ struct HabitsWidgetView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(.top, 4)
+        .onAppear(perform: ensureHabitEntry)
     }
 
     private var ring: some View {
@@ -93,10 +103,24 @@ struct HabitsWidgetView: View {
     }
 
     private func incrementProgress() {
-        guard progressDays < streakDays else { return }
-        var updated = widget
-        updated.habitProgressDays = min(streakDays, progressDays + 1)
-        manager.update(updated)
+        guard streakDays > 0 else { return }
+        guard let entry = habitEntry else {
+            ensureHabitEntry()
+            return
+        }
+        if entry.progressDays < streakDays {
+            entry.progressDays = min(streakDays, entry.progressDays + 1)
+            entry.updatedAt = Date()
+        }
+    }
+
+    private func ensureHabitEntry() {
+        guard habitEntry == nil else { return }
+        let entry = HabitEntry(widgetID: widget.id,
+                               habitKind: widget.habitKind,
+                               streakDays: widget.habitStreakDays,
+                               progressDays: widget.habitProgressDays)
+        modelContext.insert(entry)
     }
 
     private var ringGradient: LinearGradient {

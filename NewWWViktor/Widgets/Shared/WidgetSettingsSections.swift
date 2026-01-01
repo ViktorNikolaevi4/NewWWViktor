@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 #if os(macOS)
 import AppKit
 #endif
@@ -106,9 +107,27 @@ struct WidgetGeneralSettingsSection: View {
         }
 
         if widget.type == .habits {
-            WidgetSettingsGroup(title: localization.text(.widgetHabitsSectionTitle)) {
+            HabitSettingsSection(widgetID: widget.id)
+        }
+    }
+}
+
+private struct HabitSettingsSection: View {
+    @EnvironmentObject private var localization: LocalizationManager
+    @Environment(\.modelContext) private var modelContext
+    @Query private var entries: [HabitEntry]
+    let widgetID: UUID
+
+    init(widgetID: UUID) {
+        self.widgetID = widgetID
+        _entries = Query(filter: #Predicate<HabitEntry> { $0.widgetID == widgetID })
+    }
+
+    var body: some View {
+        WidgetSettingsGroup(title: localization.text(.widgetHabitsSectionTitle)) {
+            if let entry = entries.first {
                 WidgetSettingsRow(title: localization.text(.widgetHabitsHabitLabel)) {
-                    Picker("", selection: $widget.habitKind) {
+                    Picker("", selection: habitKindBinding(entry)) {
                         ForEach(HabitKind.allCases) { habit in
                             Text(localization.text(habit.titleKey))
                                 .tag(habit)
@@ -118,8 +137,8 @@ struct WidgetGeneralSettingsSection: View {
                 }
 
                 WidgetSettingsRow(title: localization.text(.widgetHabitsStreakDaysLabel)) {
-                    Stepper(value: $widget.habitStreakDays, in: 0...999) {
-                        Text("\(widget.habitStreakDays)")
+                    Stepper(value: streakDaysBinding(entry), in: 0...999) {
+                        Text("\(entry.streakDays)")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(.white)
                             .frame(minWidth: 36, alignment: .trailing)
@@ -128,12 +147,48 @@ struct WidgetGeneralSettingsSection: View {
                 }
 
                 WidgetSettingsRowButton(title: localization.text(.widgetHabitsResetProgress)) {
-                    widget.habitProgressDays = 0
+                    entry.progressDays = 0
+                    entry.updatedAt = Date()
                 } content: {
                     IconButton(systemName: "arrow.counterclockwise", isSelected: true)
                 }
+            } else {
+                WidgetSettingsRow(title: localization.text(.widgetHabitsHabitLabel)) {
+                    Text(localization.text(.widgetHabitsLoading))
+                        .foregroundStyle(.secondary)
+                }
             }
         }
+        .onAppear(perform: ensureEntry)
+    }
+
+    private func ensureEntry() {
+        guard entries.isEmpty else { return }
+        let entry = HabitEntry(widgetID: widgetID)
+        modelContext.insert(entry)
+    }
+
+    private func habitKindBinding(_ entry: HabitEntry) -> Binding<HabitKind> {
+        Binding(
+            get: { entry.habitKind },
+            set: { newValue in
+                entry.habitKind = newValue
+                entry.updatedAt = Date()
+            }
+        )
+    }
+
+    private func streakDaysBinding(_ entry: HabitEntry) -> Binding<Int> {
+        Binding(
+            get: { entry.streakDays },
+            set: { newValue in
+                entry.streakDays = newValue
+                if entry.progressDays > newValue {
+                    entry.progressDays = newValue
+                }
+                entry.updatedAt = Date()
+            }
+        )
     }
 }
 

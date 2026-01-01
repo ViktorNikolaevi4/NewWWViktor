@@ -112,6 +112,7 @@
 "widgetHabitsHabitLabel" = "Выбрать привычку";
 "widgetHabitsStreakDaysLabel" = "Дней подряд";
 "widgetHabitsResetProgress" = "Сбросить прогресс";
+"widgetHabitsLoading" = "Загрузка…";
 "widgetHabitsWater" = "Пить воду";
 "widgetHabitsWorkout" = "Тренировка";
 "widgetHabitsReading" = "Чтение";

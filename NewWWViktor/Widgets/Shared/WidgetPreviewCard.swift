@@ -205,6 +205,7 @@ struct WidgetPreviewCard: View {
                 .modelContainer(EisenhowerDataStore.previewContainer)
         case .habits:
             HabitsWidgetView(widget: previewInstance)
+                .modelContainer(EisenhowerDataStore.previewContainer)
         }
     }
 

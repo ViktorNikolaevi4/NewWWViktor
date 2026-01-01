@@ -112,6 +112,7 @@
 "widgetHabitsHabitLabel" = "Choose habit";
 "widgetHabitsStreakDaysLabel" = "Days in a row";
 "widgetHabitsResetProgress" = "Reset progress";
+"widgetHabitsLoading" = "Loading…";
 "widgetHabitsWater" = "Drink Water";
 "widgetHabitsWorkout" = "Workout";
 "widgetHabitsReading" = "Reading";

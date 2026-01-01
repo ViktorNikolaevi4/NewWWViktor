@@ -3,6 +3,7 @@ import Combine
 #if os(macOS)
 import AppKit
 import QuartzCore
+import SwiftData
 #else
 import UIKit
 #endif
@@ -531,6 +532,7 @@ struct WidgetHostView: View {
         )
         .environmentObject(manager)
         .environmentObject(localization)
+        .modelContainer(manager.modelContainer)
         .frame(width: size.width, height: size.height)
 
         let hosting = NSHostingView(rootView: content)

@@ -116,6 +116,10 @@
 "widgetHabitsDefaultSection" = "Стандартные";
 "widgetHabitsCustomSection" = "Мои";
 "widgetHabitsDeleteCustom" = "Удалить привычку";
+"widgetHabitsManageTitle" = "Управление привычками";
+"widgetHabitsManageAction" = "Управлять привычками";
+"widgetHabitsManageSearch" = "Поиск привычек";
+"widgetHabitsManageEmpty" = "Пока нет своих привычек";
 "widgetHabitsStreakDaysLabel" = "Дней подряд";
 "widgetHabitsResetProgress" = "Сбросить прогресс";
 "widgetHabitsLoading" = "Загрузка…";

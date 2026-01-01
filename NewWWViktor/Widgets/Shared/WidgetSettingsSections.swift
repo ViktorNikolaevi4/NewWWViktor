@@ -9,6 +9,7 @@ struct WidgetGeneralSettingsSection: View {
     @Binding var widget: WidgetInstance
     @Binding var isLocationPickerPresented: Bool
     @Binding var showWeather: Bool
+    @Binding var showManageHabits: Bool
 
     var body: some View {
         let isWeather = widget.type == .weather
@@ -107,21 +108,23 @@ struct WidgetGeneralSettingsSection: View {
         }
 
         if widget.type == .habits {
-            HabitSettingsSection(widgetID: widget.id)
+            HabitSettingsSection(widgetID: widget.id, showManageHabits: $showManageHabits)
         }
     }
 }
 
-private struct HabitSettingsSection: View {
+struct HabitSettingsSection: View {
     @EnvironmentObject private var localization: LocalizationManager
     @Environment(\.modelContext) private var modelContext
     @Query private var entries: [HabitEntry]
     @Query private var customHabits: [CustomHabit]
     let widgetID: UUID
     @State private var newHabitTitle = ""
+    @Binding var showManageHabits: Bool
 
-    init(widgetID: UUID) {
+    init(widgetID: UUID, showManageHabits: Binding<Bool>) {
         self.widgetID = widgetID
+        self._showManageHabits = showManageHabits
         _entries = Query(filter: #Predicate<HabitEntry> { $0.widgetID == widgetID })
         _customHabits = Query()
     }
@@ -162,20 +165,10 @@ private struct HabitSettingsSection: View {
                     }
                 }
 
-                if !customHabits.isEmpty {
-                    WidgetSettingsGroup(title: localization.text(.widgetHabitsCustomSection)) {
-                        ForEach(sortedCustomHabits) { habit in
-                            WidgetSettingsRow(title: habit.title) {
-                                Button(role: .destructive) {
-                                    deleteCustomHabit(habit)
-                                } label: {
-                                    Image(systemName: "trash")
-                                }
-                                .buttonStyle(.plain)
-                                .help(localization.text(.widgetHabitsDeleteCustom))
-                            }
-                        }
-                    }
+                WidgetSettingsRowButton(title: localization.text(.widgetHabitsManageAction)) {
+                    showManageHabits = true
+                } content: {
+                    IconButton(systemName: "slider.horizontal.3", isSelected: true)
                 }
 
                 WidgetSettingsRow(title: localization.text(.widgetHabitsStreakDaysLabel)) {
@@ -259,7 +252,6 @@ private struct HabitSettingsSection: View {
             }
         )
     }
-
     private func addCustomHabit(for entry: HabitEntry) {
         let trimmed = newHabitTitle.trimmed
         guard !trimmed.isEmpty else { return }
@@ -270,18 +262,6 @@ private struct HabitSettingsSection: View {
         entry.customHabitID = habit.id
         entry.updatedAt = Date()
         newHabitTitle = ""
-    }
-
-    private func deleteCustomHabit(_ habit: CustomHabit) {
-        let descriptor = FetchDescriptor<HabitEntry>()
-        let linked = (try? modelContext.fetch(descriptor)) ?? []
-        let affected = linked.filter { $0.customHabitID == habit.id }
-        affected.forEach { entry in
-            entry.customHabitID = nil
-            entry.habitKind = .drinkWater
-            entry.updatedAt = Date()
-        }
-        modelContext.delete(habit)
     }
 }
 

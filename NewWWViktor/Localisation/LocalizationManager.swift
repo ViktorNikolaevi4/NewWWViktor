@@ -116,6 +116,10 @@ enum LocalizationKey: String {
     case widgetHabitsDefaultSection
     case widgetHabitsCustomSection
     case widgetHabitsDeleteCustom
+    case widgetHabitsManageTitle
+    case widgetHabitsManageAction
+    case widgetHabitsManageSearch
+    case widgetHabitsManageEmpty
     case widgetHabitsStreakDaysLabel
     case widgetHabitsResetProgress
     case widgetHabitsLoading

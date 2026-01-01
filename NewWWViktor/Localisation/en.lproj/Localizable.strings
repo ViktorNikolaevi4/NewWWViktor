@@ -116,6 +116,10 @@
 "widgetHabitsDefaultSection" = "Defaults";
 "widgetHabitsCustomSection" = "Custom";
 "widgetHabitsDeleteCustom" = "Delete habit";
+"widgetHabitsManageTitle" = "Manage habits";
+"widgetHabitsManageAction" = "Manage habits";
+"widgetHabitsManageSearch" = "Search habits";
+"widgetHabitsManageEmpty" = "No custom habits yet";
 "widgetHabitsStreakDaysLabel" = "Days in a row";
 "widgetHabitsResetProgress" = "Reset progress";
 "widgetHabitsLoading" = "Loading…";

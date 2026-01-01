@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 #if os(macOS)
 import UserNotifications
 #endif
@@ -19,6 +20,7 @@ struct WidgetSettingsMenuView: View {
     @State private var showLocationPicker = false
     @State private var activeColorRole: WidgetColorRole?
     @State private var showBackgroundPicker = false
+    @State private var showManageHabits = false
     @State private var showWeather = false
     @State private var isPinnedTop = false
     @State private var lockPosition = false
@@ -36,7 +38,7 @@ struct WidgetSettingsMenuView: View {
 
     var body: some View {
         let isColorPickerPresented = activeColorRole != nil
-        let isOverlayPresented = showLocationPicker || isColorPickerPresented || showBackgroundPicker
+        let isOverlayPresented = showLocationPicker || isColorPickerPresented || showBackgroundPicker || showManageHabits
 
         return ZStack {
             panelContent
@@ -106,10 +108,17 @@ struct WidgetSettingsMenuView: View {
                 }
                 .transition(.move(edge: .trailing).combined(with: .opacity))
             }
+
+            if showManageHabits {
+                ManageHabitsView(isPresented: $showManageHabits, onDelete: deleteCustomHabit)
+                    .environmentObject(localization)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showLocationPicker)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: isColorPickerPresented)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showBackgroundPicker)
+        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageHabits)
         .frame(width: 360, height: 520)
         .onChange(of: widget) { _, newValue in
             workingWidget = newValue
@@ -181,7 +190,8 @@ struct WidgetSettingsMenuView: View {
                     }
                     WidgetGeneralSettingsSection(widget: $workingWidget,
                                                  isLocationPickerPresented: $showLocationPicker,
-                                                 showWeather: $showWeather)
+                                                 showWeather: $showWeather,
+                                                 showManageHabits: $showManageHabits)
                     WidgetAppearanceSettingsSection(widget: $workingWidget,
                                                     onColorPicker: { activeColorRole = $0 },
                                                     onBackgroundPicker: { showBackgroundPicker = true })
@@ -331,6 +341,19 @@ struct WidgetSettingsMenuView: View {
         }
 
         onUpdate(workingWidget)
+    }
+
+    private func deleteCustomHabit(_ habit: CustomHabit) {
+        let context = manager.modelContainer.mainContext
+        let descriptor = FetchDescriptor<HabitEntry>()
+        let linked = (try? context.fetch(descriptor)) ?? []
+        let affected = linked.filter { $0.customHabitID == habit.id }
+        affected.forEach { entry in
+            entry.customHabitID = nil
+            entry.habitKind = .drinkWater
+            entry.updatedAt = Date()
+        }
+        context.delete(habit)
     }
 }
 

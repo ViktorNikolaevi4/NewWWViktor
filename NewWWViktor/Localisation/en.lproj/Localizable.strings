@@ -136,6 +136,17 @@
 "widgetCryptoDetailTitle" = "Crypto";
 "widgetCryptoDetailDescription" = "Live prices from Binance.";
 "widgetCryptoTitle" = "Price";
+"widgetCryptoSectionTitle" = "Crypto";
+"widgetCryptoSymbolLabel" = "Symbol";
+"widgetCryptoSearchLabel" = "Search";
+"widgetCryptoSearchPlaceholder" = "Type a symbol";
+"widgetCryptoResultsLabel" = "Results";
+"widgetCryptoNoResults" = "No matches";
+"widgetCryptoSearchAction" = "Search pair";
+"widgetCryptoSearchTitle" = "Search pair";
+"widgetCryptoSearchHint" = "Try BTC, ETH, SOL or BTCUSDT";
+"widgetCryptoSuggestionsTitle" = "Popular";
+"widgetCryptoLoadingSymbols" = "Loading symbols…";
 "widgetPomodoroFocusLabel" = "Focus";
 "widgetPomodoroShortBreakLabel" = "Short break";
 "widgetPomodoroLongBreakLabel" = "Long break";

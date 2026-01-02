@@ -6,9 +6,12 @@ final class CryptoPriceProvider: ObservableObject {
     @Published private(set) var tickers: [String: CryptoTickerSnapshot] = [:]
     @Published private(set) var symbolInfo: [String: CryptoSymbolInfo] = [:]
     @Published private(set) var chartData: [String: [Double]] = [:]
+    @Published private(set) var allSymbols: [String] = []
+    @Published private(set) var allSymbolInfo: [String: CryptoSymbolInfo] = [:]
 
     private var timer: Timer?
     private var symbols: [String] = []
+    private var isFetchingAllSymbols = false
     private let session: URLSession
 
     init(session: URLSession = .shared) {
@@ -20,6 +23,13 @@ final class CryptoPriceProvider: ObservableObject {
         if !self.symbols.isEmpty {
             scheduleTimer(interval: interval)
         }
+    }
+
+    func loadAllSymbolsIfNeeded() {
+        guard allSymbols.isEmpty else { return }
+        guard !isFetchingAllSymbols else { return }
+        isFetchingAllSymbols = true
+        fetchAllSymbols()
     }
 
     func updateSymbols(_ symbols: [String]) {
@@ -66,6 +76,28 @@ final class CryptoPriceProvider: ObservableObject {
                 }
                 DispatchQueue.main.async {
                     self.symbolInfo = info
+                }
+            }
+        }.resume()
+    }
+
+    private func fetchAllSymbols() {
+        guard let url = URL(string: "https://api.binance.com/api/v3/exchangeInfo") else { return }
+        session.dataTask(with: url) { [weak self] data, _, _ in
+            guard let self, let data else { return }
+            if let response = try? JSONDecoder().decode(BinanceExchangeInfo.self, from: data) {
+                let info = response.symbols.reduce(into: [String: CryptoSymbolInfo]()) { dict, symbol in
+                    dict[symbol.symbol] = CryptoSymbolInfo(base: symbol.baseAsset, quote: symbol.quoteAsset)
+                }
+                let symbols = response.symbols.map { $0.symbol }.sorted()
+                DispatchQueue.main.async {
+                    self.allSymbols = symbols
+                    self.allSymbolInfo = info
+                    self.isFetchingAllSymbols = false
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.isFetchingAllSymbols = false
                 }
             }
         }.resume()

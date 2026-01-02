@@ -10,6 +10,7 @@ struct WidgetGeneralSettingsSection: View {
     @Binding var isLocationPickerPresented: Bool
     @Binding var showWeather: Bool
     @Binding var showManageHabits: Bool
+    @Binding var showCryptoSearch: Bool
 
     var body: some View {
         let isWeather = widget.type == .weather
@@ -105,6 +106,10 @@ struct WidgetGeneralSettingsSection: View {
                 ToggleRow(title: localization.text(.widgetPomodoroAutoStart),
                           isOn: $widget.pomodoroAutoStart)
             }
+        }
+
+        if widget.type == .crypto {
+            CryptoSettingsSection(widget: $widget, showCryptoSearch: $showCryptoSearch)
         }
 
         if widget.type == .habits {
@@ -262,6 +267,210 @@ struct HabitSettingsSection: View {
         entry.customHabitID = habit.id
         entry.updatedAt = Date()
         newHabitTitle = ""
+    }
+}
+
+private struct CryptoSettingsSection: View {
+    @EnvironmentObject private var localization: LocalizationManager
+    @EnvironmentObject private var manager: WidgetManager
+    @Binding var widget: WidgetInstance
+    @Binding var showCryptoSearch: Bool
+
+    var body: some View {
+        WidgetSettingsGroup(title: localization.text(.widgetCryptoSectionTitle)) {
+            WidgetSettingsRow(title: localization.text(.widgetCryptoSymbolLabel)) {
+                Text(currentSymbolLabel)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
+
+            WidgetSettingsRowButton(title: localization.text(.widgetCryptoSearchAction)) {
+                showCryptoSearch = true
+            } content: {
+                IconButton(systemName: "magnifyingglass", isSelected: true)
+            }
+        }
+        .onAppear {
+            manager.cryptoProvider.loadAllSymbolsIfNeeded()
+        }
+    }
+
+    private var currentSymbolLabel: String {
+        symbolLabel(for: widget.cryptoSymbol)
+    }
+
+    private func symbolLabel(for symbol: String) -> String {
+        if let info = manager.cryptoProvider.allSymbolInfo[symbol] {
+            return "\(info.base)/\(info.quote)"
+        }
+        return symbol
+    }
+}
+
+struct CryptoSearchView: View {
+    @EnvironmentObject private var localization: LocalizationManager
+    @EnvironmentObject private var manager: WidgetManager
+    @Binding var isPresented: Bool
+    @State private var searchText = ""
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(Color.black.opacity(0.82))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .stroke(Color.white.opacity(0.08))
+                )
+                .shadow(color: Color.black.opacity(0.25), radius: 12, x: 0, y: 10)
+
+            VStack(spacing: 12) {
+                HStack {
+                    Text(localization.text(.widgetCryptoSearchTitle))
+                        .font(.system(size: 16, weight: .semibold))
+                    Spacer()
+                    Button {
+                        isPresented = false
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .padding(6)
+                            .background(
+                                Circle()
+                                    .fill(Color.white.opacity(0.12))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                TextField(localization.text(.widgetCryptoSearchPlaceholder), text: $searchText)
+                    .textFieldStyle(.roundedBorder)
+
+                if searchText.trimmed.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(localization.text(.widgetCryptoSuggestionsTitle))
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.secondary)
+
+                        FlowCapsuleRow(items: suggestedSymbols) { symbol in
+                            onSelect(symbol)
+                            isPresented = false
+                        }
+                    }
+                }
+
+                if manager.cryptoProvider.allSymbols.isEmpty {
+                    Text(localization.text(.widgetCryptoLoadingSymbols))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if filteredSymbols.isEmpty {
+                    Text(localization.text(.widgetCryptoNoResults))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    List {
+                        ForEach(filteredSymbols, id: \.self) { symbol in
+                            WidgetSettingsRowButton(title: symbolLabel(for: symbol)) {
+                                onSelect(symbol)
+                                isPresented = false
+                            } content: {
+                                IconButton(systemName: "arrow.right", isSelected: false)
+                            }
+                            .listRowBackground(Color.clear)
+                        }
+                    }
+                    .scrollContentBackground(.hidden)
+                }
+            }
+            .padding(16)
+        }
+        .frame(width: 320, height: 360)
+        .onAppear {
+            manager.cryptoProvider.loadAllSymbolsIfNeeded()
+        }
+    }
+
+    private var filteredSymbols: [String] {
+        let query = searchText.trimmed.uppercased()
+        let symbols = manager.cryptoProvider.allSymbols
+        guard !query.isEmpty else { return Array(symbols.prefix(30)) }
+        return symbols
+            .filter { matchesQuery($0, query: query) }
+            .prefix(50)
+            .map { $0 }
+    }
+
+    private func symbolLabel(for symbol: String) -> String {
+        if let info = manager.cryptoProvider.allSymbolInfo[symbol] {
+            return "\(info.base)/\(info.quote)"
+        }
+        return symbol
+    }
+
+    private func matchesQuery(_ symbol: String, query: String) -> Bool {
+        if symbol.contains(query) {
+            return true
+        }
+        if let info = manager.cryptoProvider.allSymbolInfo[symbol] {
+            let base = info.base.uppercased()
+            let quote = info.quote.uppercased()
+            if base.contains(query) || quote.contains(query) {
+                return true
+            }
+            if query.contains(base) || query.contains(quote) {
+                return true
+            }
+            if let alias = baseAlias[base], query.contains(alias) || alias.contains(query) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private var baseAlias: [String: String] {
+        [
+            "BTC": "BITCOIN",
+            "ETH": "ETHEREUM",
+            "USDT": "TETHER",
+            "BNB": "BINANCE",
+            "SOL": "SOLANA",
+            "XRP": "RIPPLE",
+            "DOGE": "DOGECOIN",
+            "ADA": "CARDANO"
+        ]
+    }
+
+    private var suggestedSymbols: [String] {
+        let defaults = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "DOGEUSDT"]
+        let available = manager.cryptoProvider.allSymbols
+        if available.isEmpty {
+            return defaults
+        }
+        return defaults.filter { available.contains($0) }
+    }
+}
+
+private struct FlowCapsuleRow: View {
+    let items: [String]
+    let onTap: (String) -> Void
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(items, id: \.self) { symbol in
+                Button(symbol) {
+                    onTap(symbol)
+                }
+                .buttonStyle(.plain)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(Color.white.opacity(0.12))
+                )
+            }
+        }
     }
 }
 

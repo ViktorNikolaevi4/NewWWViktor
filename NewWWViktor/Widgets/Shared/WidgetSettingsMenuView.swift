@@ -21,6 +21,7 @@ struct WidgetSettingsMenuView: View {
     @State private var activeColorRole: WidgetColorRole?
     @State private var showBackgroundPicker = false
     @State private var showManageHabits = false
+    @State private var showCryptoSearch = false
     @State private var showWeather = false
     @State private var isPinnedTop = false
     @State private var lockPosition = false
@@ -38,7 +39,7 @@ struct WidgetSettingsMenuView: View {
 
     var body: some View {
         let isColorPickerPresented = activeColorRole != nil
-        let isOverlayPresented = showLocationPicker || isColorPickerPresented || showBackgroundPicker || showManageHabits
+        let isOverlayPresented = showLocationPicker || isColorPickerPresented || showBackgroundPicker || showManageHabits || showCryptoSearch
 
         return ZStack {
             panelContent
@@ -114,11 +115,22 @@ struct WidgetSettingsMenuView: View {
                     .environmentObject(localization)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
+
+            if showCryptoSearch {
+                CryptoSearchView(isPresented: $showCryptoSearch) { symbol in
+                    workingWidget.cryptoSymbol = symbol
+                    onUpdate(workingWidget)
+                }
+                .environmentObject(localization)
+                .environmentObject(manager)
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showLocationPicker)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: isColorPickerPresented)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showBackgroundPicker)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageHabits)
+        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showCryptoSearch)
         .frame(width: 360, height: 520)
         .onChange(of: widget) { _, newValue in
             workingWidget = newValue
@@ -138,6 +150,9 @@ struct WidgetSettingsMenuView: View {
             onUpdate(workingWidget)
         }
         .onChange(of: workingWidget.isBackgroundHidden) { _, _ in
+            onUpdate(workingWidget)
+        }
+        .onChange(of: workingWidget.cryptoSymbol) { _, _ in
             onUpdate(workingWidget)
         }
         .onChange(of: workingWidget.pomodoroFocusMinutes) { _, newValue in
@@ -191,7 +206,8 @@ struct WidgetSettingsMenuView: View {
                     WidgetGeneralSettingsSection(widget: $workingWidget,
                                                  isLocationPickerPresented: $showLocationPicker,
                                                  showWeather: $showWeather,
-                                                 showManageHabits: $showManageHabits)
+                                                 showManageHabits: $showManageHabits,
+                                                 showCryptoSearch: $showCryptoSearch)
                     WidgetAppearanceSettingsSection(widget: $workingWidget,
                                                     onColorPicker: { activeColorRole = $0 },
                                                     onBackgroundPicker: { showBackgroundPicker = true })

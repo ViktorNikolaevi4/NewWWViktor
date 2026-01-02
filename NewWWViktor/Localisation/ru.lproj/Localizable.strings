@@ -136,6 +136,17 @@
 "widgetCryptoDetailTitle" = "Крипта";
 "widgetCryptoDetailDescription" = "Цены в реальном времени от Binance.";
 "widgetCryptoTitle" = "Цена";
+"widgetCryptoSectionTitle" = "Крипта";
+"widgetCryptoSymbolLabel" = "Пара";
+"widgetCryptoSearchLabel" = "Поиск";
+"widgetCryptoSearchPlaceholder" = "Введите символ";
+"widgetCryptoResultsLabel" = "Результаты";
+"widgetCryptoNoResults" = "Нет совпадений";
+"widgetCryptoSearchAction" = "Поиск пары";
+"widgetCryptoSearchTitle" = "Поиск пары";
+"widgetCryptoSearchHint" = "Например: BTC, ETH, SOL или BTCUSDT";
+"widgetCryptoSuggestionsTitle" = "Популярные";
+"widgetCryptoLoadingSymbols" = "Загрузка символов…";
 "widgetPomodoroFocusLabel" = "Фокус";
 "widgetPomodoroShortBreakLabel" = "Короткий перерыв";
 "widgetPomodoroLongBreakLabel" = "Длинный перерыв";

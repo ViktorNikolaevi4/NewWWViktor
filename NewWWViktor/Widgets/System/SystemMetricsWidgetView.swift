@@ -7,22 +7,35 @@ struct SystemMetricsWidgetView: View {
 
     var body: some View {
         let layout = SystemMetricsLayout(sizeOption: widget.sizeOption)
+        let cpuPercent = metrics.cpuUsage
+        let ramPercent = usagePercent(used: metrics.memoryUsed, total: metrics.memoryTotal)
+        let diskPercent = usagePercent(used: metrics.diskUsed, total: metrics.diskTotal)
         VStack(alignment: .leading, spacing: layout.rowSpacing) {
-            SystemUsageRow(title: localization.text(.widgetSystemCPU),
-                           percent: metrics.cpuUsage,
-                           detail: nil,
-                           color: Color(hex: 0xF7B731),
-                           layout: layout)
-            SystemUsageRow(title: localization.text(.widgetSystemRAM),
-                           percent: usagePercent(used: metrics.memoryUsed, total: metrics.memoryTotal),
-                           detail: usageDetail(used: metrics.memoryUsed, total: metrics.memoryTotal),
-                           color: Color(hex: 0x5CD0FF),
-                           layout: layout)
-            SystemUsageRow(title: localization.text(.widgetSystemDisk),
-                           percent: usagePercent(used: metrics.diskUsed, total: metrics.diskTotal),
-                           detail: usageDetail(used: metrics.diskUsed, total: metrics.diskTotal),
-                           color: Color(hex: 0xA78BFA),
-                           layout: layout)
+            SystemUsageRingCluster(cpu: cpuPercent ?? 0,
+                                   ram: ramPercent ?? 0,
+                                   disk: diskPercent ?? 0,
+                                   layout: layout)
+
+            VStack(alignment: .leading, spacing: layout.labelSpacing) {
+                SystemUsageLabelRow(title: localization.text(.widgetSystemCPU),
+                                    percent: cpuPercent,
+                                    detail: nil,
+                                    color: Color(hex: 0xF7B731),
+                                    layout: layout,
+                                    alignment: .leading)
+                SystemUsageLabelRow(title: localization.text(.widgetSystemRAM),
+                                    percent: ramPercent,
+                                    detail: usageDetail(used: metrics.memoryUsed, total: metrics.memoryTotal),
+                                    color: Color(hex: 0x5CD0FF),
+                                    layout: layout,
+                                    alignment: .leading)
+                SystemUsageLabelRow(title: localization.text(.widgetSystemDisk),
+                                    percent: diskPercent,
+                                    detail: usageDetail(used: metrics.diskUsed, total: metrics.diskTotal),
+                                    color: Color(hex: 0xA78BFA),
+                                    layout: layout,
+                                    alignment: .leading)
+            }
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -49,82 +62,106 @@ struct SystemMetricsWidgetView: View {
 }
 
 private struct SystemMetricsLayout {
-    let ringSize: CGFloat
+    let ringClusterSize: CGFloat
     let ringLineWidth: CGFloat
     let valueFontSize: CGFloat
     let titleFontSize: CGFloat
     let detailFontSize: CGFloat
     let rowSpacing: CGFloat
+    let labelSpacing: CGFloat
     let rowPadding: CGFloat
 
     init(sizeOption: WidgetSizeOption) {
         switch sizeOption {
         case .small:
-            ringSize = 26
+            ringClusterSize = 58
             ringLineWidth = 4
             valueFontSize = 12
             titleFontSize = 11
             detailFontSize = 9
             rowSpacing = 10
+            labelSpacing = 3
             rowPadding = 6
         case .medium:
-            ringSize = 30
+            ringClusterSize = 70
             ringLineWidth = 4
             valueFontSize = 13
             titleFontSize = 12
             detailFontSize = 10
             rowSpacing = 12
+            labelSpacing = 4
             rowPadding = 8
         case .large, .extraLarge:
-            ringSize = 34
+            ringClusterSize = 82
             ringLineWidth = 5
             valueFontSize = 14
             titleFontSize = 12
             detailFontSize = 10
             rowSpacing = 12
+            labelSpacing = 5
             rowPadding = 8
         }
     }
 }
 
-private struct SystemUsageRow: View {
+private struct SystemUsageLabelRow: View {
     let title: String
     let percent: Double?
     let detail: String?
     let color: Color
     let layout: SystemMetricsLayout
+    let alignment: HorizontalAlignment
 
     var body: some View {
-        HStack(spacing: 10) {
-            SystemUsageRing(progress: percent ?? 0,
-                            color: color,
-                            size: layout.ringSize,
-                            lineWidth: layout.ringLineWidth)
-
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(percentText)
-                        .font(.system(size: layout.valueFontSize, weight: .bold))
-                        .foregroundStyle(color)
-                    Text(title)
-                        .font(.system(size: layout.titleFontSize, weight: .semibold))
-                        .foregroundStyle(.primary)
-                }
-
-                if let detail {
-                    Text(detail)
-                        .font(.system(size: layout.detailFontSize, weight: .medium))
-                        .foregroundStyle(.secondary)
-                }
+        VStack(alignment: alignment, spacing: 2) {
+            HStack(spacing: 6) {
+                Text(percentText)
+                    .font(.system(size: layout.valueFontSize, weight: .bold))
+                    .foregroundStyle(color)
+                Text(title)
+                    .font(.system(size: layout.titleFontSize, weight: .semibold))
+                    .foregroundStyle(.primary)
             }
-            Spacer(minLength: 0)
+
+            if let detail {
+                Text(detail)
+                    .font(.system(size: layout.detailFontSize, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
         }
-        .padding(.vertical, 2)
     }
 
     private var percentText: String {
         guard let percent else { return "—" }
         return "\(Int((percent * 100).rounded()))%"
+    }
+}
+
+private struct SystemUsageRingCluster: View {
+    let cpu: Double
+    let ram: Double
+    let disk: Double
+    let layout: SystemMetricsLayout
+
+    var body: some View {
+        let outer = layout.ringClusterSize
+        let middle = outer * 0.72
+        let inner = outer * 0.48
+        ZStack {
+            SystemUsageRing(progress: disk,
+                            color: Color(hex: 0xA78BFA),
+                            size: outer,
+                            lineWidth: layout.ringLineWidth)
+            SystemUsageRing(progress: ram,
+                            color: Color(hex: 0x5CD0FF),
+                            size: middle,
+                            lineWidth: layout.ringLineWidth)
+            SystemUsageRing(progress: cpu,
+                            color: Color(hex: 0xF7B731),
+                            size: inner,
+                            lineWidth: layout.ringLineWidth)
+        }
+        .frame(width: outer, height: outer)
     }
 }
 

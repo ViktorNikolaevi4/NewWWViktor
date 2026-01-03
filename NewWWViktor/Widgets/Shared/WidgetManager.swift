@@ -142,6 +142,7 @@ final class WidgetManager: ObservableObject {
     @Published var sharedDate: Date = Date()
     @Published var locationProvider: LocationProvider = LocationProvider()
     @Published var batteryProvider: BatteryProvider = BatteryProvider()
+    @Published var systemMetricsProvider: SystemMetricsProvider = SystemMetricsProvider()
     private var appearanceObservers: [NSObjectProtocol] = []
     private var timerCancellable: AnyCancellable?
     private var weatherTimerCancellable: AnyCancellable?

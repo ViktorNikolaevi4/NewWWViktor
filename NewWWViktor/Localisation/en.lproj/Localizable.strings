@@ -69,6 +69,8 @@
 "widgetPomodoroDetailDescription" = "Run focused work sessions with a simple timer.";
 "widgetBatteryDetailTitle" = "Battery";
 "widgetBatteryDetailDescription" = "Current battery level in a compact glance.";
+"widgetSystemDetailTitle" = "System Monitor";
+"widgetSystemDetailDescription" = "Live CPU, RAM, and disk usage.";
 "widgetEisenhowerDetailTitle" = "Eisenhower Matrix";
 "widgetEisenhowerDetailDescription" = "Focus on tasks that matter, sorted by priority.";
 "widgetBatteryLabel" = "Battery";
@@ -86,6 +88,9 @@
 "widgetBatteryStatusOn" = "On";
 "widgetBatteryStatusOff" = "Off";
 "widgetBatteryEstimateUnavailable" = "Estimate unavailable";
+"widgetSystemCPU" = "CPU";
+"widgetSystemRAM" = "RAM";
+"widgetSystemDisk" = "HD";
 "widgetEisenhowerImportantUrgent" = "Important\nUrgent";
 "widgetEisenhowerImportantNotUrgent" = "Important\nNot urgent";
 "widgetEisenhowerNotImportantUrgent" = "Not important\nUrgent";

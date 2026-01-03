@@ -69,6 +69,8 @@
 "widgetPomodoroDetailDescription" = "Запускайте фокус-сессии с простым таймером.";
 "widgetBatteryDetailTitle" = "Батарея";
 "widgetBatteryDetailDescription" = "Текущий заряд батареи в компактном виде.";
+"widgetSystemDetailTitle" = "Система";
+"widgetSystemDetailDescription" = "CPU, RAM и диск в реальном времени.";
 "widgetEisenhowerDetailTitle" = "Матрица Эйзенхауэра";
 "widgetEisenhowerDetailDescription" = "Фокус на важном, разложенном по приоритетам.";
 "widgetBatteryLabel" = "Батарея";
@@ -86,6 +88,9 @@
 "widgetBatteryStatusOn" = "Включено";
 "widgetBatteryStatusOff" = "Выключено";
 "widgetBatteryEstimateUnavailable" = "Оценка недоступна";
+"widgetSystemCPU" = "CPU";
+"widgetSystemRAM" = "RAM";
+"widgetSystemDisk" = "HD";
 "widgetEisenhowerImportantUrgent" = "Важно\nСрочно";
 "widgetEisenhowerImportantNotUrgent" = "Важно\nНе срочно";
 "widgetEisenhowerNotImportantUrgent" = "Не важно\nСрочно";

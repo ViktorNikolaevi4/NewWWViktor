@@ -5,6 +5,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
     case weather
     case pomodoro
     case battery
+    case system
     case eisenhower
     case habits
     case crypto
@@ -17,6 +18,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .weather: return .widgetCategoryLabel
         case .pomodoro: return .widgetCategoryLabel
         case .battery: return .widgetCategoryLabel
+        case .system: return .widgetCategoryLabel
         case .eisenhower: return .widgetCategoryLabel
         case .habits: return .widgetCategoryLabel
         case .crypto: return .widgetCategoryLabel
@@ -29,6 +31,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .weather: return .widgetWeatherDetailTitle
         case .pomodoro: return .widgetPomodoroDetailTitle
         case .battery: return .widgetBatteryDetailTitle
+        case .system: return .widgetSystemDetailTitle
         case .eisenhower: return .widgetEisenhowerDetailTitle
         case .habits: return .widgetHabitsDetailTitle
         case .crypto: return .widgetCryptoDetailTitle
@@ -41,6 +44,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .weather: return .widgetWeatherDetailDescription
         case .pomodoro: return .widgetPomodoroDetailDescription
         case .battery: return .widgetBatteryDetailDescription
+        case .system: return .widgetSystemDetailDescription
         case .eisenhower: return .widgetEisenhowerDetailDescription
         case .habits: return .widgetHabitsDetailDescription
         case .crypto: return .widgetCryptoDetailDescription
@@ -53,6 +57,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .weather: return nil
         case .pomodoro: return nil
         case .battery: return nil
+        case .system: return nil
         case .eisenhower: return nil
         case .habits: return nil
         case .crypto: return nil
@@ -68,6 +73,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .pomodoro:
             return WidgetSizeOption.small.dimensions
         case .battery:
+            return WidgetSizeOption.small.dimensions
+        case .system:
             return WidgetSizeOption.small.dimensions
         case .eisenhower:
             return WidgetSizeOption.small.dimensions
@@ -88,6 +95,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
             return [.small, .medium]
         case .battery:
             return [.small, .medium, .large, .extraLarge]
+        case .system:
+            return [.small, .medium]
         case .eisenhower:
             return [.small, .extraLarge]
         case .habits:

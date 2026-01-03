@@ -427,6 +427,8 @@ struct WidgetHostView: View {
             PomodoroWidgetView(widget: instance)
         case .battery:
             BatteryWidgetView(widget: instance)
+        case .system:
+            SystemMetricsWidgetView(widget: instance, metrics: manager.systemMetricsProvider)
         case .eisenhower:
             EisenhowerWidgetView(widget: instance)
         case .habits:

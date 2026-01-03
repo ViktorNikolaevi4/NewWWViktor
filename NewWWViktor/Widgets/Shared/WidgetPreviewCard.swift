@@ -200,6 +200,8 @@ struct WidgetPreviewCard: View {
             PomodoroWidgetView(widget: previewInstance)
         case .battery:
             BatteryWidgetView(widget: previewInstance)
+        case .system:
+            SystemMetricsWidgetView(widget: previewInstance, metrics: SystemMetricsProvider(preview: true))
         case .eisenhower:
             EisenhowerWidgetView(widget: previewInstance)
                 .modelContainer(EisenhowerDataStore.previewContainer)

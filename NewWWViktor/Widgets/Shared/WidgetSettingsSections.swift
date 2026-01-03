@@ -302,26 +302,6 @@ private struct CryptoSettingsSection: View {
                 } content: {
                     IconButton(systemName: "plus", isSelected: true)
                 }
-
-                if widget.cryptoSymbols.isEmpty {
-                    WidgetSettingsRow(title: localization.text(.widgetCryptoTickersTitle)) {
-                        Text(localization.text(.widgetCryptoNoTickers))
-                            .foregroundStyle(.secondary)
-                    }
-                } else {
-                    WidgetSettingsGroup(title: localization.text(.widgetCryptoTickersTitle)) {
-                        ForEach(widget.cryptoSymbols, id: \.self) { symbol in
-                            WidgetSettingsRow(title: symbolLabel(for: symbol)) {
-                                Button(role: .destructive) {
-                                    widget.cryptoSymbols.removeAll { $0 == symbol }
-                                } label: {
-                                    Image(systemName: "trash")
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-                }
             }
         }
         .onAppear {

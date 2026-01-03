@@ -142,7 +142,7 @@
 "widgetCryptoSearchPlaceholder" = "Введите символ";
 "widgetCryptoResultsLabel" = "Результаты";
 "widgetCryptoNoResults" = "Нет совпадений";
-"widgetCryptoSearchAction" = "Поиск пары";
+"widgetCryptoSearchAction" = "Основной тикер";
 "widgetCryptoSearchTitle" = "Поиск пары";
 "widgetCryptoSearchHint" = "Например: BTC, ETH, SOL или BTCUSDT";
 "widgetCryptoSuggestionsTitle" = "Популярные";

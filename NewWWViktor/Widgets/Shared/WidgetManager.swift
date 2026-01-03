@@ -836,10 +836,8 @@ final class WidgetManager: ObservableObject {
         let symbols = widgets
             .filter { $0.type == .crypto }
             .flatMap { widget in
-                if widget.cryptoSymbols.isEmpty {
-                    return [widget.cryptoSymbol]
-                }
-                return widget.cryptoSymbols
+                let ordered = [widget.cryptoSymbol] + widget.cryptoSymbols
+                return Array(NSOrderedSet(array: ordered)).compactMap { $0 as? String }
             }
         return Array(Set(symbols)).sorted()
     }

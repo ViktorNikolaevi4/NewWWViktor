@@ -79,7 +79,7 @@ struct CryptoWidgetView: View {
     }
 
     private var extraLargeLayout: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(localization.text(.widgetCryptoTitle))
                     .font(.system(size: 12, weight: .semibold))
@@ -87,23 +87,61 @@ struct CryptoWidgetView: View {
                 Spacer()
             }
 
-            ScrollView {
-                VStack(spacing: 10) {
+            GeometryReader { proxy in
+                let rowHeight = max(42, floor(proxy.size.height / 8))
+                List {
                     ForEach(displaySymbols, id: \.self) { item in
+                        let isPrimary = item == widget.cryptoSymbol
                         CryptoTickerRow(symbol: item,
                                         info: manager.cryptoProvider.allSymbolInfo[item] ?? manager.cryptoProvider.symbolInfo[item],
                                         ticker: manager.cryptoProvider.tickers[item],
-                                        chart: manager.cryptoProvider.chartData[item] ?? [])
+                                        chart: manager.cryptoProvider.chartData[item] ?? [],
+                                        rowHeight: rowHeight,
+                                        isDeletable: !isPrimary,
+                                        onDelete: {
+                                            deleteSymbol(item)
+                                        })
+                            .frame(height: rowHeight)
+                            .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                if !isPrimary {
+                                    Button(role: .destructive) {
+                                        deleteSymbol(item)
+                                    } label: {
+                                        Label(localization.text(.widgetDelete), systemImage: "trash")
+                                    }
+                                }
+                            }
+                            .contextMenu {
+                                if !isPrimary {
+                                    Button(role: .destructive) {
+                                        deleteSymbol(item)
+                                    } label: {
+                                        Text(localization.text(.widgetDelete))
+                                    }
+                                }
+                            }
                     }
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
         .padding(.horizontal, 2)
     }
 
     private var displaySymbols: [String] {
-        let list = widget.cryptoSymbols.isEmpty ? [widget.cryptoSymbol] : widget.cryptoSymbols
-        return Array(list.prefix(8))
+        let ordered = [widget.cryptoSymbol] + widget.cryptoSymbols
+        return Array(NSOrderedSet(array: ordered)).compactMap { $0 as? String }
+    }
+
+    private func deleteSymbol(_ symbol: String) {
+        guard symbol != widget.cryptoSymbol else { return }
+        var updated = widget
+        updated.cryptoSymbols.removeAll { $0 == symbol }
+        manager.update(updated)
     }
 
     private var formattedPrice: String {
@@ -143,6 +181,9 @@ private struct CryptoTickerRow: View {
     let info: CryptoSymbolInfo?
     let ticker: CryptoTickerSnapshot?
     let chart: [Double]
+    let rowHeight: CGFloat
+    let isDeletable: Bool
+    let onDelete: () -> Void
 
     var body: some View {
         HStack(spacing: 10) {
@@ -168,8 +209,24 @@ private struct CryptoTickerRow: View {
                     .foregroundStyle(changeIsPositive ? Color.green : Color.red)
             }
             .frame(width: 70, alignment: .trailing)
+
+            if isDeletable {
+                Button {
+                    onDelete()
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(6)
+                        .background(
+                            Circle()
+                                .fill(Color.black.opacity(0.35))
+                        )
+                }
+                .buttonStyle(.plain)
+            }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
         .padding(.horizontal, 6)
         .background(Color.white.opacity(0.05))
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -217,7 +274,24 @@ private struct CryptoSparkline: View {
             let points = normalizedPoints(in: size)
             if points.count > 1 {
                 Path { path in
-                    path.addLines(points)
+                    path.move(to: points[0])
+                    let smoothness: CGFloat = 0.8
+                    for index in 0..<(points.count - 1) {
+                        let p0 = points[index == 0 ? index : index - 1]
+                        let p1 = points[index]
+                        let p2 = points[index + 1]
+                        let p3 = points[min(index + 2, points.count - 1)]
+
+                        let control1 = CGPoint(
+                            x: p1.x + (p2.x - p0.x) * smoothness / 6,
+                            y: p1.y + (p2.y - p0.y) * smoothness / 6
+                        )
+                        let control2 = CGPoint(
+                            x: p2.x - (p3.x - p1.x) * smoothness / 6,
+                            y: p2.y - (p3.y - p1.y) * smoothness / 6
+                        )
+                        path.addCurve(to: p2, control1: control1, control2: control2)
+                    }
                 }
                 .stroke(lineColor, style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round))
             } else {

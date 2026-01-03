@@ -147,6 +147,9 @@
 "widgetCryptoSearchHint" = "Например: BTC, ETH, SOL или BTCUSDT";
 "widgetCryptoSuggestionsTitle" = "Популярные";
 "widgetCryptoLoadingSymbols" = "Загрузка символов…";
+"widgetCryptoTickersTitle" = "Тикеры";
+"widgetCryptoAddTicker" = "Добавить тикер";
+"widgetCryptoNoTickers" = "Пока нет тикеров";
 "widgetPomodoroFocusLabel" = "Фокус";
 "widgetPomodoroShortBreakLabel" = "Короткий перерыв";
 "widgetPomodoroLongBreakLabel" = "Длинный перерыв";

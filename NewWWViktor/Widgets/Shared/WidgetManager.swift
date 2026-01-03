@@ -833,9 +833,15 @@ final class WidgetManager: ObservableObject {
     }
 
     private func cryptoSymbolsToTrack() -> [String] {
-        widgets
+        let symbols = widgets
             .filter { $0.type == .crypto }
-            .map { $0.cryptoSymbol }
+            .flatMap { widget in
+                if widget.cryptoSymbols.isEmpty {
+                    return [widget.cryptoSymbol]
+                }
+                return widget.cryptoSymbols
+            }
+        return Array(Set(symbols)).sorted()
     }
 
     // MARK: - Windows

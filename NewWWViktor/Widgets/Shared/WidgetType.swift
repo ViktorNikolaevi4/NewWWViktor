@@ -93,7 +93,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .habits:
             return [.small]
         case .crypto:
-            return [.small]
+            return [.small, .extraLarge]
         }
     }
 }

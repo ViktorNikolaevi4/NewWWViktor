@@ -11,6 +11,7 @@ struct WidgetGeneralSettingsSection: View {
     @Binding var showWeather: Bool
     @Binding var showManageHabits: Bool
     @Binding var showCryptoSearch: Bool
+    @Binding var cryptoSearchMode: CryptoSearchMode
 
     var body: some View {
         let isWeather = widget.type == .weather
@@ -109,7 +110,9 @@ struct WidgetGeneralSettingsSection: View {
         }
 
         if widget.type == .crypto {
-            CryptoSettingsSection(widget: $widget, showCryptoSearch: $showCryptoSearch)
+            CryptoSettingsSection(widget: $widget,
+                                  showCryptoSearch: $showCryptoSearch,
+                                  cryptoSearchMode: $cryptoSearchMode)
         }
 
         if widget.type == .habits {
@@ -275,6 +278,7 @@ private struct CryptoSettingsSection: View {
     @EnvironmentObject private var manager: WidgetManager
     @Binding var widget: WidgetInstance
     @Binding var showCryptoSearch: Bool
+    @Binding var cryptoSearchMode: CryptoSearchMode
 
     var body: some View {
         WidgetSettingsGroup(title: localization.text(.widgetCryptoSectionTitle)) {
@@ -285,9 +289,39 @@ private struct CryptoSettingsSection: View {
             }
 
             WidgetSettingsRowButton(title: localization.text(.widgetCryptoSearchAction)) {
+                cryptoSearchMode = .single
                 showCryptoSearch = true
             } content: {
                 IconButton(systemName: "magnifyingglass", isSelected: true)
+            }
+
+            if widget.sizeOption == .extraLarge {
+                WidgetSettingsRowButton(title: localization.text(.widgetCryptoAddTicker)) {
+                    cryptoSearchMode = .list
+                    showCryptoSearch = true
+                } content: {
+                    IconButton(systemName: "plus", isSelected: true)
+                }
+
+                if widget.cryptoSymbols.isEmpty {
+                    WidgetSettingsRow(title: localization.text(.widgetCryptoTickersTitle)) {
+                        Text(localization.text(.widgetCryptoNoTickers))
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    WidgetSettingsGroup(title: localization.text(.widgetCryptoTickersTitle)) {
+                        ForEach(widget.cryptoSymbols, id: \.self) { symbol in
+                            WidgetSettingsRow(title: symbolLabel(for: symbol)) {
+                                Button(role: .destructive) {
+                                    widget.cryptoSymbols.removeAll { $0 == symbol }
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
             }
         }
         .onAppear {

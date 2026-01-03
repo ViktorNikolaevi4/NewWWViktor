@@ -22,6 +22,7 @@ struct WidgetSettingsMenuView: View {
     @State private var showBackgroundPicker = false
     @State private var showManageHabits = false
     @State private var showCryptoSearch = false
+    @State private var cryptoSearchMode: CryptoSearchMode = .single
     @State private var showWeather = false
     @State private var isPinnedTop = false
     @State private var lockPosition = false
@@ -118,8 +119,16 @@ struct WidgetSettingsMenuView: View {
 
             if showCryptoSearch {
                 CryptoSearchView(isPresented: $showCryptoSearch) { symbol in
-                    workingWidget.cryptoSymbol = symbol
-                    onUpdate(workingWidget)
+                    switch cryptoSearchMode {
+                    case .single:
+                        workingWidget.cryptoSymbol = symbol
+                        onUpdate(workingWidget)
+                    case .list:
+                        if !workingWidget.cryptoSymbols.contains(symbol) {
+                            workingWidget.cryptoSymbols.append(symbol)
+                            onUpdate(workingWidget)
+                        }
+                    }
                 }
                 .environmentObject(localization)
                 .environmentObject(manager)
@@ -153,6 +162,9 @@ struct WidgetSettingsMenuView: View {
             onUpdate(workingWidget)
         }
         .onChange(of: workingWidget.cryptoSymbol) { _, _ in
+            onUpdate(workingWidget)
+        }
+        .onChange(of: workingWidget.cryptoSymbols) { _, _ in
             onUpdate(workingWidget)
         }
         .onChange(of: workingWidget.pomodoroFocusMinutes) { _, newValue in
@@ -207,7 +219,8 @@ struct WidgetSettingsMenuView: View {
                                                  isLocationPickerPresented: $showLocationPicker,
                                                  showWeather: $showWeather,
                                                  showManageHabits: $showManageHabits,
-                                                 showCryptoSearch: $showCryptoSearch)
+                                                 showCryptoSearch: $showCryptoSearch,
+                                                 cryptoSearchMode: $cryptoSearchMode)
                     WidgetAppearanceSettingsSection(widget: $workingWidget,
                                                     onColorPicker: { activeColorRole = $0 },
                                                     onBackgroundPicker: { showBackgroundPicker = true })
@@ -372,6 +385,7 @@ struct WidgetSettingsMenuView: View {
         context.delete(habit)
     }
 }
+
 
 // MARK: - Location Picker
 private struct WidgetLocationPickerView: View {

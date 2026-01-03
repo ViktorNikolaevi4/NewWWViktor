@@ -147,6 +147,9 @@
 "widgetCryptoSearchHint" = "Try BTC, ETH, SOL or BTCUSDT";
 "widgetCryptoSuggestionsTitle" = "Popular";
 "widgetCryptoLoadingSymbols" = "Loading symbols…";
+"widgetCryptoTickersTitle" = "Tickers";
+"widgetCryptoAddTicker" = "Add ticker";
+"widgetCryptoNoTickers" = "No tickers yet";
 "widgetPomodoroFocusLabel" = "Focus";
 "widgetPomodoroShortBreakLabel" = "Short break";
 "widgetPomodoroLongBreakLabel" = "Long break";

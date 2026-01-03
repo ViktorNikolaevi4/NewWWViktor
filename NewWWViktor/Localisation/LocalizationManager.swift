@@ -147,6 +147,9 @@ enum LocalizationKey: String {
     case widgetCryptoSearchHint
     case widgetCryptoSuggestionsTitle
     case widgetCryptoLoadingSymbols
+    case widgetCryptoTickersTitle
+    case widgetCryptoAddTicker
+    case widgetCryptoNoTickers
     case widgetPomodoroFocusLabel
     case widgetPomodoroShortBreakLabel
     case widgetPomodoroLongBreakLabel

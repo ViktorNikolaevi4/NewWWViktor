@@ -7,39 +7,81 @@ struct SystemMetricsWidgetView: View {
 
     var body: some View {
         let layout = SystemMetricsLayout(sizeOption: widget.sizeOption)
+        let compactDetail = widget.sizeOption == .small || widget.sizeOption == .medium
         let cpuPercent = metrics.cpuUsage
         let ramPercent = usagePercent(used: metrics.memoryUsed, total: metrics.memoryTotal)
         let diskPercent = usagePercent(used: metrics.diskUsed, total: metrics.diskTotal)
-        VStack(alignment: .leading, spacing: layout.rowSpacing) {
-            SystemUsageRingCluster(cpu: cpuPercent ?? 0,
-                                   ram: ramPercent ?? 0,
-                                   disk: diskPercent ?? 0,
-                                   layout: layout)
+        Group {
+            if widget.sizeOption == .medium {
+                HStack(alignment: .top, spacing: layout.clusterSpacing) {
+                    SystemUsageRingCluster(cpu: cpuPercent ?? 0,
+                                           ram: ramPercent ?? 0,
+                                           disk: diskPercent ?? 0,
+                                           layout: layout)
 
-            VStack(alignment: .leading, spacing: layout.labelSpacing) {
-                SystemUsageLabelRow(title: localization.text(.widgetSystemCPU),
-                                    percent: cpuPercent,
-                                    detail: nil,
-                                    color: Color(hex: 0xF7B731),
-                                    layout: layout,
-                                    alignment: .leading)
-                SystemUsageLabelRow(title: localization.text(.widgetSystemRAM),
-                                    percent: ramPercent,
-                                    detail: usageDetail(used: metrics.memoryUsed, total: metrics.memoryTotal),
-                                    color: Color(hex: 0x5CD0FF),
-                                    layout: layout,
-                                    alignment: .leading)
-                SystemUsageLabelRow(title: localization.text(.widgetSystemDisk),
-                                    percent: diskPercent,
-                                    detail: usageDetail(used: metrics.diskUsed, total: metrics.diskTotal),
-                                    color: Color(hex: 0xA78BFA),
-                                    layout: layout,
-                                    alignment: .leading)
+                    VStack(alignment: .leading, spacing: layout.labelSpacing) {
+                        SystemUsageLabelRow(title: localization.text(.widgetSystemCPU),
+                                            percent: cpuPercent,
+                                            detail: nil,
+                                            color: Color(hex: 0xF7B731),
+                                            layout: layout,
+                                            alignment: .leading)
+                        SystemUsageLabelRow(title: localization.text(.widgetSystemRAM),
+                                            percent: ramPercent,
+                                            detail: usageDetail(used: metrics.memoryUsed,
+                                                                total: metrics.memoryTotal,
+                                                                compact: compactDetail),
+                                            color: Color(hex: 0x5CD0FF),
+                                            layout: layout,
+                                            alignment: .leading)
+                        SystemUsageLabelRow(title: localization.text(.widgetSystemDisk),
+                                            percent: diskPercent,
+                                            detail: usageDetail(used: metrics.diskUsed,
+                                                                total: metrics.diskTotal,
+                                                                compact: compactDetail),
+                                            color: Color(hex: 0xA78BFA),
+                                            layout: layout,
+                                            alignment: .leading)
+                    }
+                    Spacer(minLength: 0)
+                }
+            } else {
+                VStack(alignment: .leading, spacing: layout.rowSpacing) {
+                    SystemUsageRingCluster(cpu: cpuPercent ?? 0,
+                                           ram: ramPercent ?? 0,
+                                           disk: diskPercent ?? 0,
+                                           layout: layout)
+
+                    VStack(alignment: .leading, spacing: layout.labelSpacing) {
+                        SystemUsageLabelRow(title: localization.text(.widgetSystemCPU),
+                                            percent: cpuPercent,
+                                            detail: nil,
+                                            color: Color(hex: 0xF7B731),
+                                            layout: layout,
+                                            alignment: .leading)
+                        SystemUsageLabelRow(title: localization.text(.widgetSystemRAM),
+                                            percent: ramPercent,
+                                            detail: usageDetail(used: metrics.memoryUsed,
+                                                                total: metrics.memoryTotal,
+                                                                compact: compactDetail),
+                                            color: Color(hex: 0x5CD0FF),
+                                            layout: layout,
+                                            alignment: .leading)
+                        SystemUsageLabelRow(title: localization.text(.widgetSystemDisk),
+                                            percent: diskPercent,
+                                            detail: usageDetail(used: metrics.diskUsed,
+                                                                total: metrics.diskTotal,
+                                                                compact: compactDetail),
+                                            color: Color(hex: 0xA78BFA),
+                                            layout: layout,
+                                            alignment: .leading)
+                    }
+                    Spacer(minLength: 0)
+                }
             }
-            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(.top, 4)
+        .padding(.top, layout.topPadding)
     }
 
     private func usagePercent(used: UInt64?, total: UInt64?) -> Double? {
@@ -47,8 +89,11 @@ struct SystemMetricsWidgetView: View {
         return Double(used) / Double(total)
     }
 
-    private func usageDetail(used: UInt64?, total: UInt64?) -> String? {
+    private func usageDetail(used: UInt64?, total: UInt64?, compact: Bool) -> String? {
         guard let used, let total else { return nil }
+        if compact {
+            return "\(formatBytesCompact(used))/\(formatBytesCompact(total))"
+        }
         return "\(formatBytes(used))/\(formatBytes(total))"
     }
 
@@ -58,6 +103,23 @@ struct SystemMetricsWidgetView: View {
         formatter.countStyle = .decimal
         formatter.includesUnit = true
         return formatter.string(fromByteCount: Int64(bytes))
+    }
+
+    private func formatBytesCompact(_ bytes: UInt64) -> String {
+        let unitFormatter = ByteCountFormatter()
+        unitFormatter.allowedUnits = [.useGB]
+        unitFormatter.countStyle = .decimal
+        unitFormatter.includesCount = false
+        unitFormatter.includesUnit = true
+        let unit = unitFormatter.string(fromByteCount: 1_000_000_000).trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let numberFormatter = NumberFormatter()
+        numberFormatter.locale = Locale.current
+        numberFormatter.minimumFractionDigits = 0
+        numberFormatter.maximumFractionDigits = 1
+        let value = Double(bytes) / 1_000_000_000
+        let number = numberFormatter.string(from: NSNumber(value: value)) ?? String(format: "%.1f", value)
+        return "\(number)\(unit)"
     }
 }
 
@@ -69,37 +131,53 @@ private struct SystemMetricsLayout {
     let detailFontSize: CGFloat
     let rowSpacing: CGFloat
     let labelSpacing: CGFloat
+    let clusterSpacing: CGFloat
     let rowPadding: CGFloat
+    let topPadding: CGFloat
+    let detailRightAligned: Bool
+    let detailMinimumScale: CGFloat
 
     init(sizeOption: WidgetSizeOption) {
         switch sizeOption {
         case .small:
             ringClusterSize = 58
-            ringLineWidth = 4
-            valueFontSize = 12
-            titleFontSize = 11
-            detailFontSize = 9
+            ringLineWidth = 5.2
+            valueFontSize = 15.6
+            titleFontSize = 14.3
+            detailFontSize = 10.4
             rowSpacing = 10
             labelSpacing = 3
+            clusterSpacing = 12
             rowPadding = 6
+            topPadding = 8
+            detailRightAligned = true
+            detailMinimumScale = 0.7
         case .medium:
-            ringClusterSize = 70
-            ringLineWidth = 4
-            valueFontSize = 13
-            titleFontSize = 12
-            detailFontSize = 10
+            ringClusterSize = 86
+            ringLineWidth = 6.5
+            valueFontSize = 19.5
+            titleFontSize = 16.9
+            detailFontSize = 11
             rowSpacing = 12
-            labelSpacing = 4
+            labelSpacing = 6
+            clusterSpacing = 16
             rowPadding = 8
+            topPadding = 24
+            detailRightAligned = false
+            detailMinimumScale = 1.0
         case .large, .extraLarge:
             ringClusterSize = 82
-            ringLineWidth = 5
-            valueFontSize = 14
-            titleFontSize = 12
-            detailFontSize = 10
+            ringLineWidth = 6.5
+            valueFontSize = 18.2
+            titleFontSize = 15.6
+            detailFontSize = 13
             rowSpacing = 12
             labelSpacing = 5
+            clusterSpacing = 16
             rowPadding = 8
+            topPadding = 10
+            detailRightAligned = false
+            detailMinimumScale = 1.0
         }
     }
 }
@@ -113,20 +191,21 @@ private struct SystemUsageLabelRow: View {
     let alignment: HorizontalAlignment
 
     var body: some View {
-        VStack(alignment: alignment, spacing: 2) {
-            HStack(spacing: 6) {
-                Text(percentText)
-                    .font(.system(size: layout.valueFontSize, weight: .bold))
-                    .foregroundStyle(color)
-                Text(title)
-                    .font(.system(size: layout.titleFontSize, weight: .semibold))
-                    .foregroundStyle(.primary)
-            }
-
+        HStack(spacing: 6) {
+            Text(percentText)
+                .font(.system(size: layout.valueFontSize, weight: .heavy))
+                .foregroundStyle(color)
+            Text(title)
+                .font(.system(size: layout.titleFontSize, weight: .semibold))
+                .foregroundStyle(.primary)
+            Spacer(minLength: 6)
             if let detail {
                 Text(detail)
                     .font(.system(size: layout.detailFontSize, weight: .medium))
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(layout.detailMinimumScale)
+                    .allowsTightening(true)
             }
         }
     }

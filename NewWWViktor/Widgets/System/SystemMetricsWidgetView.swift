@@ -144,7 +144,7 @@ private struct SystemMetricsLayout {
             ringLineWidth = 5.2
             valueFontSize = 15.6
             titleFontSize = 14.3
-            detailFontSize = 10.4
+            detailFontSize = 9
             rowSpacing = 10
             labelSpacing = 3
             clusterSpacing = 12
@@ -152,7 +152,7 @@ private struct SystemMetricsLayout {
             topPadding = 8
             detailRightAligned = true
             detailMinimumScale = 0.7
-        case .medium:
+        default:
             ringClusterSize = 86
             ringLineWidth = 6.5
             valueFontSize = 19.5
@@ -163,19 +163,6 @@ private struct SystemMetricsLayout {
             clusterSpacing = 16
             rowPadding = 8
             topPadding = 24
-            detailRightAligned = false
-            detailMinimumScale = 1.0
-        case .large, .extraLarge:
-            ringClusterSize = 82
-            ringLineWidth = 6.5
-            valueFontSize = 18.2
-            titleFontSize = 15.6
-            detailFontSize = 13
-            rowSpacing = 12
-            labelSpacing = 5
-            clusterSpacing = 16
-            rowPadding = 8
-            topPadding = 10
             detailRightAligned = false
             detailMinimumScale = 1.0
         }

@@ -155,6 +155,14 @@
 "widgetCryptoTickersTitle" = "Tickers";
 "widgetCryptoAddTicker" = "Add ticker";
 "widgetCryptoNoTickers" = "No tickers yet";
+"widgetLinksDetailTitle" = "Links";
+"widgetLinksDetailDescription" = "Quick access to saved sites.";
+"widgetLinksTitle" = "Links";
+"widgetLinksSectionTitle" = "Links";
+"widgetLinksAdd" = "Add link";
+"widgetLinksTitlePlaceholder" = "Title";
+"widgetLinksURLPlaceholder" = "https://example.com";
+"widgetLinksEmpty" = "No links yet";
 "widgetPomodoroFocusLabel" = "Focus";
 "widgetPomodoroShortBreakLabel" = "Short break";
 "widgetPomodoroLongBreakLabel" = "Long break";

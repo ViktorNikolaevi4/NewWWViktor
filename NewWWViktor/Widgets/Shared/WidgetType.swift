@@ -9,6 +9,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
     case eisenhower
     case habits
     case crypto
+    case links
 
     var id: String { rawValue }
 
@@ -22,6 +23,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .eisenhower: return .widgetCategoryLabel
         case .habits: return .widgetCategoryLabel
         case .crypto: return .widgetCategoryLabel
+        case .links: return .widgetCategoryLabel
         }
     }
 
@@ -35,6 +37,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .eisenhower: return .widgetEisenhowerDetailTitle
         case .habits: return .widgetHabitsDetailTitle
         case .crypto: return .widgetCryptoDetailTitle
+        case .links: return .widgetLinksDetailTitle
         }
     }
 
@@ -48,6 +51,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .eisenhower: return .widgetEisenhowerDetailDescription
         case .habits: return .widgetHabitsDetailDescription
         case .crypto: return .widgetCryptoDetailDescription
+        case .links: return .widgetLinksDetailDescription
         }
     }
 
@@ -61,6 +65,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .eisenhower: return nil
         case .habits: return nil
         case .crypto: return nil
+        case .links: return nil
         }
     }
 
@@ -81,6 +86,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .habits:
             return WidgetSizeOption.small.dimensions
         case .crypto:
+            return WidgetSizeOption.small.dimensions
+        case .links:
             return WidgetSizeOption.small.dimensions
         }
     }
@@ -103,6 +110,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
             return [.small]
         case .crypto:
             return [.small, .extraLarge]
+        case .links:
+            return [.small, .medium]
         }
     }
 }

@@ -22,6 +22,9 @@ struct WidgetPreviewCard: View {
             var instance = WidgetInstance(type: type)
             instance.location = .current
             instance.applySizeOption(initialSize)
+            if type == .links {
+                instance.links = WidgetLink.sampleLinks
+            }
             return instance
         }())
     }
@@ -210,6 +213,8 @@ struct WidgetPreviewCard: View {
                 .modelContainer(EisenhowerDataStore.previewContainer)
         case .crypto:
             CryptoWidgetView(widget: previewInstance)
+        case .links:
+            LinksWidgetView(widget: previewInstance)
         }
     }
 

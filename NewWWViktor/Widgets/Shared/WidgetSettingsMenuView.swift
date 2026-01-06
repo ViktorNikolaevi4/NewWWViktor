@@ -167,6 +167,9 @@ struct WidgetSettingsMenuView: View {
         .onChange(of: workingWidget.cryptoSymbols) { _, _ in
             onUpdate(workingWidget)
         }
+        .onChange(of: workingWidget.links) { _, _ in
+            onUpdate(workingWidget)
+        }
         .onChange(of: workingWidget.pomodoroFocusMinutes) { _, newValue in
             applyPomodoroDurationChange(phase: .focus, minutes: newValue)
         }
@@ -221,13 +224,16 @@ struct WidgetSettingsMenuView: View {
                                                  showManageHabits: $showManageHabits,
                                                  showCryptoSearch: $showCryptoSearch,
                                                  cryptoSearchMode: $cryptoSearchMode)
+                    if workingWidget.type == .links {
+                        LinksSettingsSection(widget: $workingWidget)
+                    }
                     WidgetAppearanceSettingsSection(widget: $workingWidget,
                                                     onColorPicker: { activeColorRole = $0 },
                                                     onBackgroundPicker: { showBackgroundPicker = true })
-                                                    WidgetBehaviorSettingsSection(sizeSelection: sizeSelectionBinding,
-                                                                              isPinnedTop: pinnedBinding,
-                                                                              lockPosition: lockedBinding,
-                                                                              availableSizes: workingWidget.type.availableSizes)
+                    WidgetBehaviorSettingsSection(sizeSelection: sizeSelectionBinding,
+                                                  isPinnedTop: pinnedBinding,
+                                                  lockPosition: lockedBinding,
+                                                  availableSizes: workingWidget.type.availableSizes)
                     WidgetManagementSettingsSection(onAddWidgets: openSidePanel,
                                                     onShowGeneralSettings: openGeneralSettings,
                                                     onDelete: deleteWidget)

@@ -159,10 +159,13 @@
 "widgetLinksDetailDescription" = "Quick access to saved sites.";
 "widgetLinksTitle" = "Links";
 "widgetLinksSectionTitle" = "Links";
-"widgetLinksAdd" = "Add link";
 "widgetLinksTitlePlaceholder" = "Title";
 "widgetLinksURLPlaceholder" = "https://example.com";
 "widgetLinksEmpty" = "No links yet";
+"widgetLinksManageAction" = "Manage links";
+"widgetLinksManageTitle" = "Manage links";
+"widgetLinksManageSearch" = "Search links";
+"widgetLinksManageEmpty" = "No links yet";
 "widgetPomodoroFocusLabel" = "Focus";
 "widgetPomodoroShortBreakLabel" = "Short break";
 "widgetPomodoroLongBreakLabel" = "Long break";

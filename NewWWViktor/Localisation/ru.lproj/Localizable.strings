@@ -159,10 +159,13 @@
 "widgetLinksDetailDescription" = "Быстрый доступ к сохранённым сайтам.";
 "widgetLinksTitle" = "Ссылки";
 "widgetLinksSectionTitle" = "Ссылки";
-"widgetLinksAdd" = "Добавить ссылку";
 "widgetLinksTitlePlaceholder" = "Название";
 "widgetLinksURLPlaceholder" = "https://example.com";
 "widgetLinksEmpty" = "Ссылок нет";
+"widgetLinksManageAction" = "Управлять ссылками";
+"widgetLinksManageTitle" = "Ссылки";
+"widgetLinksManageSearch" = "Поиск ссылок";
+"widgetLinksManageEmpty" = "Ссылок нет";
 "widgetPomodoroFocusLabel" = "Фокус";
 "widgetPomodoroShortBreakLabel" = "Короткий перерыв";
 "widgetPomodoroLongBreakLabel" = "Длинный перерыв";

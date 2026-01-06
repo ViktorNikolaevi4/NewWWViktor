@@ -159,10 +159,13 @@ enum LocalizationKey: String {
     case widgetLinksDetailDescription
     case widgetLinksTitle
     case widgetLinksSectionTitle
-    case widgetLinksAdd
     case widgetLinksTitlePlaceholder
     case widgetLinksURLPlaceholder
     case widgetLinksEmpty
+    case widgetLinksManageAction
+    case widgetLinksManageTitle
+    case widgetLinksManageSearch
+    case widgetLinksManageEmpty
     case widgetPomodoroFocusLabel
     case widgetPomodoroShortBreakLabel
     case widgetPomodoroLongBreakLabel

@@ -22,6 +22,7 @@ struct WidgetSettingsMenuView: View {
     @State private var showBackgroundPicker = false
     @State private var showManageHabits = false
     @State private var showCryptoSearch = false
+    @State private var showManageLinks = false
     @State private var cryptoSearchMode: CryptoSearchMode = .single
     @State private var showWeather = false
     @State private var isPinnedTop = false
@@ -40,7 +41,7 @@ struct WidgetSettingsMenuView: View {
 
     var body: some View {
         let isColorPickerPresented = activeColorRole != nil
-        let isOverlayPresented = showLocationPicker || isColorPickerPresented || showBackgroundPicker || showManageHabits || showCryptoSearch
+        let isOverlayPresented = showLocationPicker || isColorPickerPresented || showBackgroundPicker || showManageHabits || showCryptoSearch || showManageLinks
 
         return ZStack {
             panelContent
@@ -134,12 +135,19 @@ struct WidgetSettingsMenuView: View {
                 .environmentObject(manager)
                 .transition(.move(edge: .trailing).combined(with: .opacity))
             }
+
+            if showManageLinks {
+                ManageLinksView(isPresented: $showManageLinks, links: $workingWidget.links)
+                    .environmentObject(localization)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showLocationPicker)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: isColorPickerPresented)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showBackgroundPicker)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageHabits)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showCryptoSearch)
+        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageLinks)
         .frame(width: 360, height: 520)
         .onChange(of: widget) { _, newValue in
             workingWidget = newValue
@@ -225,7 +233,9 @@ struct WidgetSettingsMenuView: View {
                                                  showCryptoSearch: $showCryptoSearch,
                                                  cryptoSearchMode: $cryptoSearchMode)
                     if workingWidget.type == .links {
-                        LinksSettingsSection(widget: $workingWidget)
+                        LinksSettingsSection {
+                            showManageLinks = true
+                        }
                     }
                     WidgetAppearanceSettingsSection(widget: $workingWidget,
                                                     onColorPicker: { activeColorRole = $0 },

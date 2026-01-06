@@ -275,69 +275,16 @@ struct HabitSettingsSection: View {
 
 struct LinksSettingsSection: View {
     @EnvironmentObject private var localization: LocalizationManager
-    @Binding var widget: WidgetInstance
+    let onManage: () -> Void
 
     var body: some View {
         WidgetSettingsGroup(title: localization.text(.widgetLinksSectionTitle)) {
-            if widget.links.isEmpty {
-                WidgetSettingsRow(title: localization.text(.widgetLinksEmpty)) {
-                    EmptyView()
-                }
-            } else {
-                ForEach($widget.links) { $link in
-                    LinksEditorRow(link: $link) {
-                        removeLink(id: link.id)
-                    }
-                }
-            }
-
-            WidgetSettingsRowButton(title: localization.text(.widgetLinksAdd)) {
-                addLink()
+            WidgetSettingsRowButton(title: localization.text(.widgetLinksManageAction)) {
+                onManage()
             } content: {
-                IconButton(systemName: "plus", isSelected: true)
+                IconButton(systemName: "slider.horizontal.3", isSelected: true)
             }
         }
-    }
-
-    private func addLink() {
-        widget.links.append(WidgetLink())
-    }
-
-    private func removeLink(id: UUID) {
-        widget.links.removeAll { $0.id == id }
-    }
-}
-
-private struct LinksEditorRow: View {
-    @EnvironmentObject private var localization: LocalizationManager
-    @Binding var link: WidgetLink
-    let onDelete: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 10) {
-                TextField(localization.text(.widgetLinksTitlePlaceholder), text: $link.title)
-                    .textFieldStyle(.roundedBorder)
-
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.white.opacity(0.12))
-                        )
-                }
-                .buttonStyle(.plain)
-            }
-
-            TextField(localization.text(.widgetLinksURLPlaceholder), text: $link.url)
-                .textFieldStyle(.roundedBorder)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(Color.black.opacity(0.15))
     }
 }
 

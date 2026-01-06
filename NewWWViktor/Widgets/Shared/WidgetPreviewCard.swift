@@ -23,7 +23,7 @@ struct WidgetPreviewCard: View {
             instance.location = .current
             instance.applySizeOption(initialSize)
             if type == .links {
-                instance.links = WidgetLink.sampleLinks
+                instance.linkGroups = WidgetLinkGroup.sampleGroups
             }
             return instance
         }())

@@ -6,6 +6,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var cryptoSymbol: String
     var cryptoSymbols: [String]
     var links: [WidgetLink]
+    var linkGroups: [WidgetLinkGroup]
     var x: CGFloat
     var y: CGFloat
     var width: CGFloat
@@ -55,6 +56,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.cryptoSymbol = "BTCUSDT"
         self.cryptoSymbols = []
         self.links = []
+        self.linkGroups = []
         self.x = origin.x
         self.y = origin.y
         let size = type.defaultSize
@@ -101,7 +103,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, cryptoSymbol, cryptoSymbols, links, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
+        case id, type, cryptoSymbol, cryptoSymbols, links, linkGroups, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
     }
 
     init(from decoder: Decoder) throws {
@@ -110,7 +112,16 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         type = try container.decode(WidgetType.self, forKey: .type)
         cryptoSymbol = try container.decodeIfPresent(String.self, forKey: .cryptoSymbol) ?? "BTCUSDT"
         cryptoSymbols = try container.decodeIfPresent([String].self, forKey: .cryptoSymbols) ?? []
-        links = try container.decodeIfPresent([WidgetLink].self, forKey: .links) ?? []
+        let legacyLinks = try container.decodeIfPresent([WidgetLink].self, forKey: .links) ?? []
+        let decodedGroups = try container.decodeIfPresent([WidgetLinkGroup].self, forKey: .linkGroups) ?? []
+        if !decodedGroups.isEmpty {
+            linkGroups = decodedGroups
+        } else if !legacyLinks.isEmpty {
+            linkGroups = [WidgetLinkGroup(title: "", links: legacyLinks)]
+        } else {
+            linkGroups = []
+        }
+        links = []
         x = try container.decode(CGFloat.self, forKey: .x)
         y = try container.decode(CGFloat.self, forKey: .y)
         width = try container.decode(CGFloat.self, forKey: .width)
@@ -162,6 +173,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(cryptoSymbol, forKey: .cryptoSymbol)
         try container.encode(cryptoSymbols, forKey: .cryptoSymbols)
         try container.encode(links, forKey: .links)
+        try container.encode(linkGroups, forKey: .linkGroups)
         try container.encode(x, forKey: .x)
         try container.encode(y, forKey: .y)
         try container.encode(width, forKey: .width)
@@ -225,10 +237,26 @@ struct WidgetLink: Identifiable, Codable, Equatable {
     }
 }
 
-extension WidgetLink {
-    static let sampleLinks: [WidgetLink] = [
-        WidgetLink(title: "YouTube", url: "youtube.com"),
-        WidgetLink(title: "Notion", url: "notion.so"),
-        WidgetLink(title: "GitHub", url: "github.com")
+struct WidgetLinkGroup: Identifiable, Codable, Equatable {
+    let id: UUID
+    var title: String
+    var links: [WidgetLink]
+
+    init(id: UUID = UUID(), title: String = "", links: [WidgetLink] = []) {
+        self.id = id
+        self.title = title
+        self.links = links
+    }
+}
+
+extension WidgetLinkGroup {
+    static let sampleGroups: [WidgetLinkGroup] = [
+        WidgetLinkGroup(title: "Work", links: [
+            WidgetLink(title: "Notion", url: "notion.so"),
+            WidgetLink(title: "GitHub", url: "github.com")
+        ]),
+        WidgetLinkGroup(title: "Media", links: [
+            WidgetLink(title: "YouTube", url: "youtube.com")
+        ])
     ]
 }

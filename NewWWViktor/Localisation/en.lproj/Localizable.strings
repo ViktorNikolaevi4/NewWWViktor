@@ -166,6 +166,13 @@
 "widgetLinksManageTitle" = "Manage links";
 "widgetLinksManageSearch" = "Search links";
 "widgetLinksManageEmpty" = "No links yet";
+"widgetLinksAddGroup" = "Add folder";
+"widgetLinksAddLink" = "Add link";
+"widgetLinksGroupPlaceholder" = "Folder name";
+"widgetLinksUngrouped" = "Ungrouped";
+"widgetLinksEmptyGroup" = "Empty folder";
+"widgetLinksDeleteGroupTitle" = "Delete folder?";
+"widgetLinksDeleteGroupMessage" = "This folder has links. Delete anyway?";
 "widgetPomodoroFocusLabel" = "Focus";
 "widgetPomodoroShortBreakLabel" = "Short break";
 "widgetPomodoroLongBreakLabel" = "Long break";

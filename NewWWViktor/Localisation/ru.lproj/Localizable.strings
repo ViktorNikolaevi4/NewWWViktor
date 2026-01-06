@@ -166,6 +166,13 @@
 "widgetLinksManageTitle" = "Ссылки";
 "widgetLinksManageSearch" = "Поиск ссылок";
 "widgetLinksManageEmpty" = "Ссылок нет";
+"widgetLinksAddGroup" = "Добавить папку";
+"widgetLinksAddLink" = "Добавить ссылку";
+"widgetLinksGroupPlaceholder" = "Название папки";
+"widgetLinksUngrouped" = "Без папки";
+"widgetLinksEmptyGroup" = "Папка пустая";
+"widgetLinksDeleteGroupTitle" = "Удалить папку?";
+"widgetLinksDeleteGroupMessage" = "В папке есть ссылки. Удалить всё равно?";
 "widgetPomodoroFocusLabel" = "Фокус";
 "widgetPomodoroShortBreakLabel" = "Короткий перерыв";
 "widgetPomodoroLongBreakLabel" = "Длинный перерыв";

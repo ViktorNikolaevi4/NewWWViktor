@@ -137,7 +137,7 @@ struct WidgetSettingsMenuView: View {
             }
 
             if showManageLinks {
-                ManageLinksView(isPresented: $showManageLinks, links: $workingWidget.links)
+                ManageLinksView(isPresented: $showManageLinks, linkGroups: $workingWidget.linkGroups)
                     .environmentObject(localization)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
@@ -175,7 +175,7 @@ struct WidgetSettingsMenuView: View {
         .onChange(of: workingWidget.cryptoSymbols) { _, _ in
             onUpdate(workingWidget)
         }
-        .onChange(of: workingWidget.links) { _, _ in
+        .onChange(of: workingWidget.linkGroups) { _, _ in
             onUpdate(workingWidget)
         }
         .onChange(of: workingWidget.pomodoroFocusMinutes) { _, newValue in

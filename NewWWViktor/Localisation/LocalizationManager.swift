@@ -166,6 +166,13 @@ enum LocalizationKey: String {
     case widgetLinksManageTitle
     case widgetLinksManageSearch
     case widgetLinksManageEmpty
+    case widgetLinksAddGroup
+    case widgetLinksAddLink
+    case widgetLinksGroupPlaceholder
+    case widgetLinksUngrouped
+    case widgetLinksEmptyGroup
+    case widgetLinksDeleteGroupTitle
+    case widgetLinksDeleteGroupMessage
     case widgetPomodoroFocusLabel
     case widgetPomodoroShortBreakLabel
     case widgetPomodoroLongBreakLabel

@@ -27,6 +27,7 @@ struct LinksWidgetView: View {
                     }
                 }
                 .padding(.vertical, layout.listVerticalPadding)
+                .animation(.snappy(duration: 0.2, extraBounce: 0.0), value: expandedGroupIDs)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -117,10 +118,12 @@ struct LinksWidgetView: View {
     }
 
     private func toggleGroup(_ id: UUID) {
-        if expandedGroupIDs.contains(id) {
-            expandedGroupIDs.remove(id)
-        } else {
-            expandedGroupIDs.insert(id)
+        withAnimation(.snappy(duration: 0.2, extraBounce: 0.0)) {
+            if expandedGroupIDs.contains(id) {
+                expandedGroupIDs.remove(id)
+            } else {
+                expandedGroupIDs.insert(id)
+            }
         }
     }
 

@@ -173,6 +173,7 @@
 "widgetLinksEmptyGroup" = "Empty folder";
 "widgetLinksDeleteGroupTitle" = "Delete folder?";
 "widgetLinksDeleteGroupMessage" = "This folder has links. Delete anyway?";
+"widgetLinksInvalidURL" = "Please enter a valid link";
 "widgetPomodoroFocusLabel" = "Focus";
 "widgetPomodoroShortBreakLabel" = "Short break";
 "widgetPomodoroLongBreakLabel" = "Long break";

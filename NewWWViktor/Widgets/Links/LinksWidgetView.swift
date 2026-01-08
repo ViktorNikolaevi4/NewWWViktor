@@ -74,6 +74,9 @@ struct LinksWidgetView: View {
                             open(link)
                         } label: {
                             HStack {
+                                FaviconView(url: faviconURL(for: link),
+                                            size: layout.iconSize,
+                                            cornerRadius: layout.iconCornerRadius)
                                 Text(displayTitle(for: link))
                                     .font(.system(size: layout.rowFontSize, weight: .semibold))
                                     .foregroundStyle(.primary)
@@ -152,6 +155,20 @@ struct LinksWidgetView: View {
         }
         return URL(string: "https://\(trimmed)")
     }
+
+    private func faviconURL(for link: WidgetLink) -> URL? {
+        guard let url = resolvedURL(from: link.url),
+              let host = url.host else { return nil }
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "www.google.com"
+        components.path = "/s2/favicons"
+        components.queryItems = [
+            URLQueryItem(name: "domain", value: host),
+            URLQueryItem(name: "sz", value: "64")
+        ]
+        return components.url
+    }
 }
 
 private struct LinksWidgetLayout {
@@ -162,6 +179,8 @@ private struct LinksWidgetLayout {
     let rowVerticalPadding: CGFloat
     let rowHorizontalPadding: CGFloat
     let rowCornerRadius: CGFloat
+    let iconSize: CGFloat
+    let iconCornerRadius: CGFloat
     let groupTitleFontSize: CGFloat
     let groupCountFontSize: CGFloat
     let groupChevronSize: CGFloat
@@ -181,6 +200,8 @@ private struct LinksWidgetLayout {
             rowVerticalPadding = 6
             rowHorizontalPadding = 10
             rowCornerRadius = 10
+            iconSize = 16
+            iconCornerRadius = 4
             groupTitleFontSize = 11
             groupCountFontSize = 10
             groupChevronSize = 10
@@ -197,6 +218,8 @@ private struct LinksWidgetLayout {
             rowVerticalPadding = 7
             rowHorizontalPadding = 12
             rowCornerRadius = 12
+            iconSize = 18
+            iconCornerRadius = 5
             groupTitleFontSize = 12
             groupCountFontSize = 11
             groupChevronSize = 11
@@ -213,6 +236,8 @@ private struct LinksWidgetLayout {
             rowVerticalPadding = 7
             rowHorizontalPadding = 12
             rowCornerRadius = 12
+            iconSize = 18
+            iconCornerRadius = 5
             groupTitleFontSize = 12
             groupCountFontSize = 11
             groupChevronSize = 11
@@ -228,5 +253,35 @@ private struct LinksWidgetLayout {
 private extension String {
     var trimmed: String {
         trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+private struct FaviconView: View {
+    let url: URL?
+    let size: CGFloat
+    let cornerRadius: CGFloat
+
+    var body: some View {
+        AsyncImage(url: url) { phase in
+            switch phase {
+            case .success(let image):
+                image
+                    .resizable()
+                    .scaledToFit()
+            case .empty, .failure:
+                Image(systemName: "globe")
+                    .font(.system(size: size * 0.6, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            @unknown default:
+                Image(systemName: "globe")
+                    .font(.system(size: size * 0.6, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(width: size, height: size)
+        .background(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(Color.white.opacity(0.08))
+        )
     }
 }

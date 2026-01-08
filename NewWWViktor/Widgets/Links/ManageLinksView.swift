@@ -267,6 +267,7 @@ private struct ManageLinkRow: View {
     let onDelete: () -> Void
 
     var body: some View {
+        let urlStatus = validationStatus(for: link.url)
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
                 TextField(localization.text(.widgetLinksTitlePlaceholder), text: $link.title)
@@ -287,11 +288,56 @@ private struct ManageLinkRow: View {
 
             TextField(localization.text(.widgetLinksURLPlaceholder), text: $link.url)
                 .textFieldStyle(.roundedBorder)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(urlStatus == .invalid ? Color.red.opacity(0.9) : Color.clear, lineWidth: 1)
+                )
+
+            if urlStatus == .invalid {
+                Text(localization.text(.widgetLinksInvalidURL))
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.red)
+            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .background(Color.black.opacity(0.15))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private enum URLValidation {
+        case empty
+        case valid
+        case invalid
+    }
+
+    private func validationStatus(for raw: String) -> URLValidation {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return .empty }
+        if trimmed.contains(where: \.isWhitespace) { return .invalid }
+
+        if let url = URL(string: trimmed), let host = url.host, isAcceptableHost(host) {
+            return .valid
+        }
+        if let url = URL(string: "https://\(trimmed)"), let host = url.host, isAcceptableHost(host) {
+            return .valid
+        }
+        return .invalid
+    }
+
+    private func isAcceptableHost(_ host: String) -> Bool {
+        if host == "localhost" { return true }
+        if host.contains(".") { return true }
+        return isIPv4(host)
+    }
+
+    private func isIPv4(_ value: String) -> Bool {
+        let parts = value.split(separator: ".")
+        guard parts.count == 4 else { return false }
+        return parts.allSatisfy { part in
+            guard let num = Int(part), part.count <= 3 else { return false }
+            return (0...255).contains(num)
+        }
     }
 }
 

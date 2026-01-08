@@ -173,6 +173,7 @@
 "widgetLinksEmptyGroup" = "Папка пустая";
 "widgetLinksDeleteGroupTitle" = "Удалить папку?";
 "widgetLinksDeleteGroupMessage" = "В папке есть ссылки. Удалить всё равно?";
+"widgetLinksInvalidURL" = "Введите корректную ссылку";
 "widgetPomodoroFocusLabel" = "Фокус";
 "widgetPomodoroShortBreakLabel" = "Короткий перерыв";
 "widgetPomodoroLongBreakLabel" = "Длинный перерыв";

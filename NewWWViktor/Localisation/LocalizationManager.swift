@@ -173,6 +173,7 @@ enum LocalizationKey: String {
     case widgetLinksEmptyGroup
     case widgetLinksDeleteGroupTitle
     case widgetLinksDeleteGroupMessage
+    case widgetLinksInvalidURL
     case widgetPomodoroFocusLabel
     case widgetPomodoroShortBreakLabel
     case widgetPomodoroLongBreakLabel

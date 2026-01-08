@@ -111,7 +111,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .crypto:
             return [.small, .extraLarge]
         case .links:
-            return [.small, .medium]
+            return [.small, .medium, .large]
         }
     }
 }

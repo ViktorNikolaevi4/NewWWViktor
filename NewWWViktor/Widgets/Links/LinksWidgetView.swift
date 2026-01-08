@@ -228,24 +228,42 @@ private struct LinksWidgetLayout {
             headerSpacing = 10
             listVerticalPadding = 4
             topPadding = 6
+        case .large:
+            titleFontSize = 12
+            rowFontSize = 14
+            emptyFontSize = 13
+            rowSpacing = 9
+            rowVerticalPadding = 8
+            rowHorizontalPadding = 14
+            rowCornerRadius = 13
+            iconSize = 20
+            iconCornerRadius = 6
+            groupTitleFontSize = 13
+            groupCountFontSize = 12
+            groupChevronSize = 12
+            groupHeaderPadding = 10
+            groupSpacing = 8
+            headerSpacing = 12
+            listVerticalPadding = 6
+            topPadding = 8
         default:
-            titleFontSize = 11
-            rowFontSize = 13
-            emptyFontSize = 12
-            rowSpacing = 8
-            rowVerticalPadding = 7
-            rowHorizontalPadding = 12
-            rowCornerRadius = 12
-            iconSize = 18
-            iconCornerRadius = 5
-            groupTitleFontSize = 12
-            groupCountFontSize = 11
-            groupChevronSize = 11
-            groupHeaderPadding = 8
-            groupSpacing = 6
-            headerSpacing = 10
-            listVerticalPadding = 4
-            topPadding = 6
+            titleFontSize = 12
+            rowFontSize = 14
+            emptyFontSize = 13
+            rowSpacing = 9
+            rowVerticalPadding = 8
+            rowHorizontalPadding = 14
+            rowCornerRadius = 13
+            iconSize = 20
+            iconCornerRadius = 6
+            groupTitleFontSize = 13
+            groupCountFontSize = 12
+            groupChevronSize = 12
+            groupHeaderPadding = 10
+            groupSpacing = 8
+            headerSpacing = 12
+            listVerticalPadding = 6
+            topPadding = 8
         }
     }
 }

@@ -215,6 +215,8 @@ struct WidgetPreviewCard: View {
             CryptoWidgetView(widget: previewInstance)
         case .links:
             LinksWidgetView(widget: previewInstance)
+        case .investment:
+            InvestmentCalculatorWidgetView(widget: previewInstance)
         }
     }
 

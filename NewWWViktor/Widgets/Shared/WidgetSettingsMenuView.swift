@@ -23,6 +23,7 @@ struct WidgetSettingsMenuView: View {
     @State private var showManageHabits = false
     @State private var showCryptoSearch = false
     @State private var showManageLinks = false
+    @State private var showManageInvestment = false
     @State private var cryptoSearchMode: CryptoSearchMode = .single
     @State private var showWeather = false
     @State private var isPinnedTop = false
@@ -40,10 +41,7 @@ struct WidgetSettingsMenuView: View {
     }
 
     var body: some View {
-        let isColorPickerPresented = activeColorRole != nil
-        let isOverlayPresented = showLocationPicker || isColorPickerPresented || showBackgroundPicker || showManageHabits || showCryptoSearch || showManageLinks
-
-        return ZStack {
+        ZStack {
             panelContent
                 .disabled(isOverlayPresented)
                 // Оставляем фон без затемнения при показе оверлеев, чтобы не было темной подложки позади палитры.
@@ -141,6 +139,14 @@ struct WidgetSettingsMenuView: View {
                     .environmentObject(localization)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
+
+            if showManageInvestment {
+                ManageInvestmentView(isPresented: $showManageInvestment,
+                                     widget: $workingWidget,
+                                     onUpdate: onUpdate)
+                    .environmentObject(localization)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showLocationPicker)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: isColorPickerPresented)
@@ -148,6 +154,7 @@ struct WidgetSettingsMenuView: View {
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageHabits)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showCryptoSearch)
         .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageLinks)
+        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageInvestment)
         .frame(width: 360, height: 520)
         .onChange(of: widget) { _, newValue in
             workingWidget = newValue
@@ -235,6 +242,11 @@ struct WidgetSettingsMenuView: View {
                     if workingWidget.type == .links {
                         LinksSettingsSection {
                             showManageLinks = true
+                        }
+                    }
+                    if workingWidget.type == .investment {
+                        InvestmentSettingsSection {
+                            showManageInvestment = true
                         }
                     }
                     WidgetAppearanceSettingsSection(widget: $workingWidget,
@@ -346,6 +358,20 @@ struct WidgetSettingsMenuView: View {
                 onUpdate(workingWidget)
             }
         )
+    }
+
+    private var isColorPickerPresented: Bool {
+        activeColorRole != nil
+    }
+
+    private var isOverlayPresented: Bool {
+        showLocationPicker
+        || isColorPickerPresented
+        || showBackgroundPicker
+        || showManageHabits
+        || showCryptoSearch
+        || showManageLinks
+        || showManageInvestment
     }
 
     private func openSidePanel() {

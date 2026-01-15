@@ -288,6 +288,21 @@ struct LinksSettingsSection: View {
     }
 }
 
+struct InvestmentSettingsSection: View {
+    @EnvironmentObject private var localization: LocalizationManager
+    let onManage: () -> Void
+
+    var body: some View {
+        WidgetSettingsGroup(title: localization.text(.widgetInvestmentTitle)) {
+            WidgetSettingsRowButton(title: localization.text(.widgetInvestmentManageAction)) {
+                onManage()
+            } content: {
+                IconButton(systemName: "slider.horizontal.3", isSelected: true)
+            }
+        }
+    }
+}
+
 private struct CryptoSettingsSection: View {
     @EnvironmentObject private var localization: LocalizationManager
     @EnvironmentObject private var manager: WidgetManager

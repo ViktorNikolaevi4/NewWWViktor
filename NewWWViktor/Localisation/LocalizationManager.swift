@@ -155,6 +155,36 @@ enum LocalizationKey: String {
     case widgetCryptoTickersTitle
     case widgetCryptoAddTicker
     case widgetCryptoNoTickers
+    case widgetInvestmentDetailTitle
+    case widgetInvestmentDetailDescription
+    case widgetInvestmentTitle
+    case widgetInvestmentComputeLabel
+    case widgetInvestmentComputeIncome
+    case widgetInvestmentComputeRate
+    case widgetInvestmentComputeStartCapital
+    case widgetInvestmentComputeTime
+    case widgetInvestmentComputeContribution
+    case widgetInvestmentTargetLabel
+    case widgetInvestmentStartCapitalLabel
+    case widgetInvestmentRateLabel
+    case widgetInvestmentTimeLabel
+    case widgetInvestmentContributionLabel
+    case widgetInvestmentContributionFrequencyLabel
+    case widgetInvestmentCompoundingFrequencyLabel
+    case widgetInvestmentIncomeLabel
+    case widgetInvestmentFinalAmountLabel
+    case widgetInvestmentTaxLabel
+    case widgetInvestmentTaxRateLabel
+    case widgetInvestmentInflationLabel
+    case widgetInvestmentInflationRateLabel
+    case widgetInvestmentFrequencyMonthly
+    case widgetInvestmentFrequencyQuarterly
+    case widgetInvestmentFrequencyYearly
+    case widgetInvestmentResultTitle
+    case widgetInvestmentYearsUnit
+    case widgetInvestmentMonthsUnit
+    case widgetInvestmentManageAction
+    case widgetInvestmentManageTitle
     case widgetLinksDetailTitle
     case widgetLinksDetailDescription
     case widgetLinksTitle

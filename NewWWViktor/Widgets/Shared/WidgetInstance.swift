@@ -7,6 +7,18 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var cryptoSymbols: [String]
     var links: [WidgetLink]
     var linkGroups: [WidgetLinkGroup]
+    var investmentComputeTarget: InvestmentComputeTarget
+    var investmentTargetAmount: Double
+    var investmentStartCapital: Double
+    var investmentRate: Double
+    var investmentTermYears: Double
+    var investmentContribution: Double
+    var investmentContributionFrequency: InvestmentFrequency
+    var investmentCompoundingFrequency: InvestmentFrequency
+    var investmentIncludeTax: Bool
+    var investmentTaxRate: Double
+    var investmentIncludeInflation: Bool
+    var investmentInflationRate: Double
     var x: CGFloat
     var y: CGFloat
     var width: CGFloat
@@ -57,6 +69,18 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.cryptoSymbols = []
         self.links = []
         self.linkGroups = []
+        self.investmentComputeTarget = .income
+        self.investmentTargetAmount = 1_000_000
+        self.investmentStartCapital = 100_000
+        self.investmentRate = 10
+        self.investmentTermYears = 5
+        self.investmentContribution = 10_000
+        self.investmentContributionFrequency = .monthly
+        self.investmentCompoundingFrequency = .monthly
+        self.investmentIncludeTax = false
+        self.investmentTaxRate = 13
+        self.investmentIncludeInflation = false
+        self.investmentInflationRate = 5
         self.x = origin.x
         self.y = origin.y
         let size = type.defaultSize
@@ -103,7 +127,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, cryptoSymbol, cryptoSymbols, links, linkGroups, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
+        case id, type, cryptoSymbol, cryptoSymbols, links, linkGroups, investmentComputeTarget, investmentTargetAmount, investmentStartCapital, investmentRate, investmentTermYears, investmentContribution, investmentContributionFrequency, investmentCompoundingFrequency, investmentIncludeTax, investmentTaxRate, investmentIncludeInflation, investmentInflationRate, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
     }
 
     init(from decoder: Decoder) throws {
@@ -122,6 +146,18 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
             linkGroups = []
         }
         links = []
+        investmentComputeTarget = try container.decodeIfPresent(InvestmentComputeTarget.self, forKey: .investmentComputeTarget) ?? .income
+        investmentTargetAmount = try container.decodeIfPresent(Double.self, forKey: .investmentTargetAmount) ?? 1_000_000
+        investmentStartCapital = try container.decodeIfPresent(Double.self, forKey: .investmentStartCapital) ?? 100_000
+        investmentRate = try container.decodeIfPresent(Double.self, forKey: .investmentRate) ?? 10
+        investmentTermYears = try container.decodeIfPresent(Double.self, forKey: .investmentTermYears) ?? 5
+        investmentContribution = try container.decodeIfPresent(Double.self, forKey: .investmentContribution) ?? 10_000
+        investmentContributionFrequency = try container.decodeIfPresent(InvestmentFrequency.self, forKey: .investmentContributionFrequency) ?? .monthly
+        investmentCompoundingFrequency = try container.decodeIfPresent(InvestmentFrequency.self, forKey: .investmentCompoundingFrequency) ?? .monthly
+        investmentIncludeTax = try container.decodeIfPresent(Bool.self, forKey: .investmentIncludeTax) ?? false
+        investmentTaxRate = try container.decodeIfPresent(Double.self, forKey: .investmentTaxRate) ?? 13
+        investmentIncludeInflation = try container.decodeIfPresent(Bool.self, forKey: .investmentIncludeInflation) ?? false
+        investmentInflationRate = try container.decodeIfPresent(Double.self, forKey: .investmentInflationRate) ?? 5
         x = try container.decode(CGFloat.self, forKey: .x)
         y = try container.decode(CGFloat.self, forKey: .y)
         width = try container.decode(CGFloat.self, forKey: .width)
@@ -174,6 +210,18 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(cryptoSymbols, forKey: .cryptoSymbols)
         try container.encode(links, forKey: .links)
         try container.encode(linkGroups, forKey: .linkGroups)
+        try container.encode(investmentComputeTarget, forKey: .investmentComputeTarget)
+        try container.encode(investmentTargetAmount, forKey: .investmentTargetAmount)
+        try container.encode(investmentStartCapital, forKey: .investmentStartCapital)
+        try container.encode(investmentRate, forKey: .investmentRate)
+        try container.encode(investmentTermYears, forKey: .investmentTermYears)
+        try container.encode(investmentContribution, forKey: .investmentContribution)
+        try container.encode(investmentContributionFrequency, forKey: .investmentContributionFrequency)
+        try container.encode(investmentCompoundingFrequency, forKey: .investmentCompoundingFrequency)
+        try container.encode(investmentIncludeTax, forKey: .investmentIncludeTax)
+        try container.encode(investmentTaxRate, forKey: .investmentTaxRate)
+        try container.encode(investmentIncludeInflation, forKey: .investmentIncludeInflation)
+        try container.encode(investmentInflationRate, forKey: .investmentInflationRate)
         try container.encode(x, forKey: .x)
         try container.encode(y, forKey: .y)
         try container.encode(width, forKey: .width)

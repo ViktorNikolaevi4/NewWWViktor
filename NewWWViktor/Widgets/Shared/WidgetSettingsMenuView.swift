@@ -41,178 +41,150 @@ struct WidgetSettingsMenuView: View {
     }
 
     var body: some View {
+        applyAnimations(mainContent)
+            .modifier(WidgetSettingsSyncObserver(workingWidget: $workingWidget,
+                                                 widget: widget,
+                                                 isPinnedTop: $isPinnedTop,
+                                                 lockPosition: $lockPosition,
+                                                 onUpdate: onUpdate))
+            .modifier(WidgetSettingsBasicObserver(workingWidget: $workingWidget,
+                                                  onUpdate: onUpdate))
+            .modifier(WidgetSettingsPomodoroObserver(workingWidget: $workingWidget,
+                                                     onUpdate: onUpdate,
+                                                     applyPomodoroDurationChange: applyPomodoroDurationChange,
+                                                     requestPomodoroNotificationAuthorization: requestPomodoroNotificationAuthorization))
+            .modifier(WidgetSettingsInvestmentObserver(workingWidget: $workingWidget,
+                                                       onUpdate: onUpdate))
+            .frame(width: 360, height: 520)
+    }
+
+    private var mainContent: some View {
         ZStack {
-            panelContent
-                .disabled(isOverlayPresented)
-                // Оставляем фон без затемнения при показе оверлеев, чтобы не было темной подложки позади палитры.
-                .blur(radius: 0)
-                .opacity(1)
-                .onAppear {
-                    let allowed = workingWidget.type.availableSizes
-                    if !allowed.contains(workingWidget.sizeOption), let first = allowed.first {
-                        workingWidget.applySizeOption(first)
-                        onUpdate(workingWidget)
-                    }
-                }
+            panelLayer
+            overlaysLayer
+        }
+    }
 
-            if showLocationPicker {
-                WidgetLocationPickerView(isPresented: $showLocationPicker,
-                                         selection: $workingWidget.location) { newLocation in
-                    apply(location: newLocation)
-                }
-                .transition(.move(edge: .trailing).combined(with: .opacity))
-            }
-
-            if let colorRole = activeColorRole {
-                WidgetColorPickerView(
-                    title: colorRole.title(using: localization),
-                    isPresented: Binding(
-                        get: { activeColorRole != nil },
-                        set: { shouldShow in
-                            if !shouldShow { activeColorRole = nil }
-                        }
-                    ),
-                    selection: colorSelectionBinding(for: colorRole),
-                    intensity: colorIntensityBinding(for: colorRole)
-                ) {
+    private var panelLayer: some View {
+        panelContent
+            .disabled(isOverlayPresented)
+            // Оставляем фон без затемнения при показе оверлеев, чтобы не было темной подложки позади палитры.
+            .blur(radius: 0)
+            .opacity(1)
+            .onAppear {
+                let allowed = workingWidget.type.availableSizes
+                if !allowed.contains(workingWidget.sizeOption), let first = allowed.first {
+                    workingWidget.applySizeOption(first)
                     onUpdate(workingWidget)
                 }
-                .transition(.move(edge: .trailing).combined(with: .opacity))
             }
+    }
 
-            if showBackgroundPicker {
-                WidgetColorPickerView(
-                    title: localization.text(.appearanceBackgroundSection),
-                    isPresented: $showBackgroundPicker,
-                    selection: Binding(
-                        get: { workingWidget.backgroundColorName },
-                        set: { newValue in
-                            workingWidget.backgroundColorName = newValue
-                            onUpdate(workingWidget)
-                        }
-                    ),
-                    intensity: Binding(
-                        get: { workingWidget.backgroundIntensity },
-                        set: { workingWidget.backgroundIntensity = $0; onUpdate(workingWidget) }
-                    ),
-                    backgroundStyle: backgroundStyleBinding,
-                    gradientColor1Name: $workingWidget.gradientColor1Name,
-                    gradientColor1Opacity: $workingWidget.gradientColor1Opacity,
-                    gradientColor2Name: $workingWidget.gradientColor2Name,
-                    gradientColor2Opacity: $workingWidget.gradientColor2Opacity,
-                    gradientColor1Position: $workingWidget.gradientColor1Position,
-                    gradientColor2Position: $workingWidget.gradientColor2Position,
-                    gradientType: gradientTypeBinding,
-                    gradientAngle: gradientAngleBinding
-                ) {
-                    onUpdate(workingWidget)
-                }
-                .transition(.move(edge: .trailing).combined(with: .opacity))
+    @ViewBuilder
+    private var overlaysLayer: some View {
+        if showLocationPicker {
+            WidgetLocationPickerView(isPresented: $showLocationPicker,
+                                     selection: $workingWidget.location) { newLocation in
+                apply(location: newLocation)
             }
+            .transition(.move(edge: .trailing).combined(with: .opacity))
+        }
 
-            if showManageHabits {
-                ManageHabitsView(isPresented: $showManageHabits, onDelete: deleteCustomHabit)
-                    .environmentObject(localization)
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
-            }
-
-            if showCryptoSearch {
-                CryptoSearchView(isPresented: $showCryptoSearch) { symbol in
-                    switch cryptoSearchMode {
-                    case .single:
-                        workingWidget.cryptoSymbol = symbol
-                        onUpdate(workingWidget)
-                    case .list:
-                        if !workingWidget.cryptoSymbols.contains(symbol) {
-                            workingWidget.cryptoSymbols.append(symbol)
-                            onUpdate(workingWidget)
-                        }
+        if let colorRole = activeColorRole {
+            WidgetColorPickerView(
+                title: colorRole.title(using: localization),
+                isPresented: Binding(
+                    get: { activeColorRole != nil },
+                    set: { shouldShow in
+                        if !shouldShow { activeColorRole = nil }
                     }
-                }
+                ),
+                selection: colorSelectionBinding(for: colorRole),
+                intensity: colorIntensityBinding(for: colorRole)
+            ) {
+                onUpdate(workingWidget)
+            }
+            .transition(.move(edge: .trailing).combined(with: .opacity))
+        }
+
+        if showBackgroundPicker {
+            WidgetColorPickerView(
+                title: localization.text(.appearanceBackgroundSection),
+                isPresented: $showBackgroundPicker,
+                selection: Binding(
+                    get: { workingWidget.backgroundColorName },
+                    set: { newValue in
+                        workingWidget.backgroundColorName = newValue
+                        onUpdate(workingWidget)
+                    }
+                ),
+                intensity: Binding(
+                    get: { workingWidget.backgroundIntensity },
+                    set: { workingWidget.backgroundIntensity = $0; onUpdate(workingWidget) }
+                ),
+                backgroundStyle: backgroundStyleBinding,
+                gradientColor1Name: $workingWidget.gradientColor1Name,
+                gradientColor1Opacity: $workingWidget.gradientColor1Opacity,
+                gradientColor2Name: $workingWidget.gradientColor2Name,
+                gradientColor2Opacity: $workingWidget.gradientColor2Opacity,
+                gradientColor1Position: $workingWidget.gradientColor1Position,
+                gradientColor2Position: $workingWidget.gradientColor2Position,
+                gradientType: gradientTypeBinding,
+                gradientAngle: gradientAngleBinding
+            ) {
+                onUpdate(workingWidget)
+            }
+            .transition(.move(edge: .trailing).combined(with: .opacity))
+        }
+
+        if showManageHabits {
+            ManageHabitsView(isPresented: $showManageHabits, onDelete: deleteCustomHabit)
                 .environmentObject(localization)
-                .environmentObject(manager)
                 .transition(.move(edge: .trailing).combined(with: .opacity))
-            }
+        }
 
-            if showManageLinks {
-                ManageLinksView(isPresented: $showManageLinks, linkGroups: $workingWidget.linkGroups)
-                    .environmentObject(localization)
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
+        if showCryptoSearch {
+            CryptoSearchView(isPresented: $showCryptoSearch) { symbol in
+                switch cryptoSearchMode {
+                case .single:
+                    workingWidget.cryptoSymbol = symbol
+                    onUpdate(workingWidget)
+                case .list:
+                    if !workingWidget.cryptoSymbols.contains(symbol) {
+                        workingWidget.cryptoSymbols.append(symbol)
+                        onUpdate(workingWidget)
+                    }
+                }
             }
+            .environmentObject(localization)
+            .environmentObject(manager)
+            .transition(.move(edge: .trailing).combined(with: .opacity))
+        }
 
-            if showManageInvestment {
-                ManageInvestmentView(isPresented: $showManageInvestment,
-                                     widget: $workingWidget,
-                                     onUpdate: onUpdate)
-                    .environmentObject(localization)
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
-            }
+        if showManageLinks {
+            ManageLinksView(isPresented: $showManageLinks, linkGroups: $workingWidget.linkGroups)
+                .environmentObject(localization)
+                .transition(.move(edge: .trailing).combined(with: .opacity))
         }
-        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showLocationPicker)
-        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: isColorPickerPresented)
-        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showBackgroundPicker)
-        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageHabits)
-        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showCryptoSearch)
-        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageLinks)
-        .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageInvestment)
-        .frame(width: 360, height: 520)
-        .onChange(of: widget) { _, newValue in
-            workingWidget = newValue
-            isPinnedTop = newValue.isPinned
-            lockPosition = newValue.isPositionLocked
+
+        if showManageInvestment {
+            ManageInvestmentView(isPresented: $showManageInvestment,
+                                 widget: $workingWidget,
+                                 onUpdate: onUpdate)
+                .environmentObject(localization)
+                .transition(.move(edge: .trailing).combined(with: .opacity))
         }
-        .onChange(of: workingWidget.showsDate) { _, _ in
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.showsLocation) { _, _ in
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.prefersTwelveHour) { _, _ in
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.prefersCelsius) { _, _ in
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.isBackgroundHidden) { _, _ in
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.cryptoSymbol) { _, _ in
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.cryptoSymbols) { _, _ in
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.linkGroups) { _, _ in
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.pomodoroFocusMinutes) { _, newValue in
-            applyPomodoroDurationChange(phase: .focus, minutes: newValue)
-        }
-        .onChange(of: workingWidget.pomodoroShortBreakMinutes) { _, newValue in
-            applyPomodoroDurationChange(phase: .shortBreak, minutes: newValue)
-        }
-        .onChange(of: workingWidget.pomodoroLongBreakMinutes) { _, newValue in
-            applyPomodoroDurationChange(phase: .longBreak, minutes: newValue)
-        }
-        .onChange(of: workingWidget.pomodoroTotalRounds) { _, _ in
-            guard workingWidget.type == .pomodoro else { return }
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.pomodoroAutoStart) { _, _ in
-            guard workingWidget.type == .pomodoro else { return }
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.pomodoroSoundName) { _, _ in
-            guard workingWidget.type == .pomodoro else { return }
-            onUpdate(workingWidget)
-        }
-        .onChange(of: workingWidget.pomodoroNotificationsEnabled) { _, isEnabled in
-            guard workingWidget.type == .pomodoro else { return }
-            if isEnabled {
-                requestPomodoroNotificationAuthorization()
-            }
-            onUpdate(workingWidget)
-        }
+    }
+
+    private func applyAnimations<V: View>(_ view: V) -> some View {
+        view
+            .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showLocationPicker)
+            .animation(.spring(response: 0.32, dampingFraction: 0.88), value: isColorPickerPresented)
+            .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showBackgroundPicker)
+            .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageHabits)
+            .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showCryptoSearch)
+            .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageLinks)
+            .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageInvestment)
     }
 
     private func apply(location: WidgetLocation) {
@@ -245,7 +217,7 @@ struct WidgetSettingsMenuView: View {
                         }
                     }
                     if workingWidget.type == .investment {
-                        InvestmentSettingsSection {
+                        InvestmentSettingsSection(widget: $workingWidget) {
                             showManageInvestment = true
                         }
                     }
@@ -425,6 +397,107 @@ struct WidgetSettingsMenuView: View {
             entry.updatedAt = Date()
         }
         context.delete(habit)
+    }
+}
+
+private struct WidgetSettingsSyncObserver: ViewModifier {
+    @Binding var workingWidget: WidgetInstance
+    let widget: WidgetInstance
+    @Binding var isPinnedTop: Bool
+    @Binding var lockPosition: Bool
+    let onUpdate: (WidgetInstance) -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: widget) { _, newValue in
+                workingWidget = newValue
+                isPinnedTop = newValue.isPinned
+                lockPosition = newValue.isPositionLocked
+            }
+    }
+}
+
+private struct WidgetSettingsBasicObserver: ViewModifier {
+    @Binding var workingWidget: WidgetInstance
+    let onUpdate: (WidgetInstance) -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: workingWidget.showsDate) { _, _ in
+                onUpdate(workingWidget)
+            }
+            .onChange(of: workingWidget.showsLocation) { _, _ in
+                onUpdate(workingWidget)
+            }
+            .onChange(of: workingWidget.prefersTwelveHour) { _, _ in
+                onUpdate(workingWidget)
+            }
+            .onChange(of: workingWidget.prefersCelsius) { _, _ in
+                onUpdate(workingWidget)
+            }
+            .onChange(of: workingWidget.isBackgroundHidden) { _, _ in
+                onUpdate(workingWidget)
+            }
+            .onChange(of: workingWidget.cryptoSymbol) { _, _ in
+                onUpdate(workingWidget)
+            }
+            .onChange(of: workingWidget.cryptoSymbols) { _, _ in
+                onUpdate(workingWidget)
+            }
+            .onChange(of: workingWidget.linkGroups) { _, _ in
+                onUpdate(workingWidget)
+            }
+    }
+}
+
+private struct WidgetSettingsInvestmentObserver: ViewModifier {
+    @Binding var workingWidget: WidgetInstance
+    let onUpdate: (WidgetInstance) -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: workingWidget.investmentShowBreakdown) { _, _ in
+                onUpdate(workingWidget)
+            }
+    }
+}
+
+private struct WidgetSettingsPomodoroObserver: ViewModifier {
+    @Binding var workingWidget: WidgetInstance
+    let onUpdate: (WidgetInstance) -> Void
+    let applyPomodoroDurationChange: (PomodoroPhase, Int) -> Void
+    let requestPomodoroNotificationAuthorization: () -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: workingWidget.pomodoroFocusMinutes) { _, newValue in
+                applyPomodoroDurationChange(.focus, newValue)
+            }
+            .onChange(of: workingWidget.pomodoroShortBreakMinutes) { _, newValue in
+                applyPomodoroDurationChange(.shortBreak, newValue)
+            }
+            .onChange(of: workingWidget.pomodoroLongBreakMinutes) { _, newValue in
+                applyPomodoroDurationChange(.longBreak, newValue)
+            }
+            .onChange(of: workingWidget.pomodoroTotalRounds) { _, _ in
+                guard workingWidget.type == .pomodoro else { return }
+                onUpdate(workingWidget)
+            }
+            .onChange(of: workingWidget.pomodoroAutoStart) { _, _ in
+                guard workingWidget.type == .pomodoro else { return }
+                onUpdate(workingWidget)
+            }
+            .onChange(of: workingWidget.pomodoroSoundName) { _, _ in
+                guard workingWidget.type == .pomodoro else { return }
+                onUpdate(workingWidget)
+            }
+            .onChange(of: workingWidget.pomodoroNotificationsEnabled) { _, isEnabled in
+                guard workingWidget.type == .pomodoro else { return }
+                if isEnabled {
+                    requestPomodoroNotificationAuthorization()
+                }
+                onUpdate(workingWidget)
+            }
     }
 }
 

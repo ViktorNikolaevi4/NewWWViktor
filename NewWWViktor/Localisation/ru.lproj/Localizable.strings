@@ -185,6 +185,13 @@
 "widgetInvestmentMonthsUnit" = "мес";
 "widgetInvestmentManageAction" = "Управлять расчетом";
 "widgetInvestmentManageTitle" = "Инвестиционный калькулятор";
+"widgetInvestmentCalculateAction" = "Рассчитать";
+"widgetInvestmentHideBreakdownAction" = "Скрыть расчет";
+"widgetInvestmentBreakdownYear" = "Год";
+"widgetInvestmentBreakdownStart" = "Начальная сумма";
+"widgetInvestmentBreakdownIncome" = "Процентный доход";
+"widgetInvestmentBreakdownContributions" = "Вложения";
+"widgetInvestmentBreakdownFinal" = "Конечная сумма";
 "widgetLinksDetailTitle" = "Ссылки";
 "widgetLinksDetailDescription" = "Быстрый доступ к сохранённым сайтам.";
 "widgetLinksTitle" = "Ссылки";

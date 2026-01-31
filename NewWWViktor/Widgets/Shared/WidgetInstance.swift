@@ -1,5 +1,19 @@
 import Foundation
 
+struct InvestmentInput: Codable, Equatable {
+    var targetAmount: Double
+    var startCapital: Double
+    var rate: Double
+    var termYears: Double
+    var contribution: Double
+    var contributionFrequency: InvestmentFrequency
+    var compoundingFrequency: InvestmentFrequency
+    var includeTax: Bool
+    var taxRate: Double
+    var includeInflation: Bool
+    var inflationRate: Double
+}
+
 struct WidgetInstance: Identifiable, Codable, Equatable {
     let id: UUID
     var type: WidgetType
@@ -19,6 +33,8 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var investmentTaxRate: Double
     var investmentIncludeInflation: Bool
     var investmentInflationRate: Double
+    var investmentShowBreakdown: Bool
+    var investmentProfiles: [InvestmentComputeTarget: InvestmentInput]
     var x: CGFloat
     var y: CGFloat
     var width: CGFloat
@@ -81,6 +97,19 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.investmentTaxRate = 13
         self.investmentIncludeInflation = false
         self.investmentInflationRate = 5
+        self.investmentShowBreakdown = false
+        let defaultInput = InvestmentInput(targetAmount: investmentTargetAmount,
+                                           startCapital: investmentStartCapital,
+                                           rate: investmentRate,
+                                           termYears: investmentTermYears,
+                                           contribution: investmentContribution,
+                                           contributionFrequency: investmentContributionFrequency,
+                                           compoundingFrequency: investmentCompoundingFrequency,
+                                           includeTax: investmentIncludeTax,
+                                           taxRate: investmentTaxRate,
+                                           includeInflation: investmentIncludeInflation,
+                                           inflationRate: investmentInflationRate)
+        self.investmentProfiles = Dictionary(uniqueKeysWithValues: InvestmentComputeTarget.allCases.map { ($0, defaultInput) })
         self.x = origin.x
         self.y = origin.y
         let size = type.defaultSize
@@ -127,7 +156,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, cryptoSymbol, cryptoSymbols, links, linkGroups, investmentComputeTarget, investmentTargetAmount, investmentStartCapital, investmentRate, investmentTermYears, investmentContribution, investmentContributionFrequency, investmentCompoundingFrequency, investmentIncludeTax, investmentTaxRate, investmentIncludeInflation, investmentInflationRate, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
+        case id, type, cryptoSymbol, cryptoSymbols, links, linkGroups, investmentComputeTarget, investmentTargetAmount, investmentStartCapital, investmentRate, investmentTermYears, investmentContribution, investmentContributionFrequency, investmentCompoundingFrequency, investmentIncludeTax, investmentTaxRate, investmentIncludeInflation, investmentInflationRate, investmentShowBreakdown, investmentProfiles, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
     }
 
     init(from decoder: Decoder) throws {
@@ -158,6 +187,25 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         investmentTaxRate = try container.decodeIfPresent(Double.self, forKey: .investmentTaxRate) ?? 13
         investmentIncludeInflation = try container.decodeIfPresent(Bool.self, forKey: .investmentIncludeInflation) ?? false
         investmentInflationRate = try container.decodeIfPresent(Double.self, forKey: .investmentInflationRate) ?? 5
+        investmentShowBreakdown = try container.decodeIfPresent(Bool.self, forKey: .investmentShowBreakdown) ?? false
+        let decodedProfiles = try container.decodeIfPresent([InvestmentComputeTarget: InvestmentInput].self, forKey: .investmentProfiles)
+        if let decodedProfiles, !decodedProfiles.isEmpty {
+            investmentProfiles = decodedProfiles
+        } else {
+            let input = InvestmentInput(targetAmount: investmentTargetAmount,
+                                        startCapital: investmentStartCapital,
+                                        rate: investmentRate,
+                                        termYears: investmentTermYears,
+                                        contribution: investmentContribution,
+                                        contributionFrequency: investmentContributionFrequency,
+                                        compoundingFrequency: investmentCompoundingFrequency,
+                                        includeTax: investmentIncludeTax,
+                                        taxRate: investmentTaxRate,
+                                        includeInflation: investmentIncludeInflation,
+                                        inflationRate: investmentInflationRate)
+            investmentProfiles = Dictionary(uniqueKeysWithValues: InvestmentComputeTarget.allCases.map { ($0, input) })
+        }
+        let pendingProfile = investmentProfiles[investmentComputeTarget]
         x = try container.decode(CGFloat.self, forKey: .x)
         y = try container.decode(CGFloat.self, forKey: .y)
         width = try container.decode(CGFloat.self, forKey: .width)
@@ -200,6 +248,9 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         pomodoroSoundName = try container.decodeIfPresent(String.self, forKey: .pomodoroSoundName) ?? "Glass"
         pomodoroNotificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .pomodoroNotificationsEnabled) ?? true
         applySizeOption(sizeOption)
+        if let profile = pendingProfile {
+            applyInvestmentInput(profile)
+        }
     }
 
     func encode(to encoder: Encoder) throws {
@@ -222,6 +273,8 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(investmentTaxRate, forKey: .investmentTaxRate)
         try container.encode(investmentIncludeInflation, forKey: .investmentIncludeInflation)
         try container.encode(investmentInflationRate, forKey: .investmentInflationRate)
+        try container.encode(investmentShowBreakdown, forKey: .investmentShowBreakdown)
+        try container.encode(investmentProfiles, forKey: .investmentProfiles)
         try container.encode(x, forKey: .x)
         try container.encode(y, forKey: .y)
         try container.encode(width, forKey: .width)
@@ -270,6 +323,36 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         let size = option.dimensions
         width = size.width
         height = size.height
+    }
+}
+
+extension WidgetInstance {
+    func currentInvestmentInput() -> InvestmentInput {
+        InvestmentInput(targetAmount: investmentTargetAmount,
+                        startCapital: investmentStartCapital,
+                        rate: investmentRate,
+                        termYears: investmentTermYears,
+                        contribution: investmentContribution,
+                        contributionFrequency: investmentContributionFrequency,
+                        compoundingFrequency: investmentCompoundingFrequency,
+                        includeTax: investmentIncludeTax,
+                        taxRate: investmentTaxRate,
+                        includeInflation: investmentIncludeInflation,
+                        inflationRate: investmentInflationRate)
+    }
+
+    mutating func applyInvestmentInput(_ input: InvestmentInput) {
+        investmentTargetAmount = input.targetAmount
+        investmentStartCapital = input.startCapital
+        investmentRate = input.rate
+        investmentTermYears = input.termYears
+        investmentContribution = input.contribution
+        investmentContributionFrequency = input.contributionFrequency
+        investmentCompoundingFrequency = input.compoundingFrequency
+        investmentIncludeTax = input.includeTax
+        investmentTaxRate = input.taxRate
+        investmentIncludeInflation = input.includeInflation
+        investmentInflationRate = input.inflationRate
     }
 }
 

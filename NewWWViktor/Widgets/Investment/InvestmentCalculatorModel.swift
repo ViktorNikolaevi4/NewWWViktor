@@ -75,6 +75,16 @@ struct InvestmentCalculatorResult {
     let isValid: Bool
 }
 
+struct InvestmentYearBreakdown: Identifiable {
+    let year: Int
+    let startAmount: Double
+    let interestIncome: Double
+    let contributions: Double
+    let endAmount: Double
+
+    var id: Int { year }
+}
+
 struct InvestmentCalculator {
     static func compute(target: InvestmentComputeTarget,
                         targetAmount: Double,
@@ -193,6 +203,62 @@ struct InvestmentCalculator {
                                               years: years,
                                               isValid: solvedContribution != nil)
         }
+    }
+
+    static func yearlyBreakdown(startCapital: Double,
+                                annualRate: Double,
+                                termYears: Double,
+                                contribution: Double,
+                                contributionFrequency: InvestmentFrequency,
+                                compoundingFrequency: InvestmentFrequency,
+                                includeTax: Bool,
+                                taxRate: Double,
+                                includeInflation: Bool,
+                                inflationRate: Double) -> [InvestmentYearBreakdown] {
+        let years = max(0, termYears)
+        guard years > 0 else { return [] }
+
+        let totalYears = Int(ceil(years))
+        let m = Double(contributionFrequency.periodsPerYear)
+        var breakdown: [InvestmentYearBreakdown] = []
+        breakdown.reserveCapacity(totalYears)
+
+        func adjustedEndValue(for years: Double) -> Double {
+            let nominal = futureValue(annualRate: annualRate,
+                                      years: years,
+                                      startCapital: startCapital,
+                                      contribution: contribution,
+                                      contributionFrequency: contributionFrequency,
+                                      compoundingFrequency: compoundingFrequency)
+            return adjustedValue(nominal: nominal,
+                                 startCapital: startCapital,
+                                 contribution: contribution,
+                                 periods: years * m,
+                                 includeTax: includeTax,
+                                 taxRate: taxRate,
+                                 includeInflation: includeInflation,
+                                 inflationRate: inflationRate,
+                                 years: years)
+        }
+
+        for yearIndex in 1...totalYears {
+            let startYear = min(Double(yearIndex - 1), years)
+            let endYear = min(Double(yearIndex), years)
+            guard endYear > startYear else { continue }
+
+            let startAmount = adjustedEndValue(for: startYear)
+            let endAmount = adjustedEndValue(for: endYear)
+            let contributions = contribution * m * (endYear - startYear)
+            let interestIncome = endAmount - startAmount - contributions
+
+            breakdown.append(InvestmentYearBreakdown(year: yearIndex,
+                                                     startAmount: startAmount,
+                                                     interestIncome: interestIncome,
+                                                     contributions: contributions,
+                                                     endAmount: endAmount))
+        }
+
+        return breakdown
     }
 
     private static func futureValue(annualRate: Double,

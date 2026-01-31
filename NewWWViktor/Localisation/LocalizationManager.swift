@@ -185,6 +185,13 @@ enum LocalizationKey: String {
     case widgetInvestmentMonthsUnit
     case widgetInvestmentManageAction
     case widgetInvestmentManageTitle
+    case widgetInvestmentCalculateAction
+    case widgetInvestmentHideBreakdownAction
+    case widgetInvestmentBreakdownYear
+    case widgetInvestmentBreakdownStart
+    case widgetInvestmentBreakdownIncome
+    case widgetInvestmentBreakdownContributions
+    case widgetInvestmentBreakdownFinal
     case widgetLinksDetailTitle
     case widgetLinksDetailDescription
     case widgetLinksTitle

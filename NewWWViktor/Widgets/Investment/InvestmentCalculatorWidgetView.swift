@@ -20,11 +20,25 @@ struct InvestmentCalculatorWidgetView: View {
                                                   taxRate: widget.investmentTaxRate,
                                                   includeInflation: widget.investmentIncludeInflation,
                                                   inflationRate: widget.investmentInflationRate)
+        let breakdown = shouldShowBreakdown
+            ? InvestmentCalculator.yearlyBreakdown(startCapital: widget.investmentStartCapital,
+                                                   annualRate: widget.investmentRate,
+                                                   termYears: widget.investmentTermYears,
+                                                   contribution: widget.investmentContribution,
+                                                   contributionFrequency: widget.investmentContributionFrequency,
+                                                   compoundingFrequency: widget.investmentCompoundingFrequency,
+                                                   includeTax: widget.investmentIncludeTax,
+                                                   taxRate: widget.investmentTaxRate,
+                                                   includeInflation: widget.investmentIncludeInflation,
+                                                   inflationRate: widget.investmentInflationRate)
+            : []
 
         VStack(alignment: .leading, spacing: layout.sectionSpacing) {
             resultHeader(result: result, layout: layout)
 
-            EmptyView()
+            if shouldShowBreakdown, !breakdown.isEmpty {
+                breakdownSection(entries: breakdown, layout: layout)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.top, layout.topPadding)
@@ -75,6 +89,11 @@ struct InvestmentCalculatorWidgetView: View {
         }
     }
 
+    private var shouldShowBreakdown: Bool {
+        guard widget.sizeOption != .medium else { return false }
+        return widget.investmentComputeTarget == .income && widget.investmentShowBreakdown
+    }
+
     private func resultHeader(result: InvestmentCalculatorResult, layout: InvestmentCalculatorLayout) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(localization.text(.widgetInvestmentResultTitle))
@@ -119,6 +138,90 @@ struct InvestmentCalculatorWidgetView: View {
             RoundedRectangle(cornerRadius: layout.cardCornerRadius, style: .continuous)
                 .fill(Color.white.opacity(0.08))
         )
+    }
+
+    private func breakdownSection(entries: [InvestmentYearBreakdown], layout: InvestmentCalculatorLayout) -> some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: layout.rowSpacing) {
+                breakdownHeader(layout: layout)
+
+                ForEach(entries) { entry in
+                    breakdownRow(entry: entry, layout: layout)
+                }
+            }
+            .padding(layout.cardPadding)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: layout.cardCornerRadius, style: .continuous)
+                .fill(Color.white.opacity(0.06))
+        )
+    }
+
+    private func breakdownHeader(layout: InvestmentCalculatorLayout) -> some View {
+        HStack(spacing: layout.breakdownColumnSpacing) {
+            breakdownHeaderCell(localization.text(.widgetInvestmentBreakdownYear),
+                                alignment: .leading,
+                                width: layout.breakdownYearWidth,
+                                layout: layout)
+            breakdownHeaderCell(localization.text(.widgetInvestmentBreakdownStart),
+                                alignment: .trailing,
+                                width: nil,
+                                layout: layout)
+            breakdownHeaderCell(localization.text(.widgetInvestmentBreakdownIncome),
+                                alignment: .trailing,
+                                width: nil,
+                                layout: layout)
+            breakdownHeaderCell(localization.text(.widgetInvestmentBreakdownContributions),
+                                alignment: .trailing,
+                                width: nil,
+                                layout: layout)
+            breakdownHeaderCell(localization.text(.widgetInvestmentBreakdownFinal),
+                                alignment: .trailing,
+                                width: nil,
+                                layout: layout)
+        }
+    }
+
+    private func breakdownHeaderCell(_ text: String,
+                                     alignment: Alignment,
+                                     width: CGFloat?,
+                                     layout: InvestmentCalculatorLayout) -> some View {
+        Text(text)
+            .font(.system(size: layout.breakdownHeaderFontSize, weight: .semibold))
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .frame(width: width, alignment: alignment)
+            .frame(maxWidth: width == nil ? .infinity : nil, alignment: alignment)
+    }
+
+    private func breakdownRow(entry: InvestmentYearBreakdown, layout: InvestmentCalculatorLayout) -> some View {
+        HStack(spacing: layout.breakdownColumnSpacing) {
+            Text("\(entry.year)")
+                .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
+                .foregroundStyle(.primary)
+                .frame(width: layout.breakdownYearWidth, alignment: .leading)
+
+            breakdownValueCell(entry.startAmount, layout: layout)
+            breakdownValueCell(entry.interestIncome, layout: layout)
+            breakdownValueCell(entry.contributions, layout: layout)
+            breakdownValueCell(entry.endAmount, layout: layout)
+        }
+        .padding(.vertical, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.black.opacity(0.18))
+        )
+    }
+
+    private func breakdownValueCell(_ value: Double, layout: InvestmentCalculatorLayout) -> some View {
+        Text(moneyFormatter.string(from: NSNumber(value: value)) ?? "—")
+            .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
+            .foregroundStyle(.primary)
+            .monospacedDigit()
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
     private func computePicker(layout: InvestmentCalculatorLayout) -> some View {
@@ -259,6 +362,10 @@ private struct InvestmentCalculatorLayout {
     let resultValueFontSize: CGFloat
     let metaFontSize: CGFloat
     let sectionTitleFontSize: CGFloat
+    let breakdownHeaderFontSize: CGFloat
+    let breakdownRowFontSize: CGFloat
+    let breakdownColumnSpacing: CGFloat
+    let breakdownYearWidth: CGFloat
 
     init(sizeOption: WidgetSizeOption) {
         switch sizeOption {
@@ -274,6 +381,10 @@ private struct InvestmentCalculatorLayout {
             resultValueFontSize = 14
             metaFontSize = 10
             sectionTitleFontSize = 10
+            breakdownHeaderFontSize = 9
+            breakdownRowFontSize = 9
+            breakdownColumnSpacing = 6
+            breakdownYearWidth = 28
         case .medium:
             sectionSpacing = 10
             rowSpacing = 10
@@ -286,6 +397,10 @@ private struct InvestmentCalculatorLayout {
             resultValueFontSize = 16
             metaFontSize = 11
             sectionTitleFontSize = 11
+            breakdownHeaderFontSize = 10
+            breakdownRowFontSize = 10
+            breakdownColumnSpacing = 8
+            breakdownYearWidth = 30
         case .large, .extraLarge:
             sectionSpacing = 12
             rowSpacing = 12
@@ -298,6 +413,10 @@ private struct InvestmentCalculatorLayout {
             resultValueFontSize = 18
             metaFontSize = 12
             sectionTitleFontSize = 12
+            breakdownHeaderFontSize = 11
+            breakdownRowFontSize = 11
+            breakdownColumnSpacing = 10
+            breakdownYearWidth = 34
         }
     }
 }

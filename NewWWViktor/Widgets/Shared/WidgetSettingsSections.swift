@@ -290,6 +290,7 @@ struct LinksSettingsSection: View {
 
 struct InvestmentSettingsSection: View {
     @EnvironmentObject private var localization: LocalizationManager
+    @Binding var widget: WidgetInstance
     let onManage: () -> Void
 
     var body: some View {
@@ -299,7 +300,24 @@ struct InvestmentSettingsSection: View {
             } content: {
                 IconButton(systemName: "slider.horizontal.3", isSelected: true)
             }
+
+            WidgetSettingsRowButton(title: calculateTitle) {
+                widget.investmentShowBreakdown.toggle()
+            } content: {
+                IconButton(systemName: "calculator", isSelected: widget.investmentShowBreakdown)
+            }
+            .disabled(!isBreakdownAvailable)
         }
+    }
+
+    private var calculateTitle: String {
+        widget.investmentShowBreakdown
+            ? localization.text(.widgetInvestmentHideBreakdownAction)
+            : localization.text(.widgetInvestmentCalculateAction)
+    }
+
+    private var isBreakdownAvailable: Bool {
+        widget.investmentComputeTarget == .income
     }
 }
 

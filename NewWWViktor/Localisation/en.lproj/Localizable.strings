@@ -185,6 +185,13 @@
 "widgetInvestmentMonthsUnit" = "mo";
 "widgetInvestmentManageAction" = "Manage calculations";
 "widgetInvestmentManageTitle" = "Investment calculator";
+"widgetInvestmentCalculateAction" = "Calculate";
+"widgetInvestmentHideBreakdownAction" = "Hide breakdown";
+"widgetInvestmentBreakdownYear" = "Year";
+"widgetInvestmentBreakdownStart" = "Start";
+"widgetInvestmentBreakdownIncome" = "Interest";
+"widgetInvestmentBreakdownContributions" = "Contributions";
+"widgetInvestmentBreakdownFinal" = "Final";
 "widgetLinksDetailTitle" = "Links";
 "widgetLinksDetailDescription" = "Quick access to saved sites.";
 "widgetLinksTitle" = "Links";

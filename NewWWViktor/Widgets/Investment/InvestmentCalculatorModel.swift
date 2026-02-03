@@ -85,6 +85,17 @@ struct InvestmentYearBreakdown: Identifiable {
     var id: Int { year }
 }
 
+struct InvestmentMonthBreakdown: Identifiable {
+    let year: Int
+    let month: Int
+    let startAmount: Double
+    let interestIncome: Double
+    let contributions: Double
+    let endAmount: Double
+
+    var id: Int { year * 100 + month }
+}
+
 struct InvestmentCalculator {
     static func compute(target: InvestmentComputeTarget,
                         targetAmount: Double,
@@ -256,6 +267,69 @@ struct InvestmentCalculator {
                                                      interestIncome: interestIncome,
                                                      contributions: contributions,
                                                      endAmount: endAmount))
+        }
+
+        return breakdown
+    }
+
+    static func monthlyBreakdown(startCapital: Double,
+                                 annualRate: Double,
+                                 termYears: Double,
+                                 contribution: Double,
+                                 contributionFrequency: InvestmentFrequency,
+                                 compoundingFrequency: InvestmentFrequency,
+                                 includeTax: Bool,
+                                 taxRate: Double,
+                                 includeInflation: Bool,
+                                 inflationRate: Double,
+                                 yearIndex: Int) -> [InvestmentMonthBreakdown] {
+        let years = max(0, termYears)
+        let totalMonths = Int(ceil(years * 12))
+        guard totalMonths > 0, yearIndex > 0 else { return [] }
+
+        let startMonthIndex = (yearIndex - 1) * 12
+        let endMonthIndex = min(yearIndex * 12, totalMonths)
+        guard endMonthIndex > startMonthIndex else { return [] }
+
+        let m = Double(contributionFrequency.periodsPerYear)
+        var breakdown: [InvestmentMonthBreakdown] = []
+        breakdown.reserveCapacity(endMonthIndex - startMonthIndex)
+
+        func adjustedEndValue(for years: Double) -> Double {
+            let nominal = futureValue(annualRate: annualRate,
+                                      years: years,
+                                      startCapital: startCapital,
+                                      contribution: contribution,
+                                      contributionFrequency: contributionFrequency,
+                                      compoundingFrequency: compoundingFrequency)
+            return adjustedValue(nominal: nominal,
+                                 startCapital: startCapital,
+                                 contribution: contribution,
+                                 periods: years * m,
+                                 includeTax: includeTax,
+                                 taxRate: taxRate,
+                                 includeInflation: includeInflation,
+                                 inflationRate: inflationRate,
+                                 years: years)
+        }
+
+        for monthIndex in (startMonthIndex + 1)...endMonthIndex {
+            let startYear = Double(monthIndex - 1) / 12.0
+            let endYear = Double(monthIndex) / 12.0
+            guard endYear > startYear else { continue }
+
+            let startAmount = adjustedEndValue(for: startYear)
+            let endAmount = adjustedEndValue(for: endYear)
+            let contributions = contribution * m * (endYear - startYear)
+            let interestIncome = endAmount - startAmount - contributions
+            let monthInYear = monthIndex - startMonthIndex
+
+            breakdown.append(InvestmentMonthBreakdown(year: yearIndex,
+                                                      month: monthInYear,
+                                                      startAmount: startAmount,
+                                                      interestIncome: interestIncome,
+                                                      contributions: contributions,
+                                                      endAmount: endAmount))
         }
 
         return breakdown

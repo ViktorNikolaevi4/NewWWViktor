@@ -188,10 +188,12 @@
 "widgetInvestmentCalculateAction" = "Calculate";
 "widgetInvestmentHideBreakdownAction" = "Hide breakdown";
 "widgetInvestmentBreakdownYear" = "Year";
+"widgetInvestmentBreakdownMonth" = "Month";
 "widgetInvestmentBreakdownStart" = "Start";
 "widgetInvestmentBreakdownIncome" = "Interest";
 "widgetInvestmentBreakdownContributions" = "Contributions";
 "widgetInvestmentBreakdownFinal" = "Final";
+"widgetInvestmentMonthlyTitle" = "Monthly breakdown";
 "widgetLinksDetailTitle" = "Links";
 "widgetLinksDetailDescription" = "Quick access to saved sites.";
 "widgetLinksTitle" = "Links";

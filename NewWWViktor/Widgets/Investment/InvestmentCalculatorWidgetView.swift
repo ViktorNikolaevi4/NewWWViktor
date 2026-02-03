@@ -5,6 +5,7 @@ struct InvestmentCalculatorWidgetView: View {
 
     @EnvironmentObject private var manager: WidgetManager
     @EnvironmentObject private var localization: LocalizationManager
+    @State private var selectedYear: YearSelection?
 
     var body: some View {
         let layout = InvestmentCalculatorLayout(sizeOption: widget.sizeOption)
@@ -43,6 +44,25 @@ struct InvestmentCalculatorWidgetView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.top, layout.topPadding)
+        .sheet(item: $selectedYear) { selection in
+            let sheetLayout = InvestmentCalculatorLayout(sizeOption: .large)
+            let monthly = InvestmentCalculator.monthlyBreakdown(startCapital: breakdownInputs.startCapital,
+                                                                annualRate: breakdownInputs.annualRate,
+                                                                termYears: breakdownInputs.termYears,
+                                                                contribution: breakdownInputs.contribution,
+                                                                contributionFrequency: widget.investmentContributionFrequency,
+                                                                compoundingFrequency: widget.investmentCompoundingFrequency,
+                                                                includeTax: widget.investmentIncludeTax,
+                                                                taxRate: widget.investmentTaxRate,
+                                                                includeInflation: widget.investmentIncludeInflation,
+                                                                inflationRate: widget.investmentInflationRate,
+                                                                yearIndex: selection.year)
+            InvestmentMonthlyBreakdownView(year: selection.year,
+                                           entries: monthly,
+                                           layout: sheetLayout,
+                                           moneyFormatter: moneyFormatter)
+                .environmentObject(localization)
+        }
     }
 
     private var shouldShowGoal: Bool {
@@ -206,18 +226,24 @@ struct InvestmentCalculatorWidgetView: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 6) {
                     ForEach(rows) { entry in
-                        HStack {
-                            Text("\(entry.year)")
-                                .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                            Spacer(minLength: 0)
-                            Text(moneyFormatter.string(from: NSNumber(value: entry.endAmount)) ?? "—")
-                                .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
-                                .foregroundStyle(.primary)
-                                .monospacedDigit()
+                        Button {
+                            selectedYear = YearSelection(year: entry.year)
+                        } label: {
+                            HStack {
+                                Text("\(entry.year)")
+                                    .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                                Spacer(minLength: 0)
+                                Text(moneyFormatter.string(from: NSNumber(value: entry.endAmount)) ?? "—")
+                                    .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
+                                    .foregroundStyle(.primary)
+                                    .monospacedDigit()
+                            }
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 10)
+                            .contentShape(Rectangle())
                         }
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 10)
+                        .buttonStyle(.plain)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
                                 .fill(Color.black.opacity(0.18))
@@ -290,18 +316,24 @@ struct InvestmentCalculatorWidgetView: View {
     }
 
     private func breakdownRow(entry: InvestmentYearBreakdown, layout: InvestmentCalculatorLayout) -> some View {
-        HStack(spacing: layout.breakdownColumnSpacing) {
-            Text("\(entry.year)")
-                .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
-                .foregroundStyle(.primary)
-                .frame(width: layout.breakdownYearWidth, alignment: .leading)
+        Button {
+            selectedYear = YearSelection(year: entry.year)
+        } label: {
+            HStack(spacing: layout.breakdownColumnSpacing) {
+                Text("\(entry.year)")
+                    .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .frame(width: layout.breakdownYearWidth, alignment: .leading)
 
-            breakdownValueCell(entry.startAmount, layout: layout)
-            breakdownValueCell(entry.interestIncome, layout: layout)
-            breakdownValueCell(entry.contributions, layout: layout)
-            breakdownValueCell(entry.endAmount, layout: layout)
+                breakdownValueCell(entry.startAmount, layout: layout)
+                breakdownValueCell(entry.interestIncome, layout: layout)
+                breakdownValueCell(entry.contributions, layout: layout)
+                breakdownValueCell(entry.endAmount, layout: layout)
+            }
+            .padding(.vertical, 4)
+            .contentShape(Rectangle())
         }
-        .padding(.vertical, 4)
+        .buttonStyle(.plain)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(Color.black.opacity(0.18))
@@ -420,6 +452,169 @@ struct InvestmentCalculatorWidgetView: View {
         formatter.maximumFractionDigits = 2
         formatter.minimumFractionDigits = 0
         return formatter
+    }
+}
+
+private struct YearSelection: Identifiable {
+    let year: Int
+    var id: Int { year }
+}
+
+private struct InvestmentMonthlyBreakdownView: View {
+    let year: Int
+    let entries: [InvestmentMonthBreakdown]
+    let layout: InvestmentCalculatorLayout
+    let moneyFormatter: NumberFormatter
+
+    @EnvironmentObject private var localization: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        let totalContrib = entries.reduce(0.0) { $0 + $1.contributions }
+        let totalIncome = entries.reduce(0.0) { $0 + $1.interestIncome }
+        let finalAmount = entries.last?.endAmount ?? 0
+
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Text(localization.text(.widgetInvestmentMonthlyTitle))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
+                Spacer(minLength: 0)
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+
+            Text("\(localization.text(.widgetInvestmentBreakdownYear)) \(year)")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 10) {
+                summaryChip(title: localization.text(.widgetInvestmentBreakdownContributions),
+                            value: totalContrib,
+                            layout: layout,
+                            formatter: moneyFormatter)
+                summaryChip(title: localization.text(.widgetInvestmentBreakdownIncome),
+                            value: totalIncome,
+                            layout: layout,
+                            formatter: moneyFormatter)
+                summaryChip(title: localization.text(.widgetInvestmentBreakdownFinal),
+                            value: finalAmount,
+                            layout: layout,
+                            formatter: moneyFormatter)
+            }
+
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: layout.rowSpacing) {
+                    monthlyHeader(layout: layout)
+
+                    ForEach(entries) { entry in
+                        monthlyRow(entry: entry, layout: layout)
+                    }
+                }
+                .padding(layout.cardPadding)
+                .background(
+                    RoundedRectangle(cornerRadius: layout.cardCornerRadius, style: .continuous)
+                        .fill(Color.white.opacity(0.06))
+                )
+            }
+        }
+        .padding(16)
+        .frame(minWidth: 420, minHeight: 420)
+        .background(Color.black.opacity(0.9))
+    }
+
+    private func summaryChip(title: String, value: Double, layout: InvestmentCalculatorLayout, formatter: NumberFormatter) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: layout.breakdownHeaderFontSize, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(formatter.string(from: NSNumber(value: value)) ?? "—")
+                .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
+                .foregroundStyle(.primary)
+                .monospacedDigit()
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.black.opacity(0.2))
+        )
+    }
+
+    private func monthlyHeader(layout: InvestmentCalculatorLayout) -> some View {
+        HStack(spacing: layout.breakdownColumnSpacing) {
+            headerCell(localization.text(.widgetInvestmentBreakdownMonth),
+                       alignment: .leading,
+                       width: layout.breakdownYearWidth,
+                       layout: layout)
+            headerCell(localization.text(.widgetInvestmentBreakdownStart),
+                       alignment: .trailing,
+                       width: nil,
+                       layout: layout)
+            headerCell(localization.text(.widgetInvestmentBreakdownIncome),
+                       alignment: .trailing,
+                       width: nil,
+                       layout: layout)
+            headerCell(localization.text(.widgetInvestmentBreakdownContributions),
+                       alignment: .trailing,
+                       width: nil,
+                       layout: layout)
+            headerCell(localization.text(.widgetInvestmentBreakdownFinal),
+                       alignment: .trailing,
+                       width: nil,
+                       layout: layout)
+        }
+    }
+
+    private func headerCell(_ text: String,
+                            alignment: Alignment,
+                            width: CGFloat?,
+                            layout: InvestmentCalculatorLayout) -> some View {
+        Text(text)
+            .font(.system(size: layout.breakdownHeaderFontSize, weight: .semibold))
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .frame(width: width, alignment: alignment)
+            .frame(maxWidth: width == nil ? .infinity : nil, alignment: alignment)
+    }
+
+    private func monthlyRow(entry: InvestmentMonthBreakdown, layout: InvestmentCalculatorLayout) -> some View {
+        HStack(spacing: layout.breakdownColumnSpacing) {
+            Text("\(entry.month)")
+                .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
+                .foregroundStyle(.primary)
+                .frame(width: layout.breakdownYearWidth, alignment: .leading)
+
+            valueCell(entry.startAmount, layout: layout)
+            valueCell(entry.interestIncome, layout: layout)
+            valueCell(entry.contributions, layout: layout)
+            valueCell(entry.endAmount, layout: layout)
+        }
+        .padding(.vertical, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.black.opacity(0.18))
+        )
+    }
+
+    private func valueCell(_ value: Double, layout: InvestmentCalculatorLayout) -> some View {
+        Text(moneyFormatter.string(from: NSNumber(value: value)) ?? "—")
+            .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
+            .foregroundStyle(.primary)
+            .monospacedDigit()
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .frame(maxWidth: .infinity, alignment: .trailing)
     }
 }
 

@@ -188,10 +188,12 @@
 "widgetInvestmentCalculateAction" = "Рассчитать";
 "widgetInvestmentHideBreakdownAction" = "Скрыть расчет";
 "widgetInvestmentBreakdownYear" = "Год";
+"widgetInvestmentBreakdownMonth" = "Месяц";
 "widgetInvestmentBreakdownStart" = "Начальная сумма";
 "widgetInvestmentBreakdownIncome" = "Процентный доход";
 "widgetInvestmentBreakdownContributions" = "Вложения";
 "widgetInvestmentBreakdownFinal" = "Конечная сумма";
+"widgetInvestmentMonthlyTitle" = "Помесячный расчет";
 "widgetLinksDetailTitle" = "Ссылки";
 "widgetLinksDetailDescription" = "Быстрый доступ к сохранённым сайтам.";
 "widgetLinksTitle" = "Ссылки";

@@ -20,11 +20,12 @@ struct InvestmentCalculatorWidgetView: View {
                                                   taxRate: widget.investmentTaxRate,
                                                   includeInflation: widget.investmentIncludeInflation,
                                                   inflationRate: widget.investmentInflationRate)
+        let breakdownInputs = effectiveBreakdownInputs(result: result)
         let breakdown = shouldShowBreakdown
-            ? InvestmentCalculator.yearlyBreakdown(startCapital: widget.investmentStartCapital,
-                                                   annualRate: widget.investmentRate,
-                                                   termYears: widget.investmentTermYears,
-                                                   contribution: widget.investmentContribution,
+            ? InvestmentCalculator.yearlyBreakdown(startCapital: breakdownInputs.startCapital,
+                                                   annualRate: breakdownInputs.annualRate,
+                                                   termYears: breakdownInputs.termYears,
+                                                   contribution: breakdownInputs.contribution,
                                                    contributionFrequency: widget.investmentContributionFrequency,
                                                    compoundingFrequency: widget.investmentCompoundingFrequency,
                                                    includeTax: widget.investmentIncludeTax,
@@ -91,7 +92,25 @@ struct InvestmentCalculatorWidgetView: View {
 
     private var shouldShowBreakdown: Bool {
         guard widget.sizeOption != .medium else { return false }
-        return widget.investmentComputeTarget == .income && widget.investmentShowBreakdown
+        return widget.investmentShowBreakdown
+    }
+
+    private func effectiveBreakdownInputs(result: InvestmentCalculatorResult) -> (startCapital: Double, annualRate: Double, termYears: Double, contribution: Double) {
+        guard result.isValid else {
+            return (widget.investmentStartCapital, widget.investmentRate, widget.investmentTermYears, widget.investmentContribution)
+        }
+        switch widget.investmentComputeTarget {
+        case .rate:
+            return (widget.investmentStartCapital, result.computedValue, widget.investmentTermYears, widget.investmentContribution)
+        case .timeToGoal:
+            return (widget.investmentStartCapital, widget.investmentRate, result.computedValue, widget.investmentContribution)
+        case .contribution:
+            return (widget.investmentStartCapital, widget.investmentRate, widget.investmentTermYears, result.computedValue)
+        case .startCapital:
+            return (result.computedValue, widget.investmentRate, widget.investmentTermYears, widget.investmentContribution)
+        case .income:
+            return (widget.investmentStartCapital, widget.investmentRate, widget.investmentTermYears, widget.investmentContribution)
+        }
     }
 
     private func resultHeader(result: InvestmentCalculatorResult, layout: InvestmentCalculatorLayout) -> some View {
@@ -131,6 +150,8 @@ struct InvestmentCalculatorWidgetView: View {
                     .font(.system(size: layout.metaFontSize, weight: .semibold))
                     .foregroundStyle(.secondary)
             }
+            .opacity(widget.investmentComputeTarget == .income ? 0 : 1)
+            .frame(maxHeight: widget.investmentComputeTarget == .income ? 0 : nil)
         }
         .padding(.horizontal, layout.cardPadding)
         .padding(.vertical, layout.cardPadding)
@@ -141,19 +162,92 @@ struct InvestmentCalculatorWidgetView: View {
     }
 
     private func breakdownSection(entries: [InvestmentYearBreakdown], layout: InvestmentCalculatorLayout) -> some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: layout.rowSpacing) {
-                breakdownHeader(layout: layout)
+        Group {
+            if widget.sizeOption == .large {
+                largeBreakdown(entries: entries, layout: layout)
+            } else {
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: layout.rowSpacing) {
+                        breakdownHeader(layout: layout)
 
-                ForEach(entries) { entry in
-                    breakdownRow(entry: entry, layout: layout)
+                        ForEach(entries) { entry in
+                            breakdownRow(entry: entry, layout: layout)
+                        }
+                    }
+                    .padding(layout.cardPadding)
                 }
             }
-            .padding(layout.cardPadding)
         }
         .background(
             RoundedRectangle(cornerRadius: layout.cardCornerRadius, style: .continuous)
                 .fill(Color.white.opacity(0.06))
+        )
+    }
+
+    private func largeBreakdown(entries: [InvestmentYearBreakdown], layout: InvestmentCalculatorLayout) -> some View {
+        let totalContrib = entries.reduce(0.0) { $0 + $1.contributions }
+        let totalIncome = entries.reduce(0.0) { $0 + $1.interestIncome }
+        let finalAmount = entries.last?.endAmount ?? 0
+        let rows = entries
+
+        return VStack(alignment: .leading, spacing: layout.rowSpacing) {
+            HStack(spacing: 10) {
+                summaryChip(title: localization.text(.widgetInvestmentBreakdownContributions),
+                            value: totalContrib,
+                            layout: layout)
+                summaryChip(title: localization.text(.widgetInvestmentBreakdownIncome),
+                            value: totalIncome,
+                            layout: layout)
+                summaryChip(title: localization.text(.widgetInvestmentBreakdownFinal),
+                            value: finalAmount,
+                            layout: layout)
+            }
+
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 6) {
+                    ForEach(rows) { entry in
+                        HStack {
+                            Text("\(entry.year)")
+                                .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                            Spacer(minLength: 0)
+                            Text(moneyFormatter.string(from: NSNumber(value: entry.endAmount)) ?? "—")
+                                .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
+                                .foregroundStyle(.primary)
+                                .monospacedDigit()
+                        }
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(Color.black.opacity(0.18))
+                        )
+                    }
+                    
+                }
+            }
+        }
+        .padding(layout.cardPadding)
+    }
+
+    private func summaryChip(title: String, value: Double, layout: InvestmentCalculatorLayout) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: layout.breakdownHeaderFontSize, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(moneyFormatter.string(from: NSNumber(value: value)) ?? "—")
+                .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
+                .foregroundStyle(.primary)
+                .monospacedDigit()
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.black.opacity(0.2))
         )
     }
 

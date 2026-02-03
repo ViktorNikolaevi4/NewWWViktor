@@ -320,7 +320,12 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
 
     mutating func applySizeOption(_ option: WidgetSizeOption) {
         sizeOption = option
-        let size = option.dimensions
+        let size: CGSize
+        if type == .investment, option == .medium {
+            size = WidgetSizeOption.small.dimensions
+        } else {
+            size = option.dimensions
+        }
         width = size.width
         height = size.height
     }

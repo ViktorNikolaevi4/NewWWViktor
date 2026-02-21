@@ -198,6 +198,15 @@ enum LocalizationKey: String {
     case widgetLinksDetailDescription
     case widgetLinksTitle
     case widgetLinksSectionTitle
+    case widgetClientsDetailTitle
+    case widgetClientsDetailDescription
+    case widgetClientsTitle
+    case widgetClientsMonthLabel
+    case widgetClientsPayByLabel
+    case widgetClientsTotalLabel
+    case widgetClientsOverdueFormat
+    case widgetClientsUnpaidFormat
+    case widgetClientsPaidFormat
     case widgetLinksTitlePlaceholder
     case widgetLinksURLPlaceholder
     case widgetLinksEmpty

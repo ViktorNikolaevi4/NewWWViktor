@@ -198,6 +198,15 @@
 "widgetLinksDetailDescription" = "Quick access to saved sites.";
 "widgetLinksTitle" = "Links";
 "widgetLinksSectionTitle" = "Links";
+"widgetClientsDetailTitle" = "Client payments";
+"widgetClientsDetailDescription" = "Track who to pay and when each month.";
+"widgetClientsTitle" = "Clients";
+"widgetClientsMonthLabel" = "This month";
+"widgetClientsPayByLabel" = "Pay by";
+"widgetClientsTotalLabel" = "Total";
+"widgetClientsOverdueFormat" = "Overdue %d";
+"widgetClientsUnpaidFormat" = "Unpaid - %d invoices";
+"widgetClientsPaidFormat" = "Paid - %d invoices";
 "widgetLinksTitlePlaceholder" = "Title";
 "widgetLinksURLPlaceholder" = "https://example.com";
 "widgetLinksEmpty" = "No links yet";

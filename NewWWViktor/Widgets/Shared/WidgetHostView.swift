@@ -437,6 +437,8 @@ struct WidgetHostView: View {
             CryptoWidgetView(widget: instance)
         case .links:
             LinksWidgetView(widget: instance)
+        case .clientsPayments:
+            ClientsPaymentsWidgetView(widget: instance)
         case .investment:
             InvestmentCalculatorWidgetView(widget: instance)
         }

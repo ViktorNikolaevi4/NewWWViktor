@@ -198,6 +198,15 @@
 "widgetLinksDetailDescription" = "Быстрый доступ к сохранённым сайтам.";
 "widgetLinksTitle" = "Ссылки";
 "widgetLinksSectionTitle" = "Ссылки";
+"widgetClientsDetailTitle" = "Платежи клиентам";
+"widgetClientsDetailDescription" = "Кто и когда должен получить оплату в этом месяце.";
+"widgetClientsTitle" = "Клиенты";
+"widgetClientsMonthLabel" = "Этот месяц";
+"widgetClientsPayByLabel" = "До";
+"widgetClientsTotalLabel" = "Итого";
+"widgetClientsOverdueFormat" = "Просрочено %d";
+"widgetClientsUnpaidFormat" = "Неоплачено - %d счетов";
+"widgetClientsPaidFormat" = "Оплачено - %d счетов";
 "widgetLinksTitlePlaceholder" = "Название";
 "widgetLinksURLPlaceholder" = "https://example.com";
 "widgetLinksEmpty" = "Ссылок нет";

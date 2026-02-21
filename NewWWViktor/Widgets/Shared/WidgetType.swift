@@ -10,6 +10,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
     case habits
     case crypto
     case links
+    case clientsPayments
     case investment
 
     var id: String { rawValue }
@@ -25,6 +26,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .habits: return .widgetCategoryLabel
         case .crypto: return .widgetCategoryLabel
         case .links: return .widgetCategoryLabel
+        case .clientsPayments: return .widgetCategoryLabel
         case .investment: return .widgetCategoryLabel
         }
     }
@@ -40,6 +42,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .habits: return .widgetHabitsDetailTitle
         case .crypto: return .widgetCryptoDetailTitle
         case .links: return .widgetLinksDetailTitle
+        case .clientsPayments: return .widgetClientsDetailTitle
         case .investment: return .widgetInvestmentDetailTitle
         }
     }
@@ -55,6 +58,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .habits: return .widgetHabitsDetailDescription
         case .crypto: return .widgetCryptoDetailDescription
         case .links: return .widgetLinksDetailDescription
+        case .clientsPayments: return .widgetClientsDetailDescription
         case .investment: return .widgetInvestmentDetailDescription
         }
     }
@@ -70,6 +74,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .habits: return nil
         case .crypto: return nil
         case .links: return nil
+        case .clientsPayments: return nil
         case .investment: return nil
         }
     }
@@ -93,6 +98,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .crypto:
             return WidgetSizeOption.small.dimensions
         case .links:
+            return WidgetSizeOption.small.dimensions
+        case .clientsPayments:
             return WidgetSizeOption.small.dimensions
         case .investment:
             return WidgetSizeOption.medium.dimensions
@@ -119,6 +126,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
             return [.small, .extraLarge]
         case .links:
             return [.small, .medium, .large]
+        case .clientsPayments:
+            return [.small]
         case .investment:
             return [.medium, .large]
         }

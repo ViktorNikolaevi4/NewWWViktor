@@ -24,6 +24,7 @@ struct WidgetSettingsMenuView: View {
     @State private var showCryptoSearch = false
     @State private var showManageLinks = false
     @State private var showManageInvestment = false
+    @State private var showManageClients = false
     @State private var cryptoSearchMode: CryptoSearchMode = .single
     @State private var showWeather = false
     @State private var isPinnedTop = false
@@ -167,6 +168,12 @@ struct WidgetSettingsMenuView: View {
                 .transition(.move(edge: .trailing).combined(with: .opacity))
         }
 
+        if showManageClients {
+            ManageClientsView(widgetID: workingWidget.id, isPresented: $showManageClients)
+                .environmentObject(localization)
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+        }
+
         if showManageInvestment {
             ManageInvestmentView(isPresented: $showManageInvestment,
                                  widget: $workingWidget,
@@ -184,6 +191,7 @@ struct WidgetSettingsMenuView: View {
             .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageHabits)
             .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showCryptoSearch)
             .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageLinks)
+            .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageClients)
             .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageInvestment)
     }
 
@@ -214,6 +222,11 @@ struct WidgetSettingsMenuView: View {
                     if workingWidget.type == .links {
                         LinksSettingsSection {
                             showManageLinks = true
+                        }
+                    }
+                    if workingWidget.type == .clientsPayments {
+                        ClientsSettingsSection {
+                            showManageClients = true
                         }
                     }
                     if workingWidget.type == .investment {
@@ -343,6 +356,7 @@ struct WidgetSettingsMenuView: View {
         || showManageHabits
         || showCryptoSearch
         || showManageLinks
+        || showManageClients
         || showManageInvestment
     }
 

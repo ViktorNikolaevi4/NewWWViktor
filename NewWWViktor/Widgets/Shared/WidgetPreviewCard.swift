@@ -217,6 +217,7 @@ struct WidgetPreviewCard: View {
             LinksWidgetView(widget: previewInstance)
         case .clientsPayments:
             ClientsPaymentsWidgetView(widget: previewInstance)
+                .modelContainer(EisenhowerDataStore.previewContainer)
         case .investment:
             InvestmentCalculatorWidgetView(widget: previewInstance)
         }

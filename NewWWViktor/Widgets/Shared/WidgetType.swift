@@ -127,7 +127,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .links:
             return [.small, .medium, .large]
         case .clientsPayments:
-            return [.small]
+            return [.small, .medium, .large]
         case .investment:
             return [.medium, .large]
         }

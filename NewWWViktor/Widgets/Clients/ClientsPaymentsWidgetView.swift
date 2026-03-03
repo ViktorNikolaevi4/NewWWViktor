@@ -22,9 +22,19 @@ struct ClientsPaymentsWidgetView: View {
     private var paidCount: Int {
         clients.filter { $0.isPaid }.count
     }
+
+    private var paidAmountText: String? {
+        let paidAmounts = clients
+            .filter { $0.isPaid }
+            .compactMap { $0.amount }
+        guard !paidAmounts.isEmpty else { return nil }
+        let total = paidAmounts.reduce(0, +)
+        let formatted = numberFormatter.string(from: NSNumber(value: total)) ?? "\(total)"
+        return String(format: localization.text(.widgetClientsAmountFormat), formatted)
+    }
     private var totalAmount: String {
         let total = clients
-            .filter { !$0.isPaid }
+            .filter { $0.isPaid }
             .compactMap { $0.amount }
             .reduce(0, +)
         let formatted = numberFormatter.string(from: NSNumber(value: total)) ?? "\(total)"
@@ -154,7 +164,9 @@ struct ClientsPaymentsWidgetView: View {
     }
 
     private var paidLabel: String {
-        String(format: localization.text(.widgetClientsPaidFormat), paidCount)
+        let base = String(format: localization.text(.widgetClientsPaidFormat), paidCount)
+        guard let paidAmountText else { return base }
+        return "\(base) · \(paidAmountText)"
     }
 
     private var numberFormatter: NumberFormatter {

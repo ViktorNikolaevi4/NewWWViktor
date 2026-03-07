@@ -12,6 +12,7 @@ struct ManageClientsView: View {
     @State private var payDayText = ""
     @State private var visitsText = ""
     @State private var amountText = ""
+    @State private var showAddClient = false
 
     private let widgetID: UUID
 
@@ -33,13 +34,16 @@ struct ManageClientsView: View {
 
             VStack(spacing: 12) {
                 header
-                addForm
+                addButton
                 searchField
                 listContent
             }
             .padding(16)
         }
         .frame(width: 360, height: 420)
+        .sheet(isPresented: $showAddClient) {
+            addClientSheet
+        }
     }
 
     private var header: some View {
@@ -62,34 +66,80 @@ struct ManageClientsView: View {
         }
     }
 
-    private var addForm: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 8) {
+    private var addButton: some View {
+        HStack {
+            Button {
+                showAddClient = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "plus")
+                    Text(localization.text(.widgetClientsAddAction))
+                }
+            }
+            .buttonStyle(.plain)
+            Spacer()
+        }
+    }
+
+    private var addClientSheet: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text(localization.text(.widgetClientsAddAction))
+                    .font(.system(size: 16, weight: .semibold))
+                Spacer()
+                Button {
+                    showAddClient = false
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 12, weight: .bold))
+                        .padding(6)
+                        .background(
+                            Circle()
+                                .fill(Color.white.opacity(0.12))
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+
+            VStack(spacing: 10) {
                 TextField(localization.text(.widgetClientsNamePlaceholder), text: $nameText)
                     .textFieldStyle(.roundedBorder)
 
-                TextField(localization.text(.widgetClientsPayDayPlaceholder), text: $payDayText)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 80)
+                HStack(spacing: 8) {
+                    TextField(localization.text(.widgetClientsPayDayPlaceholder), text: $payDayText)
+                        .textFieldStyle(.roundedBorder)
 
-                TextField(localization.text(.widgetClientsVisitsPlaceholder), text: $visitsText)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 90)
+                    TextField(localization.text(.widgetClientsVisitsPlaceholder), text: $visitsText)
+                        .textFieldStyle(.roundedBorder)
+                }
 
                 TextField(localization.text(.widgetClientsAmountPlaceholder), text: $amountText)
                     .textFieldStyle(.roundedBorder)
-                    .frame(width: 90)
             }
 
             HStack {
-                Spacer()
                 Button(localization.text(.widgetClientsAddAction)) {
                     addClient()
+                    showAddClient = false
                 }
                 .buttonStyle(.plain)
                 .disabled(!canAddClient)
+
+                Spacer()
+
+                Button("Отмена") {
+                    showAddClient = false
+                }
+                .buttonStyle(.plain)
             }
         }
+        .padding(20)
+        .frame(width: 360)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.black.opacity(0.9))
+        )
+        .onAppear(perform: resetForm)
     }
 
     private var searchField: some View {

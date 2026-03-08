@@ -50,6 +50,8 @@ struct ClientsPaymentsWidgetView: View {
         Group {
             if widget.sizeOption == .small {
                 smallLayout
+            } else if widget.sizeOption == .medium {
+                mediumLayout
             } else {
                 listLayout
             }
@@ -87,6 +89,89 @@ struct ClientsPaymentsWidgetView: View {
             Spacer(minLength: 0)
         }
         .padding(12)
+    }
+
+    private var mediumLayout: some View {
+        HStack(alignment: .top, spacing: 10) {
+            VStack(alignment: .leading, spacing: 10) {
+                statRow(color: .red, text: overdueLabel)
+
+                Spacer(minLength: 0)
+
+                statRow(color: .yellow, text: todayDueLabel)
+
+                Spacer(minLength: 0)
+
+                statRow(color: .green, text: paidShortLabel)
+
+                if let paidAmountText {
+                    Text(paidAmountText)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.leading, 13)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Divider()
+                .background(Color.white.opacity(0.1))
+
+            VStack(alignment: .leading, spacing: 7) {
+                Text(localization.text(.widgetClientsNextTitle))
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.primary)
+
+                if upcomingClients.isEmpty {
+                    Text(localization.text(.widgetClientsEmpty))
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(Array(upcomingClients.prefix(3))) { client in
+                        VStack(alignment: .leading, spacing: 1) {
+                            HStack(spacing: 6) {
+                                Text(client.name)
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+
+                                Spacer(minLength: 0)
+
+                                if let amountText = amountText(for: client) {
+                                    Text(amountText)
+                                        .font(.system(size: 10, weight: .semibold))
+                                        .foregroundStyle(.primary)
+                                }
+                            }
+
+                            Text(relativePayDayText(for: client))
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxHeight: .infinity, alignment: .bottom)
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
+    }
+
+    private func statRow(color: Color, text: String) -> some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(color)
+                .frame(width: 7, height: 7)
+
+            Text(text)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+
+            Spacer(minLength: 0)
+        }
     }
 
     private var summaryContent: some View {
@@ -140,6 +225,29 @@ struct ClientsPaymentsWidgetView: View {
         }
     }
 
+    private var todayDay: Int {
+        Calendar.current.component(.day, from: Date())
+    }
+
+    private var daysInCurrentMonth: Int {
+        Calendar.current.range(of: .day, in: .month, for: Date())?.count ?? 31
+    }
+
+    private var todayDueCount: Int {
+        clients.filter { !$0.isPaid && $0.payDay == todayDay }.count
+    }
+
+    private var upcomingClients: [ClientPaymentEntry] {
+        clients
+            .filter { !$0.isPaid && $0.payDay != nil && ($0.payDay ?? 0) >= todayDay }
+            .sorted { lhs, rhs in
+                let lDistance = nextDueDistance(for: lhs) ?? Int.max
+                let rDistance = nextDueDistance(for: rhs) ?? Int.max
+                if lDistance != rDistance { return lDistance < rDistance }
+                return lhs.createdAt < rhs.createdAt
+            }
+    }
+
     private func detailText(for client: ClientPaymentEntry) -> String? {
         let payDayText = client.payDay.map { String(format: localization.text(.widgetClientsPayDayFormat), $0) }
         let visitsText = client.visitsCount.map { String(format: localization.text(.widgetClientsVisitsFormat), $0) }
@@ -155,8 +263,44 @@ struct ClientsPaymentsWidgetView: View {
         }
     }
 
+    private func nextDueDistance(for client: ClientPaymentEntry) -> Int? {
+        guard let payDay = client.payDay else { return nil }
+        if payDay >= todayDay {
+            return payDay - todayDay
+        }
+        return payDay + daysInCurrentMonth - todayDay
+    }
+
+    private func relativePayDayText(for client: ClientPaymentEntry) -> String {
+        guard let distance = nextDueDistance(for: client), let payDay = client.payDay else {
+            return localization.text(.widgetPlaceholderDash)
+        }
+
+        if distance == 0 {
+            return localization.text(.widgetClientsTodayTitle)
+        }
+        if distance == 1 {
+            return localization.text(.widgetClientsTomorrowTitle)
+        }
+        return String(format: localization.text(.widgetClientsPayDayFormat), payDay)
+    }
+
+    private func amountText(for client: ClientPaymentEntry) -> String? {
+        guard let amount = client.amount else { return nil }
+        let formatted = numberFormatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
+        return String(format: localization.text(.widgetClientsAmountFormat), formatted)
+    }
+
     private var overdueLabel: String {
         String(format: localization.text(.widgetClientsOverdueFormat), overdueCount)
+    }
+
+    private var todayDueLabel: String {
+        String(format: localization.text(.widgetClientsTodayFormat), todayDueCount)
+    }
+
+    private var paidShortLabel: String {
+        String(format: localization.text(.widgetClientsPaidShortFormat), paidCount)
     }
 
     private var unpaidLabel: String {

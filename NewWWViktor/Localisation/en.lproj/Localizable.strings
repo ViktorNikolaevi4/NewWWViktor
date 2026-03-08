@@ -205,8 +205,13 @@
 "widgetClientsPayByLabel" = "Pay by";
 "widgetClientsTotalLabel" = "Total";
 "widgetClientsOverdueFormat" = "Overdue %d";
+"widgetClientsTodayFormat" = "Today %d";
 "widgetClientsUnpaidFormat" = "Unpaid - %d invoices";
 "widgetClientsPaidFormat" = "Paid - %d invoices";
+"widgetClientsPaidShortFormat" = "Paid %d";
+"widgetClientsNextTitle" = "Upcoming:";
+"widgetClientsTodayTitle" = "Today";
+"widgetClientsTomorrowTitle" = "Tomorrow";
 "widgetClientsSectionTitle" = "Clients";
 "widgetClientsManageAction" = "Manage clients";
 "widgetClientsManageTitle" = "Manage clients";
@@ -216,6 +221,7 @@
 "widgetClientsPayDayPlaceholder" = "Pay day";
 "widgetClientsVisitsPlaceholder" = "Visits";
 "widgetClientsAddAction" = "Add client";
+"widgetClientsEditAction" = "Edit client";
 "widgetClientsPayDayFormat" = "Pay by %d";
 "widgetClientsVisitsFormat" = "%d visits";
 "widgetClientsEmpty" = "No clients to show";

@@ -205,8 +205,13 @@
 "widgetClientsPayByLabel" = "До";
 "widgetClientsTotalLabel" = "Итого";
 "widgetClientsOverdueFormat" = "Просрочено %d";
+"widgetClientsTodayFormat" = "Сегодня %d";
 "widgetClientsUnpaidFormat" = "Неоплачено - %d счетов";
 "widgetClientsPaidFormat" = "Оплачено - %d счетов";
+"widgetClientsPaidShortFormat" = "Оплачено %d";
+"widgetClientsNextTitle" = "Следующие:";
+"widgetClientsTodayTitle" = "Сегодня";
+"widgetClientsTomorrowTitle" = "Завтра";
 "widgetClientsSectionTitle" = "Клиенты";
 "widgetClientsManageAction" = "Управлять клиентами";
 "widgetClientsManageTitle" = "Клиенты";
@@ -216,6 +221,7 @@
 "widgetClientsPayDayPlaceholder" = "День оплаты";
 "widgetClientsVisitsPlaceholder" = "Посещения";
 "widgetClientsAddAction" = "Добавить клиента";
+"widgetClientsEditAction" = "Редактировать клиента";
 "widgetClientsPayDayFormat" = "До %d";
 "widgetClientsVisitsFormat" = "%d посещений";
 "widgetClientsEmpty" = "Клиентов нет";

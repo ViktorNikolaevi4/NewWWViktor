@@ -205,8 +205,13 @@ enum LocalizationKey: String {
     case widgetClientsPayByLabel
     case widgetClientsTotalLabel
     case widgetClientsOverdueFormat
+    case widgetClientsTodayFormat
     case widgetClientsUnpaidFormat
     case widgetClientsPaidFormat
+    case widgetClientsPaidShortFormat
+    case widgetClientsNextTitle
+    case widgetClientsTodayTitle
+    case widgetClientsTomorrowTitle
     case widgetClientsSectionTitle
     case widgetClientsManageAction
     case widgetClientsManageTitle
@@ -216,6 +221,7 @@ enum LocalizationKey: String {
     case widgetClientsPayDayPlaceholder
     case widgetClientsVisitsPlaceholder
     case widgetClientsAddAction
+    case widgetClientsEditAction
     case widgetClientsPayDayFormat
     case widgetClientsVisitsFormat
     case widgetClientsEmpty

@@ -13,6 +13,8 @@ struct ManageClientsView: View {
     @State private var visitsText = ""
     @State private var amountText = ""
     @State private var showAddClient = false
+    @State private var showEditClient = false
+    @State private var editingClient: ClientPaymentEntry?
 
     private let widgetID: UUID
 
@@ -44,12 +46,23 @@ struct ManageClientsView: View {
         .sheet(isPresented: $showAddClient) {
             addClientSheet
         }
+        .sheet(isPresented: $showEditClient) {
+            editClientSheet
+        }
     }
 
     private var header: some View {
         HStack {
             Text(localization.text(.widgetClientsManageTitle))
                 .font(.system(size: 16, weight: .semibold))
+            Text("\(clients.count)")
+                .font(.system(size: 11, weight: .bold))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(
+                    Capsule()
+                        .fill(Color.white.opacity(0.14))
+                )
             Spacer()
             Button {
                 isPresented = false
@@ -123,11 +136,11 @@ struct ManageClientsView: View {
                     showAddClient = false
                 }
                 .buttonStyle(.plain)
-                .disabled(!canAddClient)
+                .disabled(!canSaveClient)
 
                 Spacer()
 
-                Button("Отмена") {
+                Button(localization.text(.widgetEisenhowerCancel)) {
                     showAddClient = false
                 }
                 .buttonStyle(.plain)
@@ -140,6 +153,70 @@ struct ManageClientsView: View {
                 .fill(Color.black.opacity(0.9))
         )
         .onAppear(perform: resetForm)
+    }
+
+    private var editClientSheet: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text(localization.text(.widgetClientsEditAction))
+                    .font(.system(size: 16, weight: .semibold))
+                Spacer()
+                Button {
+                    showEditClient = false
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 12, weight: .bold))
+                        .padding(6)
+                        .background(
+                            Circle()
+                                .fill(Color.white.opacity(0.12))
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+
+            VStack(spacing: 10) {
+                TextField(localization.text(.widgetClientsNamePlaceholder), text: $nameText)
+                    .textFieldStyle(.roundedBorder)
+
+                HStack(spacing: 8) {
+                    TextField(localization.text(.widgetClientsPayDayPlaceholder), text: $payDayText)
+                        .textFieldStyle(.roundedBorder)
+
+                    TextField(localization.text(.widgetClientsVisitsPlaceholder), text: $visitsText)
+                        .textFieldStyle(.roundedBorder)
+                }
+
+                TextField(localization.text(.widgetClientsAmountPlaceholder), text: $amountText)
+                    .textFieldStyle(.roundedBorder)
+            }
+
+            HStack {
+                Button(localization.text(.widgetEisenhowerSave)) {
+                    saveEditedClient()
+                    showEditClient = false
+                }
+                .buttonStyle(.plain)
+                .disabled(!canSaveClient)
+
+                Spacer()
+
+                Button(localization.text(.widgetEisenhowerCancel)) {
+                    showEditClient = false
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(20)
+        .frame(width: 360)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.black.opacity(0.9))
+        )
+        .onDisappear {
+            editingClient = nil
+            resetForm()
+        }
     }
 
     private var searchField: some View {
@@ -171,6 +248,12 @@ struct ManageClientsView: View {
                                     .font(.system(size: 11, weight: .semibold))
                                     .foregroundStyle(.secondary)
                             }
+                            Button {
+                                beginEditing(client)
+                            } label: {
+                                Image(systemName: "pencil")
+                            }
+                            .buttonStyle(.plain)
                             Toggle(localization.text(.widgetClientsPaidToggle),
                                    isOn: paidBinding(for: client))
                                 .labelsHidden()
@@ -180,6 +263,10 @@ struct ManageClientsView: View {
                                 Image(systemName: "trash")
                             }
                             .buttonStyle(.plain)
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            beginEditing(client)
                         }
                         .listRowBackground(Color.clear)
                     }
@@ -196,7 +283,7 @@ struct ManageClientsView: View {
         return sorted.filter { $0.name.localizedCaseInsensitiveContains(trimmed) }
     }
 
-    private var canAddClient: Bool {
+    private var canSaveClient: Bool {
         !nameText.trimmed.isEmpty && (payDayValue != nil || visitsValue != nil || amountValue != nil)
     }
 
@@ -226,6 +313,32 @@ struct ManageClientsView: View {
                                        amount: amountValue)
         modelContext.insert(entry)
         resetForm()
+    }
+
+    private func beginEditing(_ client: ClientPaymentEntry) {
+        editingClient = client
+        nameText = client.name
+        payDayText = client.payDay.map(String.init) ?? ""
+        visitsText = client.visitsCount.map(String.init) ?? ""
+        if let amount = client.amount {
+            amountText = plainAmountString(amount)
+        } else {
+            amountText = ""
+        }
+        showEditClient = true
+    }
+
+    private func saveEditedClient() {
+        guard let client = editingClient else { return }
+        let name = nameText.trimmed
+        guard !name.isEmpty else { return }
+        client.name = name
+        client.payDay = payDayValue
+        client.visitsCount = visitsValue
+        client.amount = amountValue
+        client.updatedAt = Date()
+        resetForm()
+        editingClient = nil
     }
 
     private func resetForm() {
@@ -272,6 +385,13 @@ struct ManageClientsView: View {
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
         return formatter
+    }
+
+    private func plainAmountString(_ value: Double) -> String {
+        if value.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(Int(value))
+        }
+        return String(value)
     }
 }
 

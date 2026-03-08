@@ -668,11 +668,27 @@ struct WidgetHostView: View {
 
         // Игнорируем клики в окно самого виджета: повторное нажатие на троеточие не будет закрывать и сразу открывать панель.
         let widgetWindowNumber = settingsPanelWidgetID.flatMap { manager.window(for: $0)?.windowNumber }
+        let shouldCloseForWindowNumber: (Int) -> Bool = { windowNumber in
+            if windowNumber == panel.windowNumber || windowNumber == widgetWindowNumber {
+                return false
+            }
 
-        if let local = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown], handler: { [weak panel] event in
-            guard let panel else { return event }
+            // Не закрываем настройки, если клик пришелся в дочернее окно панели (например, .sheet "Добавить клиента").
+            if let eventWindow = NSApp.window(withWindowNumber: windowNumber) {
+                if eventWindow === panel {
+                    return false
+                }
+                if eventWindow.parent === panel || eventWindow.sheetParent === panel {
+                    return false
+                }
+            }
+
+            return true
+        }
+
+        if let local = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown], handler: { event in
             // Закрываем только если клик вне панели и не по окну виджета (для троеточия и своей области не закрываем).
-            if event.windowNumber != panel.windowNumber && event.windowNumber != widgetWindowNumber {
+            if shouldCloseForWindowNumber(event.windowNumber) {
                 closeSettingsPanel()
             }
             return event
@@ -680,9 +696,8 @@ struct WidgetHostView: View {
             settingsPanelMonitors.append(local)
         }
 
-        if let global = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown], handler: { [weak panel] event in
-            guard let panel else { return }
-            if event.windowNumber != panel.windowNumber && event.windowNumber != widgetWindowNumber {
+        if let global = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown], handler: { event in
+            if shouldCloseForWindowNumber(event.windowNumber) {
                 closeSettingsPanel()
             }
         }) {

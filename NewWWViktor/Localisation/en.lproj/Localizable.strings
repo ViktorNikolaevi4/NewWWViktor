@@ -209,6 +209,8 @@
 "widgetClientsUnpaidFormat" = "Unpaid - %d invoices";
 "widgetClientsPaidFormat" = "Paid - %d invoices";
 "widgetClientsPaidShortFormat" = "Paid %d";
+"widgetClientsExpectedAmountTitle" = "Expected amount";
+"widgetClientsCollectedAmountTitle" = "Collected amount";
 "widgetClientsNextTitle" = "Upcoming:";
 "widgetClientsTodayTitle" = "Today";
 "widgetClientsTomorrowTitle" = "Tomorrow";

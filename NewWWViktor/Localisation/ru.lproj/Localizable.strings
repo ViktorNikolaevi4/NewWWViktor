@@ -209,6 +209,8 @@
 "widgetClientsUnpaidFormat" = "Неоплачено - %d счетов";
 "widgetClientsPaidFormat" = "Оплачено - %d счетов";
 "widgetClientsPaidShortFormat" = "Оплачено %d";
+"widgetClientsExpectedAmountTitle" = "Ожидаемая сумма";
+"widgetClientsCollectedAmountTitle" = "Собранная сумма";
 "widgetClientsNextTitle" = "Следующие:";
 "widgetClientsTodayTitle" = "Сегодня";
 "widgetClientsTomorrowTitle" = "Завтра";

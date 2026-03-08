@@ -32,9 +32,17 @@ struct ClientsPaymentsWidgetView: View {
         let formatted = numberFormatter.string(from: NSNumber(value: total)) ?? "\(total)"
         return String(format: localization.text(.widgetClientsAmountFormat), formatted)
     }
-    private var totalAmount: String {
+    private var collectedAmount: String {
         let total = clients
             .filter { $0.isPaid }
+            .compactMap { $0.amount }
+            .reduce(0, +)
+        let formatted = numberFormatter.string(from: NSNumber(value: total)) ?? "\(total)"
+        return String(format: localization.text(.widgetClientsAmountFormat), formatted)
+    }
+
+    private var expectedAmount: String {
+        let total = clients
             .compactMap { $0.amount }
             .reduce(0, +)
         let formatted = numberFormatter.string(from: NSNumber(value: total)) ?? "\(total)"
@@ -52,6 +60,8 @@ struct ClientsPaymentsWidgetView: View {
                 smallLayout
             } else if widget.sizeOption == .medium {
                 mediumLayout
+            } else if widget.sizeOption == .large {
+                largeLayout
             } else {
                 listLayout
             }
@@ -73,6 +83,33 @@ struct ClientsPaymentsWidgetView: View {
             Divider()
                 .background(Color.white.opacity(0.1))
 
+            clientsListContent
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+    }
+
+    private var largeLayout: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 12) {
+                amountCard(title: localization.text(.widgetClientsExpectedAmountTitle),
+                           amount: expectedAmount)
+                amountCard(title: localization.text(.widgetClientsCollectedAmountTitle),
+                           amount: collectedAmount)
+            }
+
+            Divider()
+                .background(Color.white.opacity(0.1))
+
+            clientsListContent
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+    }
+
+    private var clientsListContent: some View {
+        Group {
             if sortedClients.isEmpty {
                 Text(localization.text(.widgetClientsEmpty))
                     .font(.system(size: 12, weight: .semibold))
@@ -85,10 +122,22 @@ struct ClientsPaymentsWidgetView: View {
                     }
                 }
             }
-
-            Spacer(minLength: 0)
         }
-        .padding(12)
+    }
+
+    private func amountCard(title: String, amount: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Text(amount)
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var mediumLayout: some View {
@@ -180,7 +229,7 @@ struct ClientsPaymentsWidgetView: View {
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(.secondary)
 
-            Text(totalAmount)
+            Text(collectedAmount)
                 .font(.system(size: 26, weight: .bold))
                 .foregroundStyle(.primary)
 

@@ -49,6 +49,24 @@ struct ClientsPaymentsWidgetView: View {
         return String(format: localization.text(.widgetClientsAmountFormat), formatted)
     }
 
+    private var expectedAmountValue: Double {
+        clients
+            .compactMap { $0.amount }
+            .reduce(0, +)
+    }
+
+    private var collectedAmountValue: Double {
+        clients
+            .filter { $0.isPaid }
+            .compactMap { $0.amount }
+            .reduce(0, +)
+    }
+
+    private var collectionProgress: Double {
+        guard expectedAmountValue > 0 else { return 0 }
+        return min(max(collectedAmountValue / expectedAmountValue, 0), 1)
+    }
+
     init(widget: WidgetInstance) {
         self.widget = widget
         _clients = Query(filter: #Predicate<ClientPaymentEntry> { $0.widgetID == widget.id })
@@ -98,6 +116,10 @@ struct ClientsPaymentsWidgetView: View {
                 amountCard(title: localization.text(.widgetClientsCollectedAmountTitle),
                            amount: collectedAmount)
             }
+
+            ProgressView(value: collectionProgress)
+                .progressViewStyle(.linear)
+                .tint(.blue.opacity(0.8))
 
             Divider()
                 .background(Color.white.opacity(0.1))

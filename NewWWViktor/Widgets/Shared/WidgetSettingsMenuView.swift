@@ -238,14 +238,11 @@ struct WidgetSettingsMenuView: View {
                                                     onColorPicker: { activeColorRole = $0 },
                                                     onBackgroundPicker: { showBackgroundPicker = true })
                     WidgetBehaviorSettingsSection(sizeSelection: sizeSelectionBinding,
-                                                  isPinnedTop: pinnedBinding,
-                                                  lockPosition: lockedBinding,
                                                   availableSizes: workingWidget.type.availableSizes)
-                    WidgetManagementSettingsSection(onAddWidgets: openSidePanel,
-                                                    onShowGeneralSettings: openGeneralSettings,
-                                                    onDelete: deleteWidget)
                 }
             }
+
+            bottomActionsBar
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 14)
@@ -263,6 +260,71 @@ struct WidgetSettingsMenuView: View {
             .fill(Color.white.opacity(0.4))
             .frame(width: 38, height: 5)
             .padding(.top, 4)
+    }
+
+    private var bottomActionsBar: some View {
+        HStack(spacing: 0) {
+            actionIconButton(systemName: "pin.fill",
+                             isActive: isPinnedTop,
+                             isDestructive: false,
+                             action: { pinnedBinding.wrappedValue.toggle() })
+                .help(localization.text(.widgetPinToTop))
+
+            actionIconButton(systemName: "lock.fill",
+                             isActive: lockPosition,
+                             isDestructive: false,
+                             action: { lockedBinding.wrappedValue.toggle() })
+                .help(localization.text(.widgetLockPosition))
+
+            actionIconButton(systemName: "plus",
+                             isActive: true,
+                             isDestructive: false,
+                             action: openSidePanel)
+                .help(localization.text(.widgetAddWidgets))
+
+            actionIconButton(systemName: "gearshape.fill",
+                             isActive: true,
+                             isDestructive: false,
+                             action: openGeneralSettings)
+                .help(localization.text(.widgetGeneralSettings))
+
+            actionIconButton(systemName: "trash.fill",
+                             isActive: true,
+                             isDestructive: true,
+                             action: deleteWidget)
+                .help(localization.text(.widgetDelete))
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, 8)
+        .padding(.top, 2)
+    }
+
+    private func actionIconButton(systemName: String,
+                                  isActive: Bool,
+                                  isDestructive: Bool,
+                                  action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(iconForeground(active: isActive, destructive: isDestructive))
+                .frame(width: 40, height: 40)
+                .background(
+                    Circle()
+                        .fill(iconBackground(active: isActive, destructive: isDestructive))
+                )
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
+    }
+
+    private func iconForeground(active: Bool, destructive: Bool) -> Color {
+        if destructive { return Color.red.opacity(0.9) }
+        return active ? .black : .white.opacity(0.8)
+    }
+
+    private func iconBackground(active: Bool, destructive: Bool) -> Color {
+        if destructive { return Color.red.opacity(0.16) }
+        return active ? Color.white.opacity(0.92) : Color.white.opacity(0.14)
     }
 
     private var sizeSelectionBinding: Binding<WidgetSizeOption> {

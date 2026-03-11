@@ -683,8 +683,6 @@ struct WidgetAppearanceSettingsSection: View {
 struct WidgetBehaviorSettingsSection: View {
     @EnvironmentObject private var localization: LocalizationManager
     @Binding var sizeSelection: WidgetSizeOption
-    @Binding var isPinnedTop: Bool
-    @Binding var lockPosition: Bool
     var availableSizes: [WidgetSizeOption]
 
     var body: some View {
@@ -692,8 +690,6 @@ struct WidgetBehaviorSettingsSection: View {
             WidgetSettingsRow(title: localization.text(.widgetSizeLabel)) {
                 WidgetSizePicker(selection: $sizeSelection, availableSizes: availableSizes)
             }
-            ToggleRow(title: localization.text(.widgetPinToTop), isOn: $isPinnedTop)
-            ToggleRow(title: localization.text(.widgetLockPosition), isOn: $lockPosition)
         }
     }
 }

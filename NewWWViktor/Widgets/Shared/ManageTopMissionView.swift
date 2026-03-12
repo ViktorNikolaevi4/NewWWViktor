@@ -10,6 +10,7 @@ struct ManageTopMissionView: View {
     let widgetID: UUID
 
     @State private var draftTask: String = ""
+    @State private var draftSubtasks: [String] = []
     @StateObject private var speechRecognizer = TopMissionSpeechRecognizer()
 
     init(widgetID: UUID, isPresented: Binding<Bool>) {
@@ -78,9 +79,45 @@ struct ManageTopMissionView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(localization.text(.widgetTopMissionSubtasksTitle))
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    ScrollView {
+                        VStack(spacing: 6) {
+                            ForEach(Array(draftSubtasks.enumerated()), id: \.offset) { index, _ in
+                                HStack(spacing: 8) {
+                                    TextField(localization.text(.widgetTopMissionSubtaskPlaceholder),
+                                              text: bindingForSubtask(at: index))
+                                    .textFieldStyle(.roundedBorder)
+
+                                    Button(role: .destructive) {
+                                        removeSubtask(at: index)
+                                    } label: {
+                                        Image(systemName: "trash")
+                                            .font(.system(size: 12, weight: .semibold))
+                                            .foregroundStyle(.red.opacity(0.9))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+                    }
+                    .frame(maxHeight: 90)
+
+                    Button {
+                        draftSubtasks.append("")
+                    } label: {
+                        Label(localization.text(.widgetTopMissionAddSubtask), systemImage: "plus.circle.fill")
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 HStack {
                     Button(localization.text(.widgetEisenhowerSave)) {
                         saveTask()
+                        persistContext()
                         speechRecognizer.stopRecording()
                         isPresented = false
                     }
@@ -90,6 +127,7 @@ struct ManageTopMissionView: View {
 
                     Button(localization.text(.widgetDelete), role: .destructive) {
                         deleteTask()
+                        persistContext()
                         speechRecognizer.stopRecording()
                         isPresented = false
                     }
@@ -104,9 +142,10 @@ struct ManageTopMissionView: View {
             }
             .padding(16)
         }
-        .frame(width: 360, height: 220)
+        .frame(width: 380, height: 340)
         .onAppear {
             draftTask = entries.first?.task ?? ""
+            draftSubtasks = entries.first?.subtasksList ?? []
         }
         .onDisappear {
             speechRecognizer.stopRecording()
@@ -115,11 +154,16 @@ struct ManageTopMissionView: View {
 
     private func saveTask() {
         let text = draftTask.trimmed
+        let subtasks = draftSubtasks
+            .map(\.trimmed)
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n")
         if let existing = entries.first {
             existing.task = text
+            existing.subtasksRaw = subtasks
             existing.updatedAt = Date()
         } else {
-            let entry = TopMissionEntry(widgetID: widgetID, task: text)
+            let entry = TopMissionEntry(widgetID: widgetID, task: text, subtasksRaw: subtasks)
             modelContext.insert(entry)
         }
     }
@@ -128,6 +172,32 @@ struct ManageTopMissionView: View {
         for entry in entries {
             modelContext.delete(entry)
         }
+    }
+
+    private func persistContext() {
+        do {
+            try modelContext.save()
+        } catch {
+            print("TopMission save error: \(error)")
+        }
+    }
+
+    private func bindingForSubtask(at index: Int) -> Binding<String> {
+        Binding(
+            get: {
+                guard draftSubtasks.indices.contains(index) else { return "" }
+                return draftSubtasks[index]
+            },
+            set: { value in
+                guard draftSubtasks.indices.contains(index) else { return }
+                draftSubtasks[index] = value
+            }
+        )
+    }
+
+    private func removeSubtask(at index: Int) {
+        guard draftSubtasks.indices.contains(index) else { return }
+        draftSubtasks.remove(at: index)
     }
 }
 

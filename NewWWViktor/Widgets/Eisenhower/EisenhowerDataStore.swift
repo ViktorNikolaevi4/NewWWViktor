@@ -3,13 +3,16 @@ import Foundation
 
 enum EisenhowerDataStore {
     static let sharedContainer: ModelContainer = {
+        let persistentConfiguration = ModelConfiguration("WidgetsData")
         do {
             return try ModelContainer(for: EisenhowerTask.self,
                                       HabitEntry.self,
                                       CustomHabit.self,
                                       ClientPaymentEntry.self,
-                                      TopMissionEntry.self)
+                                      TopMissionEntry.self,
+                                      configurations: persistentConfiguration)
         } catch {
+            print("SwiftData persistent container init failed. Falling back to in-memory store: \(error)")
             let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
             return try! ModelContainer(for: EisenhowerTask.self,
                                        HabitEntry.self,

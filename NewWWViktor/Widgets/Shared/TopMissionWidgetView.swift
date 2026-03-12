@@ -17,6 +17,10 @@ struct TopMissionWidgetView: View {
         return trimmed.isEmpty ? localization.text(.widgetTopMissionTaskPlaceholder) : trimmed
     }
 
+    private var subtasks: [String] {
+        entries.first?.subtasksList ?? []
+    }
+
     var body: some View {
         switch widget.sizeOption {
         case .small:
@@ -62,6 +66,10 @@ struct TopMissionWidgetView: View {
                 .foregroundStyle(.primary)
                 .lineLimit(3)
 
+            if !subtasks.isEmpty {
+                subtasksList(maxItems: 2, fontSize: 11)
+            }
+
             Spacer(minLength: 0)
 
             missionBadge
@@ -83,9 +91,32 @@ struct TopMissionWidgetView: View {
                 .foregroundStyle(.primary)
                 .lineLimit(4)
 
+            if !subtasks.isEmpty {
+                subtasksList(maxItems: 4, fontSize: 12)
+            }
+
             Spacer(minLength: 0)
 
             missionBadge
+        }
+    }
+
+    @ViewBuilder
+    private func subtasksList(maxItems: Int, fontSize: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(Array(subtasks.prefix(maxItems).enumerated()), id: \.offset) { _, subtask in
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Circle()
+                        .fill(Color.white.opacity(0.7))
+                        .frame(width: 4, height: 4)
+                        .padding(.top, 5)
+
+                    Text(subtask)
+                        .font(.system(size: fontSize, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
         }
     }
 

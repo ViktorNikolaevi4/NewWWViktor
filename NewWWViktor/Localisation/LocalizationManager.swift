@@ -205,6 +205,9 @@ enum LocalizationKey: String {
     case widgetTopMissionTaskPlaceholder
     case widgetTopMissionManageAction
     case widgetTopMissionCTA
+    case widgetTopMissionSubtasksTitle
+    case widgetTopMissionSubtaskPlaceholder
+    case widgetTopMissionAddSubtask
     case widgetClientsDetailTitle
     case widgetClientsDetailDescription
     case widgetClientsTitle

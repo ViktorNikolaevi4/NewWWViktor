@@ -205,6 +205,9 @@
 "widgetTopMissionTaskPlaceholder" = "Сфокусируйся на одной задаче";
 "widgetTopMissionManageAction" = "Добавить задачу";
 "widgetTopMissionCTA" = "В работе";
+"widgetTopMissionSubtasksTitle" = "Подзадачи";
+"widgetTopMissionSubtaskPlaceholder" = "Подзадача";
+"widgetTopMissionAddSubtask" = "Добавить подзадачу";
 "widgetClientsDetailTitle" = "Платежи клиентам";
 "widgetClientsDetailDescription" = "Кто и когда должен получить оплату в этом месяце.";
 "widgetClientsTitle" = "Клиенты";

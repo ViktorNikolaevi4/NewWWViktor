@@ -21,6 +21,7 @@ struct WidgetSettingsMenuView: View {
     @State private var activeColorRole: WidgetColorRole?
     @State private var showBackgroundPicker = false
     @State private var showManageHabits = false
+    @State private var showManageTopMission = false
     @State private var showCryptoSearch = false
     @State private var showManageLinks = false
     @State private var showManageInvestment = false
@@ -144,6 +145,12 @@ struct WidgetSettingsMenuView: View {
                 .transition(.move(edge: .trailing).combined(with: .opacity))
         }
 
+        if showManageTopMission {
+            ManageTopMissionView(widgetID: workingWidget.id, isPresented: $showManageTopMission)
+            .environmentObject(localization)
+            .transition(.move(edge: .trailing).combined(with: .opacity))
+        }
+
         if showCryptoSearch {
             CryptoSearchView(isPresented: $showCryptoSearch) { symbol in
                 switch cryptoSearchMode {
@@ -189,6 +196,7 @@ struct WidgetSettingsMenuView: View {
             .animation(.spring(response: 0.32, dampingFraction: 0.88), value: isColorPickerPresented)
             .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showBackgroundPicker)
             .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageHabits)
+            .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageTopMission)
             .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showCryptoSearch)
             .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageLinks)
             .animation(.spring(response: 0.32, dampingFraction: 0.88), value: showManageClients)
@@ -218,7 +226,8 @@ struct WidgetSettingsMenuView: View {
                                                  showWeather: $showWeather,
                                                  showManageHabits: $showManageHabits,
                                                  showCryptoSearch: $showCryptoSearch,
-                                                 cryptoSearchMode: $cryptoSearchMode)
+                                                 cryptoSearchMode: $cryptoSearchMode,
+                                                 showManageTopMission: $showManageTopMission)
                     if workingWidget.type == .links {
                         LinksSettingsSection {
                             showManageLinks = true
@@ -416,6 +425,7 @@ struct WidgetSettingsMenuView: View {
         || isColorPickerPresented
         || showBackgroundPicker
         || showManageHabits
+        || showManageTopMission
         || showCryptoSearch
         || showManageLinks
         || showManageClients

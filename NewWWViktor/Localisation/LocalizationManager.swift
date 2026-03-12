@@ -203,6 +203,7 @@ enum LocalizationKey: String {
     case widgetTopMissionTitle
     case widgetTopMissionSubtitle
     case widgetTopMissionTaskPlaceholder
+    case widgetTopMissionManageAction
     case widgetTopMissionCTA
     case widgetClientsDetailTitle
     case widgetClientsDetailDescription

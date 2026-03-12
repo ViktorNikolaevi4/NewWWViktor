@@ -7,13 +7,15 @@ enum EisenhowerDataStore {
             return try ModelContainer(for: EisenhowerTask.self,
                                       HabitEntry.self,
                                       CustomHabit.self,
-                                      ClientPaymentEntry.self)
+                                      ClientPaymentEntry.self,
+                                      TopMissionEntry.self)
         } catch {
             let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
             return try! ModelContainer(for: EisenhowerTask.self,
                                        HabitEntry.self,
                                        CustomHabit.self,
                                        ClientPaymentEntry.self,
+                                       TopMissionEntry.self,
                                        configurations: configuration)
         }
     }()
@@ -24,6 +26,7 @@ enum EisenhowerDataStore {
                                             HabitEntry.self,
                                             CustomHabit.self,
                                             ClientPaymentEntry.self,
+                                            TopMissionEntry.self,
                                             configurations: configuration)
         let context = container.mainContext
         let tasks = [

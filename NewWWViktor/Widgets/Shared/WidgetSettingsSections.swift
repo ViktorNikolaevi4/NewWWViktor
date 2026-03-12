@@ -12,6 +12,7 @@ struct WidgetGeneralSettingsSection: View {
     @Binding var showManageHabits: Bool
     @Binding var showCryptoSearch: Bool
     @Binding var cryptoSearchMode: CryptoSearchMode
+    @Binding var showManageTopMission: Bool
 
     var body: some View {
         let isWeather = widget.type == .weather
@@ -117,6 +118,27 @@ struct WidgetGeneralSettingsSection: View {
 
         if widget.type == .habits {
             HabitSettingsSection(widgetID: widget.id, showManageHabits: $showManageHabits)
+        }
+
+        if widget.type == .topMission {
+            TopMissionSettingsSection {
+                showManageTopMission = true
+            }
+        }
+    }
+}
+
+struct TopMissionSettingsSection: View {
+    @EnvironmentObject private var localization: LocalizationManager
+    let onManage: () -> Void
+
+    var body: some View {
+        WidgetSettingsGroup(title: localization.text(.widgetTopMissionSubtitle)) {
+            WidgetSettingsRowButton(title: localization.text(.widgetTopMissionManageAction)) {
+                onManage()
+            } content: {
+                IconButton(systemName: "square.and.pencil", isSelected: true)
+            }
         }
     }
 }

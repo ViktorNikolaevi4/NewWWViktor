@@ -222,6 +222,7 @@ struct WidgetPreviewCard: View {
             InvestmentCalculatorWidgetView(widget: previewInstance)
         case .topMission:
             TopMissionWidgetView(widget: previewInstance)
+                .modelContainer(EisenhowerDataStore.previewContainer)
         }
     }
 

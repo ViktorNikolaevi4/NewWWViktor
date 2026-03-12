@@ -21,6 +21,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     var cryptoSymbols: [String]
     var links: [WidgetLink]
     var linkGroups: [WidgetLinkGroup]
+    var topMissionTask: String
     var investmentComputeTarget: InvestmentComputeTarget
     var investmentTargetAmount: Double
     var investmentStartCapital: Double
@@ -85,6 +86,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         self.cryptoSymbols = []
         self.links = []
         self.linkGroups = []
+        self.topMissionTask = ""
         self.investmentComputeTarget = .income
         self.investmentTargetAmount = 1_000_000
         self.investmentStartCapital = 100_000
@@ -156,7 +158,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, cryptoSymbol, cryptoSymbols, links, linkGroups, investmentComputeTarget, investmentTargetAmount, investmentStartCapital, investmentRate, investmentTermYears, investmentContribution, investmentContributionFrequency, investmentCompoundingFrequency, investmentIncludeTax, investmentTaxRate, investmentIncludeInflation, investmentInflationRate, investmentShowBreakdown, investmentProfiles, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
+        case id, type, cryptoSymbol, cryptoSymbols, links, linkGroups, topMissionTask, investmentComputeTarget, investmentTargetAmount, investmentStartCapital, investmentRate, investmentTermYears, investmentContribution, investmentContributionFrequency, investmentCompoundingFrequency, investmentIncludeTax, investmentTaxRate, investmentIncludeInflation, investmentInflationRate, investmentShowBreakdown, investmentProfiles, x, y, width, height, isPinned, isPositionLocked, showsDate, showsLocation, prefersTwelveHour, prefersCelsius, location, mainColorName, mainColorIntensity, secondaryColorName, secondaryColorIntensity, backgroundStyle, backgroundColorName, backgroundIntensity, backgroundImagePath, gradientColor1Name, gradientColor2Name, gradientColor1Opacity, gradientColor2Opacity, gradientColor1Position, gradientColor2Position, gradientType, gradientAngle, isBackgroundHidden, sizeOption, pomodoroPhase, pomodoroRound, pomodoroIsRunning, pomodoroEndDate, pomodoroRemaining, pomodoroFocusMinutes, pomodoroShortBreakMinutes, pomodoroLongBreakMinutes, pomodoroTotalRounds, pomodoroAutoStart, pomodoroSoundName, pomodoroNotificationsEnabled
     }
 
     init(from decoder: Decoder) throws {
@@ -174,6 +176,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         } else {
             linkGroups = []
         }
+        topMissionTask = try container.decodeIfPresent(String.self, forKey: .topMissionTask) ?? ""
         links = []
         investmentComputeTarget = try container.decodeIfPresent(InvestmentComputeTarget.self, forKey: .investmentComputeTarget) ?? .income
         investmentTargetAmount = try container.decodeIfPresent(Double.self, forKey: .investmentTargetAmount) ?? 1_000_000
@@ -261,6 +264,7 @@ struct WidgetInstance: Identifiable, Codable, Equatable {
         try container.encode(cryptoSymbols, forKey: .cryptoSymbols)
         try container.encode(links, forKey: .links)
         try container.encode(linkGroups, forKey: .linkGroups)
+        try container.encode(topMissionTask, forKey: .topMissionTask)
         try container.encode(investmentComputeTarget, forKey: .investmentComputeTarget)
         try container.encode(investmentTargetAmount, forKey: .investmentTargetAmount)
         try container.encode(investmentStartCapital, forKey: .investmentStartCapital)

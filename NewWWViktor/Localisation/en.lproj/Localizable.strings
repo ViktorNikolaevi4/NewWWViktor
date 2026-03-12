@@ -203,6 +203,7 @@
 "widgetTopMissionTitle" = "Top 1 Mission";
 "widgetTopMissionSubtitle" = "Main task";
 "widgetTopMissionTaskPlaceholder" = "Focus on one important task";
+"widgetTopMissionManageAction" = "Add task";
 "widgetTopMissionCTA" = "In progress";
 "widgetClientsDetailTitle" = "Client payments";
 "widgetClientsDetailDescription" = "Track who to pay and when each month.";

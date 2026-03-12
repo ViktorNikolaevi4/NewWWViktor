@@ -1,8 +1,21 @@
 import SwiftUI
+import SwiftData
 
 struct TopMissionWidgetView: View {
     let widget: WidgetInstance
     @EnvironmentObject private var localization: LocalizationManager
+    @Query private var entries: [TopMissionEntry]
+
+    init(widget: WidgetInstance) {
+        self.widget = widget
+        _entries = Query(filter: #Predicate<TopMissionEntry> { $0.widgetID == widget.id })
+    }
+
+    private var missionText: String {
+        let current = entries.first?.task ?? ""
+        let trimmed = current.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? localization.text(.widgetTopMissionTaskPlaceholder) : trimmed
+    }
 
     var body: some View {
         switch widget.sizeOption {
@@ -23,7 +36,7 @@ struct TopMissionWidgetView: View {
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
 
-            Text(localization.text(.widgetTopMissionTaskPlaceholder))
+            Text(missionText)
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(.primary)
                 .lineLimit(3)
@@ -44,7 +57,7 @@ struct TopMissionWidgetView: View {
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
 
-            Text(localization.text(.widgetTopMissionTaskPlaceholder))
+            Text(missionText)
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(.primary)
                 .lineLimit(3)
@@ -65,7 +78,7 @@ struct TopMissionWidgetView: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.secondary)
 
-            Text(localization.text(.widgetTopMissionTaskPlaceholder))
+            Text(missionText)
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.primary)
                 .lineLimit(4)

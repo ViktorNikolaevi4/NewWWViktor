@@ -10,6 +10,7 @@ struct ManageTopMissionView: View {
     let widgetID: UUID
 
     @State private var draftTask: String = ""
+    @StateObject private var speechRecognizer = TopMissionSpeechRecognizer()
 
     init(widgetID: UUID, isPresented: Binding<Bool>) {
         self.widgetID = widgetID
@@ -33,6 +34,7 @@ struct ManageTopMissionView: View {
                         .font(.system(size: 16, weight: .semibold))
                     Spacer()
                     Button {
+                        speechRecognizer.stopRecording()
                         isPresented = false
                     } label: {
                         Image(systemName: "xmark")
@@ -46,13 +48,40 @@ struct ManageTopMissionView: View {
                     .buttonStyle(.plain)
                 }
 
-                TextField(localization.text(.widgetTopMissionTaskPlaceholder), text: $draftTask, axis: .vertical)
-                    .lineLimit(3...6)
-                    .textFieldStyle(.roundedBorder)
+                HStack(spacing: 8) {
+                    TextField(localization.text(.widgetTopMissionTaskPlaceholder), text: $draftTask, axis: .vertical)
+                        .lineLimit(3...6)
+                        .textFieldStyle(.roundedBorder)
+
+                    Button {
+                        speechRecognizer.toggleRecording { text in
+                            draftTask = text
+                        }
+                    } label: {
+                        Image(systemName: speechRecognizer.isRecording ? "stop.fill" : "mic.fill")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 32, height: 32)
+                            .background(
+                                Circle()
+                                    .fill(speechRecognizer.isRecording ? Color.red.opacity(0.82) : Color.white.opacity(0.2))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .help(speechRecognizer.isRecording ? "Stop voice input" : "Start voice input")
+                }
+
+                if let error = speechRecognizer.errorMessage, !error.isEmpty {
+                    Text(error)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.red.opacity(0.9))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
 
                 HStack {
                     Button(localization.text(.widgetEisenhowerSave)) {
                         saveTask()
+                        speechRecognizer.stopRecording()
                         isPresented = false
                     }
                     .buttonStyle(.plain)
@@ -61,11 +90,13 @@ struct ManageTopMissionView: View {
 
                     Button(localization.text(.widgetDelete), role: .destructive) {
                         deleteTask()
+                        speechRecognizer.stopRecording()
                         isPresented = false
                     }
                     .buttonStyle(.plain)
 
                     Button(localization.text(.widgetEisenhowerCancel)) {
+                        speechRecognizer.stopRecording()
                         isPresented = false
                     }
                     .buttonStyle(.plain)
@@ -76,6 +107,9 @@ struct ManageTopMissionView: View {
         .frame(width: 360, height: 220)
         .onAppear {
             draftTask = entries.first?.task ?? ""
+        }
+        .onDisappear {
+            speechRecognizer.stopRecording()
         }
     }
 

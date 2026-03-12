@@ -198,6 +198,12 @@ enum LocalizationKey: String {
     case widgetLinksDetailDescription
     case widgetLinksTitle
     case widgetLinksSectionTitle
+    case widgetTopMissionDetailTitle
+    case widgetTopMissionDetailDescription
+    case widgetTopMissionTitle
+    case widgetTopMissionSubtitle
+    case widgetTopMissionTaskPlaceholder
+    case widgetTopMissionCTA
     case widgetClientsDetailTitle
     case widgetClientsDetailDescription
     case widgetClientsTitle

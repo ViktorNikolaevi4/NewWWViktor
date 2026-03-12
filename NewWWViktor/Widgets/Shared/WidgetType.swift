@@ -12,6 +12,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
     case links
     case clientsPayments
     case investment
+    case topMission
 
     var id: String { rawValue }
 
@@ -28,6 +29,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .links: return .widgetCategoryLabel
         case .clientsPayments: return .widgetCategoryLabel
         case .investment: return .widgetCategoryLabel
+        case .topMission: return .widgetCategoryLabel
         }
     }
 
@@ -44,6 +46,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .links: return .widgetLinksDetailTitle
         case .clientsPayments: return .widgetClientsDetailTitle
         case .investment: return .widgetInvestmentDetailTitle
+        case .topMission: return .widgetTopMissionDetailTitle
         }
     }
 
@@ -60,6 +63,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .links: return .widgetLinksDetailDescription
         case .clientsPayments: return .widgetClientsDetailDescription
         case .investment: return .widgetInvestmentDetailDescription
+        case .topMission: return .widgetTopMissionDetailDescription
         }
     }
 
@@ -76,6 +80,7 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
         case .links: return nil
         case .clientsPayments: return nil
         case .investment: return nil
+        case .topMission: return nil
         }
     }
 
@@ -103,6 +108,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
             return WidgetSizeOption.small.dimensions
         case .investment:
             return WidgetSizeOption.medium.dimensions
+        case .topMission:
+            return WidgetSizeOption.small.dimensions
         }
     }
 
@@ -130,6 +137,8 @@ enum WidgetType: String, Codable, CaseIterable, Identifiable {
             return [.small, .medium, .large]
         case .investment:
             return [.medium, .large]
+        case .topMission:
+            return [.small, .medium, .large]
         }
     }
 }

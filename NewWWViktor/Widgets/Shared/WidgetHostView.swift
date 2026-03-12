@@ -441,6 +441,8 @@ struct WidgetHostView: View {
             ClientsPaymentsWidgetView(widget: instance)
         case .investment:
             InvestmentCalculatorWidgetView(widget: instance)
+        case .topMission:
+            TopMissionWidgetView(widget: instance)
         }
     }
 

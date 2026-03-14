@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct ManageTopMissionView: View {
+    private let maxSubtasks = 4
     @EnvironmentObject private var localization: LocalizationManager
     @Environment(\.modelContext) private var modelContext
     @Binding var isPresented: Bool
@@ -107,11 +108,13 @@ struct ManageTopMissionView: View {
                     .frame(maxHeight: 90)
 
                     Button {
+                        guard draftSubtasks.count < maxSubtasks else { return }
                         draftSubtasks.append("")
                     } label: {
                         Label(localization.text(.widgetTopMissionAddSubtask), systemImage: "plus.circle.fill")
                     }
                     .buttonStyle(.plain)
+                    .disabled(draftSubtasks.count >= maxSubtasks)
                 }
 
                 HStack {
@@ -142,10 +145,10 @@ struct ManageTopMissionView: View {
             }
             .padding(16)
         }
-        .frame(width: 380, height: 340)
+        .frame(width: 332, height: 320)
         .onAppear {
             draftTask = entries.first?.task ?? ""
-            draftSubtasks = entries.first?.subtasksList ?? []
+            draftSubtasks = Array((entries.first?.subtasksList ?? []).prefix(maxSubtasks))
         }
         .onDisappear {
             speechRecognizer.stopRecording()
@@ -157,6 +160,8 @@ struct ManageTopMissionView: View {
         let subtasks = draftSubtasks
             .map(\.trimmed)
             .filter { !$0.isEmpty }
+            .prefix(maxSubtasks)
+            .map { $0 }
             .joined(separator: "\n")
         if let existing = entries.first {
             existing.task = text

@@ -21,6 +21,10 @@ struct TopMissionWidgetView: View {
         entries.first?.subtasksList ?? []
     }
 
+    private var subtasksProgress: Double {
+        min(Double(subtasks.count), 4.0) / 4.0
+    }
+
     var body: some View {
         switch widget.sizeOption {
         case .small:
@@ -43,11 +47,14 @@ struct TopMissionWidgetView: View {
             Text(missionText)
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(.primary)
-                .lineLimit(3)
+                .lineLimit(1)
+
+            if !subtasks.isEmpty {
+                subtasksList(maxItems: 4, fontSize: 9)
+                missionProgressView
+            }
 
             Spacer(minLength: 0)
-
-            missionBadge
         }
     }
 
@@ -68,11 +75,10 @@ struct TopMissionWidgetView: View {
 
             if !subtasks.isEmpty {
                 subtasksList(maxItems: 2, fontSize: 11)
+                missionProgressView
             }
 
             Spacer(minLength: 0)
-
-            missionBadge
         }
     }
 
@@ -93,11 +99,10 @@ struct TopMissionWidgetView: View {
 
             if !subtasks.isEmpty {
                 subtasksList(maxItems: 4, fontSize: 12)
+                missionProgressView
             }
 
             Spacer(minLength: 0)
-
-            missionBadge
         }
     }
 
@@ -120,15 +125,9 @@ struct TopMissionWidgetView: View {
         }
     }
 
-    private var missionBadge: some View {
-        Text(localization.text(.widgetTopMissionCTA))
-            .font(.system(size: 11, weight: .semibold))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(
-                Capsule()
-                    .fill(Color.white.opacity(0.2))
-            )
+    private var missionProgressView: some View {
+        ProgressView(value: subtasksProgress)
+            .progressViewStyle(.linear)
+            .tint(.white.opacity(0.85))
     }
 }

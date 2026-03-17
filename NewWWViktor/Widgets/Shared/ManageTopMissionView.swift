@@ -2,6 +2,11 @@ import SwiftUI
 import SwiftData
 
 struct ManageTopMissionView: View {
+    private enum RecordingTarget: Equatable {
+        case mainTask
+        case subtask(Int)
+    }
+
     private let maxSubtasks = 4
     @EnvironmentObject private var localization: LocalizationManager
     @Environment(\.modelContext) private var modelContext
@@ -11,7 +16,8 @@ struct ManageTopMissionView: View {
     let widgetID: UUID
 
     @State private var draftTask: String = ""
-    @State private var draftSubtasks: [String] = []
+    @State private var draftSubtasks: [TopMissionSubtask] = []
+    @State private var recordingTarget: RecordingTarget?
     @StateObject private var speechRecognizer = TopMissionSpeechRecognizer()
 
     init(widgetID: UUID, isPresented: Binding<Bool>) {
@@ -56,21 +62,21 @@ struct ManageTopMissionView: View {
                         .textFieldStyle(.roundedBorder)
 
                     Button {
-                        speechRecognizer.toggleRecording { text in
+                        toggleRecording(for: .mainTask) { text in
                             draftTask = text
                         }
                     } label: {
-                        Image(systemName: speechRecognizer.isRecording ? "stop.fill" : "mic.fill")
+                        Image(systemName: isRecording(.mainTask) ? "stop.fill" : "mic.fill")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(.white)
                             .frame(width: 32, height: 32)
                             .background(
                                 Circle()
-                                    .fill(speechRecognizer.isRecording ? Color.red.opacity(0.82) : Color.white.opacity(0.2))
+                                    .fill(isRecording(.mainTask) ? Color.red.opacity(0.82) : Color.white.opacity(0.2))
                             )
                     }
                     .buttonStyle(.plain)
-                    .help(speechRecognizer.isRecording ? "Stop voice input" : "Start voice input")
+                    .help(isRecording(.mainTask) ? "Stop voice input" : "Start voice input")
                 }
 
                 if let error = speechRecognizer.errorMessage, !error.isEmpty {
@@ -93,14 +99,44 @@ struct ManageTopMissionView: View {
                                               text: bindingForSubtask(at: index))
                                     .textFieldStyle(.roundedBorder)
 
-                                    Button(role: .destructive) {
-                                        removeSubtask(at: index)
+                                    Button {
+                                        toggleRecording(for: .subtask(index)) { text in
+                                            guard draftSubtasks.indices.contains(index) else { return }
+                                            draftSubtasks[index].title = text
+                                        }
                                     } label: {
-                                        Image(systemName: "trash")
-                                            .font(.system(size: 12, weight: .semibold))
-                                            .foregroundStyle(.red.opacity(0.9))
+                                        Image(systemName: isRecording(.subtask(index)) ? "stop.fill" : "mic.fill")
+                                            .font(.system(size: 11, weight: .semibold))
+                                            .foregroundStyle(.white)
+                                            .frame(width: 24, height: 24)
+                                            .background(
+                                                Circle()
+                                                    .fill(isRecording(.subtask(index)) ? Color.red.opacity(0.82) : Color.white.opacity(0.16))
+                                            )
                                     }
                                     .buttonStyle(.plain)
+                                    .help(isRecording(.subtask(index)) ? "Stop voice input" : "Start voice input for subtask")
+
+                                    if isRecording(.subtask(index)) {
+                                        Button {
+                                            finishRecordingAndSaveDraft()
+                                        } label: {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .font(.system(size: 14, weight: .semibold))
+                                                .foregroundStyle(.green.opacity(0.92))
+                                        }
+                                        .buttonStyle(.plain)
+                                        .help("Finish voice input")
+                                    } else {
+                                        Button(role: .destructive) {
+                                            removeSubtask(at: index)
+                                        } label: {
+                                            Image(systemName: "trash")
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .foregroundStyle(.red.opacity(0.9))
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
                                 }
                             }
                         }
@@ -109,7 +145,7 @@ struct ManageTopMissionView: View {
 
                     Button {
                         guard draftSubtasks.count < maxSubtasks else { return }
-                        draftSubtasks.append("")
+                        draftSubtasks.append(TopMissionSubtask(title: ""))
                     } label: {
                         Label(localization.text(.widgetTopMissionAddSubtask), systemImage: "plus.circle.fill")
                     }
@@ -147,10 +183,13 @@ struct ManageTopMissionView: View {
         }
         .frame(width: 332, height: 320)
         .onAppear {
-            draftTask = entries.first?.task ?? ""
-            draftSubtasks = Array((entries.first?.subtasksList ?? []).prefix(maxSubtasks))
+            refreshDraftFromEntry()
+        }
+        .onChange(of: entries.first?.updatedAt) { _, _ in
+            refreshDraftFromEntry()
         }
         .onDisappear {
+            recordingTarget = nil
             speechRecognizer.stopRecording()
         }
     }
@@ -158,17 +197,18 @@ struct ManageTopMissionView: View {
     private func saveTask() {
         let text = draftTask.trimmed
         let subtasks = draftSubtasks
-            .map(\.trimmed)
-            .filter { !$0.isEmpty }
             .prefix(maxSubtasks)
             .map { $0 }
-            .joined(separator: "\n")
         if let existing = entries.first {
             existing.task = text
-            existing.subtasksRaw = subtasks
+            existing.isCompleted = text.isEmpty ? false : existing.isCompleted
+            existing.setSubtasks(Array(subtasks))
             existing.updatedAt = Date()
         } else {
-            let entry = TopMissionEntry(widgetID: widgetID, task: text, subtasksRaw: subtasks)
+            let entry = TopMissionEntry(widgetID: widgetID,
+                                       task: text,
+                                       isCompleted: false)
+            entry.setSubtasks(Array(subtasks))
             modelContext.insert(entry)
         }
     }
@@ -191,18 +231,63 @@ struct ManageTopMissionView: View {
         Binding(
             get: {
                 guard draftSubtasks.indices.contains(index) else { return "" }
-                return draftSubtasks[index]
+                return draftSubtasks[index].title
             },
             set: { value in
                 guard draftSubtasks.indices.contains(index) else { return }
-                draftSubtasks[index] = value
+                draftSubtasks[index].title = value
             }
         )
     }
 
+    private func isRecording(_ target: RecordingTarget) -> Bool {
+        speechRecognizer.isRecording && recordingTarget == target
+    }
+
+    private func stopRecording() {
+        recordingTarget = nil
+        speechRecognizer.stopRecording()
+    }
+
+    private func finishRecordingAndSaveDraft() {
+        recordingTarget = nil
+        speechRecognizer.completeRecording {
+            saveTask()
+            persistContext()
+            refreshDraftFromEntry()
+        }
+    }
+
+    private func toggleRecording(for target: RecordingTarget, onText: @escaping (String) -> Void) {
+        if speechRecognizer.isRecording {
+            if recordingTarget == target {
+                stopRecording()
+                return
+            }
+
+            stopRecording()
+        }
+
+        recordingTarget = target
+        speechRecognizer.toggleRecording { text in
+            onText(text)
+            if !speechRecognizer.isRecording {
+                recordingTarget = nil
+            }
+        }
+    }
+
     private func removeSubtask(at index: Int) {
         guard draftSubtasks.indices.contains(index) else { return }
+        if case .subtask = recordingTarget {
+            stopRecording()
+        }
         draftSubtasks.remove(at: index)
+    }
+
+    private func refreshDraftFromEntry() {
+        draftTask = entries.first?.task ?? ""
+        draftSubtasks = Array((entries.first?.subtasks ?? []).prefix(maxSubtasks))
     }
 }
 

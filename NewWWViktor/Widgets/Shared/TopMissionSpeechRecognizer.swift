@@ -12,6 +12,8 @@ final class TopMissionSpeechRecognizer: ObservableObject {
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let recognizer: SFSpeechRecognizer?
+    private var isStoppingIntentionally = false
+    private var completionHandler: (() -> Void)?
 
     init(locale: Locale = .autoupdatingCurrent) {
         recognizer = SFSpeechRecognizer(locale: locale) ?? SFSpeechRecognizer(locale: Locale(identifier: "ru-RU"))
@@ -29,14 +31,20 @@ final class TopMissionSpeechRecognizer: ObservableObject {
     }
 
     func stopRecording() {
-        if audioEngine.isRunning {
-            audioEngine.stop()
-        }
-        audioEngine.inputNode.removeTap(onBus: 0)
-        recognitionRequest?.endAudio()
+        isStoppingIntentionally = true
+        finishAudioInput()
         recognitionTask?.cancel()
-        recognitionTask = nil
-        recognitionRequest = nil
+        resetSession()
+    }
+
+    func completeRecording(onComplete: @escaping () -> Void) {
+        guard isRecording else {
+            onComplete()
+            return
+        }
+
+        completionHandler = onComplete
+        finishAudioInput()
         isRecording = false
     }
 
@@ -58,7 +66,9 @@ final class TopMissionSpeechRecognizer: ObservableObject {
             return
         }
 
+        isStoppingIntentionally = false
         stopRecording()
+        isStoppingIntentionally = false
 
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
@@ -70,12 +80,14 @@ final class TopMissionSpeechRecognizer: ObservableObject {
                 if let result {
                     onText(result.bestTranscription.formattedString)
                     if result.isFinal {
-                        self.stopRecording()
+                        self.resetSession()
                     }
                 }
                 if let error {
-                    self.errorMessage = error.localizedDescription
-                    self.stopRecording()
+                    if !self.shouldIgnore(error) {
+                        self.errorMessage = error.localizedDescription
+                    }
+                    self.resetSession()
                 }
             }
         }
@@ -90,6 +102,7 @@ final class TopMissionSpeechRecognizer: ObservableObject {
         audioEngine.prepare()
         do {
             try audioEngine.start()
+            isStoppingIntentionally = false
             isRecording = true
         } catch {
             errorMessage = error.localizedDescription
@@ -114,5 +127,39 @@ final class TopMissionSpeechRecognizer: ObservableObject {
                 continuation.resume(returning: granted)
             }
         }
+    }
+
+    private func shouldIgnore(_ error: Error) -> Bool {
+        if isStoppingIntentionally {
+            return true
+        }
+
+        let nsError = error as NSError
+        if nsError.domain == "kAFAssistantErrorDomain", nsError.code == 216 {
+            return true
+        }
+
+        let message = nsError.localizedDescription.lowercased()
+        return message.contains("canceled") || message.contains("cancelled")
+    }
+
+    private func finishAudioInput() {
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+        audioEngine.inputNode.removeTap(onBus: 0)
+        recognitionRequest?.endAudio()
+    }
+
+    private func resetSession() {
+        recognitionTask?.cancel()
+        recognitionTask = nil
+        recognitionRequest = nil
+        isRecording = false
+        isStoppingIntentionally = false
+
+        let handler = completionHandler
+        completionHandler = nil
+        handler?()
     }
 }

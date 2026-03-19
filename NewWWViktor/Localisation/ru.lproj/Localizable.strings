@@ -198,9 +198,9 @@
 "widgetLinksDetailDescription" = "Быстрый доступ к сохранённым сайтам.";
 "widgetLinksTitle" = "Ссылки";
 "widgetLinksSectionTitle" = "Ссылки";
-"widgetTopMissionDetailTitle" = "Top 1 Mission";
+"widgetTopMissionDetailTitle" = "Главная задача";
 "widgetTopMissionDetailDescription" = "Одна главная задача на день.";
-"widgetTopMissionTitle" = "Top 1 Mission";
+"widgetTopMissionTitle" = "Главная задача";
 "widgetTopMissionSubtitle" = "Главная задача";
 "widgetTopMissionTaskPlaceholder" = "Сфокусируйся на одной задаче";
 "widgetTopMissionManageAction" = "Добавить задачу";
@@ -208,6 +208,9 @@
 "widgetTopMissionSubtasksTitle" = "Подзадачи";
 "widgetTopMissionSubtaskPlaceholder" = "Подзадача";
 "widgetTopMissionAddSubtask" = "Добавить подзадачу";
+"widgetTopMissionDeadlineTitle" = "Дедлайн";
+"widgetTopMissionDeadlinePlaceholder" = "Не задан";
+"widgetTopMissionShowDeadline" = "Добавить дедлайн";
 "widgetClientsDetailTitle" = "Платежи клиентам";
 "widgetClientsDetailDescription" = "Кто и когда должен получить оплату в этом месяце.";
 "widgetClientsTitle" = "Клиенты";

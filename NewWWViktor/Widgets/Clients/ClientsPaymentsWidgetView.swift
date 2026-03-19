@@ -4,6 +4,7 @@ import SwiftData
 struct ClientsPaymentsWidgetView: View {
     let widget: WidgetInstance
 
+    @EnvironmentObject private var manager: WidgetManager
     @EnvironmentObject private var localization: LocalizationManager
     @Query private var clients: [ClientPaymentEntry]
 
@@ -99,7 +100,7 @@ struct ClientsPaymentsWidgetView: View {
             summaryContent
 
             Divider()
-                .background(Color.white.opacity(0.1))
+                .background(secondaryColor.opacity(0.2))
 
             clientsListContent
 
@@ -119,10 +120,10 @@ struct ClientsPaymentsWidgetView: View {
 
             ProgressView(value: collectionProgress)
                 .progressViewStyle(.linear)
-                .tint(.blue.opacity(0.8))
+                .tint(primaryColor.opacity(0.9))
 
             Divider()
-                .background(Color.white.opacity(0.1))
+                .background(secondaryColor.opacity(0.2))
 
             clientsListContent
             Spacer(minLength: 0)
@@ -135,7 +136,7 @@ struct ClientsPaymentsWidgetView: View {
             if sortedClients.isEmpty {
                 Text(localization.text(.widgetClientsEmpty))
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 VStack(alignment: .leading, spacing: 8) {
@@ -151,11 +152,11 @@ struct ClientsPaymentsWidgetView: View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
                 .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(secondaryColor)
                 .lineLimit(1)
             Text(amount)
                 .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(primaryColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
@@ -178,31 +179,31 @@ struct ClientsPaymentsWidgetView: View {
                 if let paidAmountText {
                     Text(paidAmountText)
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(secondaryColor)
                         .padding(.leading, 13)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
             Divider()
-                .background(Color.white.opacity(0.1))
+                .background(secondaryColor.opacity(0.2))
 
             VStack(alignment: .leading, spacing: 7) {
                 Text(localization.text(.widgetClientsNextTitle))
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(primaryColor)
 
                 if upcomingClients.isEmpty {
                     Text(localization.text(.widgetClientsEmpty))
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(secondaryColor)
                 } else {
                     ForEach(Array(upcomingClients.prefix(3))) { client in
                         VStack(alignment: .leading, spacing: 1) {
                             HStack(spacing: 6) {
                                 Text(client.name)
                                     .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(primaryColor)
                                     .lineLimit(1)
 
                                 Spacer(minLength: 0)
@@ -210,13 +211,13 @@ struct ClientsPaymentsWidgetView: View {
                                 if let amountText = amountText(for: client) {
                                     Text(amountText)
                                         .font(.system(size: 10, weight: .semibold))
-                                        .foregroundStyle(.primary)
+                                        .foregroundStyle(primaryColor)
                                 }
                             }
 
                             Text(relativePayDayText(for: client))
                                 .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(secondaryColor)
                         }
                     }
                 }
@@ -238,7 +239,7 @@ struct ClientsPaymentsWidgetView: View {
 
             Text(text)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(primaryColor)
                 .lineLimit(1)
 
             Spacer(minLength: 0)
@@ -249,19 +250,19 @@ struct ClientsPaymentsWidgetView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(overdueLabel)
                 .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(secondaryColor)
 
             Text(collectedAmount)
                 .font(.system(size: 26, weight: .bold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(primaryColor)
 
             Text(unpaidLabel)
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(secondaryColor)
 
             Text(paidLabel)
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(secondaryColor)
         }
     }
 
@@ -269,14 +270,14 @@ struct ClientsPaymentsWidgetView: View {
         HStack(spacing: 8) {
             Text(client.name)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(primaryColor)
 
             Spacer(minLength: 0)
 
             if let detail = detailText(for: client) {
                 Text(detail)
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
             }
         }
     }
@@ -390,5 +391,17 @@ struct ClientsPaymentsWidgetView: View {
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
         return formatter
+    }
+
+    private var primaryColor: Color {
+        let name = widget.mainColorName ?? manager.globalPrimaryColorName
+        let intensity = widget.mainColorName == nil ? manager.globalPrimaryIntensity : widget.mainColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .primary)
+    }
+
+    private var secondaryColor: Color {
+        let name = widget.secondaryColorName ?? manager.globalSecondaryColorName
+        let intensity = widget.secondaryColorName == nil ? manager.globalSecondaryIntensity : widget.secondaryColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .secondary)
     }
 }

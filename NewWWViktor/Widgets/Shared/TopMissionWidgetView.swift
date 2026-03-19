@@ -3,9 +3,12 @@ import SwiftData
 
 struct TopMissionWidgetView: View {
     let widget: WidgetInstance
+    @EnvironmentObject private var manager: WidgetManager
     @EnvironmentObject private var localization: LocalizationManager
     @Environment(\.modelContext) private var modelContext
     @Query private var entries: [TopMissionEntry]
+    @State private var showDeadlineEditor = false
+    @State private var draftDeadline = Date()
 
     init(widget: WidgetInstance) {
         self.widget = widget
@@ -34,6 +37,10 @@ struct TopMissionWidgetView: View {
         entries.first?.subtasks ?? []
     }
 
+    private var deadlineAt: Date? {
+        entries.first?.deadlineAt
+    }
+
     private var subtasksProgress: Double {
         guard !subtasks.isEmpty else { return 0 }
         return Double(subtasks.filter(\.isCompleted).count) / Double(subtasks.count)
@@ -54,14 +61,14 @@ struct TopMissionWidgetView: View {
 
     private var smallLayout: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(localization.text(.widgetTopMissionTitle))
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.secondary)
+            sectionTitle(fontSize: 11)
 
             missionRow(fontSize: 14, lineLimit: 2)
 
             if !subtasks.isEmpty {
+                sectionDivider
                 subtasksList(maxItems: 4, fontSize: 9)
+                sectionDivider
                 missionProgressView
             }
 
@@ -71,18 +78,25 @@ struct TopMissionWidgetView: View {
 
     private var mediumLayout: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(localization.text(.widgetTopMissionTitle))
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.secondary)
+            sectionTitle(fontSize: 12)
 
-            Text(localization.text(.widgetTopMissionSubtitle))
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.secondary)
+            HStack(alignment: .top, spacing: 10) {
+                missionRow(fontSize: 18, lineLimit: 3)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            missionRow(fontSize: 18, lineLimit: 3)
+                if !subtasks.isEmpty {
+                    Rectangle()
+                        .fill(secondaryColor.opacity(0.18))
+                        .frame(width: 1)
+                        .padding(.vertical, 2)
+
+                    subtasksList(maxItems: 4, fontSize: 11)
+                        .frame(width: 116, alignment: .leading)
+                }
+            }
 
             if !subtasks.isEmpty {
-                subtasksList(maxItems: 2, fontSize: 11)
+                sectionDivider
                 missionProgressView
             }
 
@@ -92,22 +106,38 @@ struct TopMissionWidgetView: View {
 
     private var largeLayout: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(localization.text(.widgetTopMissionTitle))
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.secondary)
-
-            Text(localization.text(.widgetTopMissionSubtitle))
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.secondary)
+            sectionTitle(fontSize: 12)
 
             missionRow(fontSize: 22, lineLimit: 4)
 
             if !subtasks.isEmpty {
+                sectionDivider
                 subtasksList(maxItems: 4, fontSize: 12)
+                sectionDivider
                 missionProgressView
             }
 
+            if hasMission {
+                deadlineSection
+            }
+
             Spacer(minLength: 0)
+        }
+        .onChange(of: deadlineAt) { _, newValue in
+            draftDeadline = newValue ?? Date()
+        }
+    }
+
+    @ViewBuilder
+    private func sectionTitle(fontSize: CGFloat) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "target")
+                .font(.system(size: max(fontSize - 1, 10), weight: .semibold))
+                .foregroundStyle(primaryColor)
+
+            Text(localization.text(.widgetTopMissionTitle))
+                .font(.system(size: fontSize, weight: .semibold))
+                .foregroundStyle(secondaryColor)
         }
     }
 
@@ -186,15 +216,117 @@ struct TopMissionWidgetView: View {
     private var missionProgressView: some View {
         ProgressView(value: subtasksProgress)
             .progressViewStyle(.linear)
-            .tint(.white.opacity(0.85))
+            .tint(primaryColor.opacity(0.9))
+    }
+
+    @ViewBuilder
+    private var deadlineSection: some View {
+        if let deadlineAt {
+            Button {
+                draftDeadline = deadlineAt
+                showDeadlineEditor = true
+            } label: {
+                deadlineRow(deadlineAt)
+            }
+            .buttonStyle(.plain)
+            .popover(isPresented: $showDeadlineEditor, arrowEdge: .bottom) {
+                deadlineEditorPopover
+            }
+        } else {
+            Button {
+                draftDeadline = Date()
+                showDeadlineEditor = true
+            } label: {
+                addDeadlineRow
+            }
+            .buttonStyle(.plain)
+            .popover(isPresented: $showDeadlineEditor, arrowEdge: .bottom) {
+                deadlineEditorPopover
+            }
+        }
+    }
+
+    private func deadlineRow(_ date: Date) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "calendar.badge.clock")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(primaryColor)
+
+            Text(localization.text(.widgetTopMissionDeadlineTitle))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(secondaryColor)
+
+            Spacer(minLength: 0)
+
+            Text(deadlineText(for: date))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(primaryColor)
+                .multilineTextAlignment(.trailing)
+        }
+    }
+
+    private var addDeadlineRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "calendar.badge.plus")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(primaryColor)
+
+            Text(localization.text(.widgetTopMissionShowDeadline))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(secondaryColor)
+
+            Spacer(minLength: 0)
+        }
+    }
+
+    private var deadlineEditorPopover: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localization.text(.widgetTopMissionDeadlineTitle))
+                .font(.system(size: 13, weight: .semibold))
+
+            DatePicker("",
+                       selection: $draftDeadline,
+                       displayedComponents: [.date, .hourAndMinute])
+                .labelsHidden()
+                .datePickerStyle(.graphical)
+
+            HStack {
+                Button(localization.text(.widgetEisenhowerSave)) {
+                    saveDeadline(draftDeadline)
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                if deadlineAt != nil {
+                    Button(localization.text(.widgetDelete), role: .destructive) {
+                        clearDeadline()
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Button(localization.text(.widgetEisenhowerCancel)) {
+                    showDeadlineEditor = false
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(14)
+        .frame(width: 280)
+    }
+
+    private var sectionDivider: some View {
+        Rectangle()
+            .fill(secondaryColor.opacity(0.2))
+            .frame(height: 1)
     }
 
     private var missionTextColor: Color {
-        hasMission && isCompleted ? .primary.opacity(0.58) : .primary
+        hasMission && isCompleted ? primaryColor.opacity(0.58) : primaryColor
     }
 
     private var missionTextStrikeColor: Color {
-        .primary.opacity(0.45)
+        primaryColor.opacity(0.45)
     }
 
     private var checkboxStrokeColor: Color {
@@ -214,7 +346,7 @@ struct TopMissionWidgetView: View {
     }
 
     private func subtaskTextColor(for subtask: TopMissionSubtask) -> Color {
-        subtask.isCompleted ? .secondary.opacity(0.62) : .secondary
+        subtask.isCompleted ? secondaryColor.opacity(0.62) : secondaryColor
     }
 
     private func subtaskCheckboxStrokeColor(for subtask: TopMissionSubtask) -> Color {
@@ -249,5 +381,40 @@ struct TopMissionWidgetView: View {
             modelContext.rollback()
             print("TopMission toggle completion save error: \(error)")
         }
+    }
+
+    private func saveDeadline(_ date: Date) {
+        guard let entry else { return }
+        entry.deadlineAt = date
+        entry.updatedAt = Date()
+        persistChanges()
+        showDeadlineEditor = false
+    }
+
+    private func clearDeadline() {
+        guard let entry else { return }
+        entry.deadlineAt = nil
+        entry.updatedAt = Date()
+        persistChanges()
+        showDeadlineEditor = false
+    }
+
+    private var primaryColor: Color {
+        let name = widget.mainColorName ?? manager.globalPrimaryColorName
+        let intensity = widget.mainColorName == nil ? manager.globalPrimaryIntensity : widget.mainColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .primary)
+    }
+
+    private var secondaryColor: Color {
+        let name = widget.secondaryColorName ?? manager.globalSecondaryColorName
+        let intensity = widget.secondaryColorName == nil ? manager.globalSecondaryIntensity : widget.secondaryColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .secondary)
+    }
+
+    private func deadlineText(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale.current
+        formatter.setLocalizedDateFormatFromTemplate("d MMM HH:mm")
+        return formatter.string(from: date)
     }
 }

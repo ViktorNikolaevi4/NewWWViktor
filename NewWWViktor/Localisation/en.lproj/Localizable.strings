@@ -198,9 +198,9 @@
 "widgetLinksDetailDescription" = "Quick access to saved sites.";
 "widgetLinksTitle" = "Links";
 "widgetLinksSectionTitle" = "Links";
-"widgetTopMissionDetailTitle" = "Top 1 Mission";
+"widgetTopMissionDetailTitle" = "Main Task";
 "widgetTopMissionDetailDescription" = "One primary task for today.";
-"widgetTopMissionTitle" = "Top 1 Mission";
+"widgetTopMissionTitle" = "Main Task";
 "widgetTopMissionSubtitle" = "Main task";
 "widgetTopMissionTaskPlaceholder" = "Focus on one important task";
 "widgetTopMissionManageAction" = "Add task";
@@ -208,6 +208,9 @@
 "widgetTopMissionSubtasksTitle" = "Subtasks";
 "widgetTopMissionSubtaskPlaceholder" = "Subtask";
 "widgetTopMissionAddSubtask" = "Add subtask";
+"widgetTopMissionDeadlineTitle" = "Deadline";
+"widgetTopMissionDeadlinePlaceholder" = "Not set";
+"widgetTopMissionShowDeadline" = "Add deadline";
 "widgetClientsDetailTitle" = "Client payments";
 "widgetClientsDetailDescription" = "Track who to pay and when each month.";
 "widgetClientsTitle" = "Clients";

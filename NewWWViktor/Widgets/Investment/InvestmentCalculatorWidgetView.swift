@@ -137,38 +137,38 @@ struct InvestmentCalculatorWidgetView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(localization.text(.widgetInvestmentResultTitle))
                 .font(.system(size: layout.resultTitleFontSize, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(secondaryColor)
 
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Text(localization.text(widget.investmentComputeTarget.resultTitleKey))
                     .font(.system(size: layout.resultLabelFontSize, weight: .semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(primaryColor)
 
                 Spacer(minLength: 0)
 
                 Text(resultValueText(result: result))
                     .font(.system(size: layout.resultValueFontSize, weight: .bold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(primaryColor)
             }
 
             HStack {
                 Text(localization.text(.widgetInvestmentFinalAmountLabel))
                     .font(.system(size: layout.metaFontSize, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
                 Spacer(minLength: 0)
                 Text(moneyFormatter.string(from: NSNumber(value: result.finalAmount)) ?? "—")
                     .font(.system(size: layout.metaFontSize, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
             }
 
             HStack {
                 Text(localization.text(.widgetInvestmentIncomeLabel))
                     .font(.system(size: layout.metaFontSize, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
                 Spacer(minLength: 0)
                 Text(moneyFormatter.string(from: NSNumber(value: result.income)) ?? "—")
                     .font(.system(size: layout.metaFontSize, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
             }
             .opacity(widget.investmentComputeTarget == .income ? 0 : 1)
             .frame(maxHeight: widget.investmentComputeTarget == .income ? 0 : nil)
@@ -177,7 +177,7 @@ struct InvestmentCalculatorWidgetView: View {
         .padding(.vertical, layout.cardPadding)
         .background(
             RoundedRectangle(cornerRadius: layout.cardCornerRadius, style: .continuous)
-                .fill(Color.white.opacity(0.08))
+                .fill(surfaceColor)
         )
     }
 
@@ -200,7 +200,7 @@ struct InvestmentCalculatorWidgetView: View {
         }
         .background(
             RoundedRectangle(cornerRadius: layout.cardCornerRadius, style: .continuous)
-                .fill(Color.white.opacity(0.06))
+                .fill(secondaryColor.opacity(0.1))
         )
     }
 
@@ -232,11 +232,11 @@ struct InvestmentCalculatorWidgetView: View {
                             HStack {
                                 Text("\(entry.year)")
                                     .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(secondaryColor)
                                 Spacer(minLength: 0)
                                 Text(moneyFormatter.string(from: NSNumber(value: entry.endAmount)) ?? "—")
                                     .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(primaryColor)
                                     .monospacedDigit()
                             }
                             .padding(.vertical, 6)
@@ -246,7 +246,7 @@ struct InvestmentCalculatorWidgetView: View {
                         .buttonStyle(.plain)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(Color.black.opacity(0.18))
+                                .fill(surfaceEmphasisColor)
                         )
                     }
                     
@@ -260,12 +260,12 @@ struct InvestmentCalculatorWidgetView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.system(size: layout.breakdownHeaderFontSize, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(secondaryColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Text(moneyFormatter.string(from: NSNumber(value: value)) ?? "—")
                 .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(primaryColor)
                 .monospacedDigit()
         }
         .padding(.vertical, 8)
@@ -273,7 +273,7 @@ struct InvestmentCalculatorWidgetView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.black.opacity(0.2))
+                .fill(surfaceEmphasisColor)
         )
     }
 
@@ -308,7 +308,7 @@ struct InvestmentCalculatorWidgetView: View {
                                      layout: InvestmentCalculatorLayout) -> some View {
         Text(text)
             .font(.system(size: layout.breakdownHeaderFontSize, weight: .semibold))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(secondaryColor)
             .lineLimit(1)
             .minimumScaleFactor(0.7)
             .frame(width: width, alignment: alignment)
@@ -322,7 +322,7 @@ struct InvestmentCalculatorWidgetView: View {
             HStack(spacing: layout.breakdownColumnSpacing) {
                 Text("\(entry.year)")
                     .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(primaryColor)
                     .frame(width: layout.breakdownYearWidth, alignment: .leading)
 
                 breakdownValueCell(entry.startAmount, layout: layout)
@@ -334,16 +334,16 @@ struct InvestmentCalculatorWidgetView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.black.opacity(0.18))
-        )
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(surfaceEmphasisColor)
+            )
     }
 
     private func breakdownValueCell(_ value: Double, layout: InvestmentCalculatorLayout) -> some View {
         Text(moneyFormatter.string(from: NSNumber(value: value)) ?? "—")
             .font(.system(size: layout.breakdownRowFontSize, weight: .semibold))
-            .foregroundStyle(.primary)
+            .foregroundStyle(primaryColor)
             .monospacedDigit()
             .lineLimit(1)
             .minimumScaleFactor(0.7)
@@ -354,7 +354,7 @@ struct InvestmentCalculatorWidgetView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(localization.text(.widgetInvestmentComputeLabel))
                 .font(.system(size: layout.sectionTitleFontSize, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(secondaryColor)
 
             Picker("", selection: binding(for: \.investmentComputeTarget)) {
                 ForEach(InvestmentComputeTarget.allCases) { option in
@@ -452,6 +452,26 @@ struct InvestmentCalculatorWidgetView: View {
         formatter.maximumFractionDigits = 2
         formatter.minimumFractionDigits = 0
         return formatter
+    }
+
+    private var primaryColor: Color {
+        let name = widget.mainColorName ?? manager.globalPrimaryColorName
+        let intensity = widget.mainColorName == nil ? manager.globalPrimaryIntensity : widget.mainColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .primary)
+    }
+
+    private var secondaryColor: Color {
+        let name = widget.secondaryColorName ?? manager.globalSecondaryColorName
+        let intensity = widget.secondaryColorName == nil ? manager.globalSecondaryIntensity : widget.secondaryColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .secondary)
+    }
+
+    private var surfaceColor: Color {
+        secondaryColor.opacity(0.12)
+    }
+
+    private var surfaceEmphasisColor: Color {
+        secondaryColor.opacity(0.16)
     }
 }
 

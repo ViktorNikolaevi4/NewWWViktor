@@ -37,18 +37,18 @@ struct CryptoWidgetView: View {
         HStack {
             Text(symbolLabel)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(primaryColor)
             Spacer()
             Text(localization.text(.widgetCryptoTitle))
                 .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(secondaryColor)
         }
     }
 
     private var priceRow: some View {
         Text(formattedPrice)
             .font(.system(size: 26, weight: .bold))
-            .foregroundStyle(.primary)
+            .foregroundStyle(primaryColor)
     }
 
     private var changeRow: some View {
@@ -83,7 +83,7 @@ struct CryptoWidgetView: View {
             HStack {
                 Text(localization.text(.widgetCryptoTitle))
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
                 Spacer()
             }
 
@@ -100,7 +100,10 @@ struct CryptoWidgetView: View {
                                         isDeletable: !isPrimary,
                                         onDelete: {
                                             deleteSymbol(item)
-                                        })
+                                        },
+                                        primaryColor: primaryColor,
+                                        secondaryColor: secondaryColor,
+                                        surfaceColor: surfaceColor)
                             .frame(height: rowHeight)
                             .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0))
                             .listRowSeparator(.hidden)
@@ -184,16 +187,19 @@ private struct CryptoTickerRow: View {
     let rowHeight: CGFloat
     let isDeletable: Bool
     let onDelete: () -> Void
+    let primaryColor: Color
+    let secondaryColor: Color
+    let surfaceColor: Color
 
     var body: some View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(primaryColor)
                 Text(subtitle)
                     .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
             }
             .frame(width: 90, alignment: .leading)
 
@@ -203,7 +209,7 @@ private struct CryptoTickerRow: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(priceText)
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(primaryColor)
                 Text(changeText)
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(changeIsPositive ? Color.green : Color.red)
@@ -228,7 +234,7 @@ private struct CryptoTickerRow: View {
         }
         .padding(.vertical, 2)
         .padding(.horizontal, 6)
-        .background(Color.white.opacity(0.05))
+        .background(surfaceColor)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
@@ -261,6 +267,24 @@ private struct CryptoTickerRow: View {
         formatter.minimumFractionDigits = price >= 1000 ? 0 : (price >= 1 ? 2 : 4)
         formatter.maximumFractionDigits = formatter.minimumFractionDigits
         return formatter.string(from: NSNumber(value: price)) ?? "—"
+    }
+}
+
+private extension CryptoWidgetView {
+    var primaryColor: Color {
+        let name = widget.mainColorName ?? manager.globalPrimaryColorName
+        let intensity = widget.mainColorName == nil ? manager.globalPrimaryIntensity : widget.mainColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .primary)
+    }
+
+    var secondaryColor: Color {
+        let name = widget.secondaryColorName ?? manager.globalSecondaryColorName
+        let intensity = widget.secondaryColorName == nil ? manager.globalSecondaryIntensity : widget.secondaryColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .secondary)
+    }
+
+    var surfaceColor: Color {
+        secondaryColor.opacity(0.12)
     }
 }
 

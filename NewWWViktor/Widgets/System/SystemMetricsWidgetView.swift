@@ -3,6 +3,7 @@ import SwiftUI
 struct SystemMetricsWidgetView: View {
     let widget: WidgetInstance
     @ObservedObject var metrics: SystemMetricsProvider
+    @EnvironmentObject private var manager: WidgetManager
     @EnvironmentObject private var localization: LocalizationManager
 
     var body: some View {
@@ -17,7 +18,8 @@ struct SystemMetricsWidgetView: View {
                     SystemUsageRingCluster(cpu: cpuPercent ?? 0,
                                            ram: ramPercent ?? 0,
                                            disk: diskPercent ?? 0,
-                                           layout: layout)
+                                           layout: layout,
+                                           trackColor: secondaryColor.opacity(0.24))
 
                     VStack(alignment: .leading, spacing: layout.labelSpacing) {
                         SystemUsageLabelRow(title: localization.text(.widgetSystemCPU),
@@ -25,7 +27,9 @@ struct SystemMetricsWidgetView: View {
                                             detail: nil,
                                             color: Color(hex: 0xF7B731),
                                             layout: layout,
-                                            alignment: .leading)
+                                            alignment: .leading,
+                                            primaryColor: primaryColor,
+                                            secondaryColor: secondaryColor)
                         SystemUsageLabelRow(title: localization.text(.widgetSystemRAM),
                                             percent: ramPercent,
                                             detail: usageDetail(used: metrics.memoryUsed,
@@ -33,7 +37,9 @@ struct SystemMetricsWidgetView: View {
                                                                 compact: compactDetail),
                                             color: Color(hex: 0x5CD0FF),
                                             layout: layout,
-                                            alignment: .leading)
+                                            alignment: .leading,
+                                            primaryColor: primaryColor,
+                                            secondaryColor: secondaryColor)
                         SystemUsageLabelRow(title: localization.text(.widgetSystemDisk),
                                             percent: diskPercent,
                                             detail: usageDetail(used: metrics.diskUsed,
@@ -41,7 +47,9 @@ struct SystemMetricsWidgetView: View {
                                                                 compact: compactDetail),
                                             color: Color(hex: 0xA78BFA),
                                             layout: layout,
-                                            alignment: .leading)
+                                            alignment: .leading,
+                                            primaryColor: primaryColor,
+                                            secondaryColor: secondaryColor)
                     }
                     Spacer(minLength: 0)
                 }
@@ -50,7 +58,8 @@ struct SystemMetricsWidgetView: View {
                     SystemUsageRingCluster(cpu: cpuPercent ?? 0,
                                            ram: ramPercent ?? 0,
                                            disk: diskPercent ?? 0,
-                                           layout: layout)
+                                           layout: layout,
+                                           trackColor: secondaryColor.opacity(0.24))
 
                     VStack(alignment: .leading, spacing: layout.labelSpacing) {
                         SystemUsageLabelRow(title: localization.text(.widgetSystemCPU),
@@ -58,7 +67,9 @@ struct SystemMetricsWidgetView: View {
                                             detail: nil,
                                             color: Color(hex: 0xF7B731),
                                             layout: layout,
-                                            alignment: .leading)
+                                            alignment: .leading,
+                                            primaryColor: primaryColor,
+                                            secondaryColor: secondaryColor)
                         SystemUsageLabelRow(title: localization.text(.widgetSystemRAM),
                                             percent: ramPercent,
                                             detail: usageDetail(used: metrics.memoryUsed,
@@ -66,7 +77,9 @@ struct SystemMetricsWidgetView: View {
                                                                 compact: compactDetail),
                                             color: Color(hex: 0x5CD0FF),
                                             layout: layout,
-                                            alignment: .leading)
+                                            alignment: .leading,
+                                            primaryColor: primaryColor,
+                                            secondaryColor: secondaryColor)
                         SystemUsageLabelRow(title: localization.text(.widgetSystemDisk),
                                             percent: diskPercent,
                                             detail: usageDetail(used: metrics.diskUsed,
@@ -74,7 +87,9 @@ struct SystemMetricsWidgetView: View {
                                                                 compact: compactDetail),
                                             color: Color(hex: 0xA78BFA),
                                             layout: layout,
-                                            alignment: .leading)
+                                            alignment: .leading,
+                                            primaryColor: primaryColor,
+                                            secondaryColor: secondaryColor)
                     }
                     Spacer(minLength: 0)
                 }
@@ -120,6 +135,18 @@ struct SystemMetricsWidgetView: View {
         let value = Double(bytes) / 1_000_000_000
         let number = numberFormatter.string(from: NSNumber(value: value)) ?? String(format: "%.1f", value)
         return "\(number)\(unit)"
+    }
+
+    private var primaryColor: Color {
+        let name = widget.mainColorName ?? manager.globalPrimaryColorName
+        let intensity = widget.mainColorName == nil ? manager.globalPrimaryIntensity : widget.mainColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .primary)
+    }
+
+    private var secondaryColor: Color {
+        let name = widget.secondaryColorName ?? manager.globalSecondaryColorName
+        let intensity = widget.secondaryColorName == nil ? manager.globalSecondaryIntensity : widget.secondaryColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .secondary)
     }
 }
 
@@ -176,6 +203,8 @@ private struct SystemUsageLabelRow: View {
     let color: Color
     let layout: SystemMetricsLayout
     let alignment: HorizontalAlignment
+    let primaryColor: Color
+    let secondaryColor: Color
 
     var body: some View {
         HStack(spacing: 6) {
@@ -184,12 +213,12 @@ private struct SystemUsageLabelRow: View {
                 .foregroundStyle(color)
             Text(title)
                 .font(.system(size: layout.titleFontSize, weight: .semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(primaryColor)
             Spacer(minLength: 6)
             if let detail {
                 Text(detail)
                     .font(.system(size: layout.detailFontSize, weight: .medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
                     .lineLimit(1)
                     .minimumScaleFactor(layout.detailMinimumScale)
                     .allowsTightening(true)
@@ -208,6 +237,7 @@ private struct SystemUsageRingCluster: View {
     let ram: Double
     let disk: Double
     let layout: SystemMetricsLayout
+    let trackColor: Color
 
     var body: some View {
         let outer = layout.ringClusterSize
@@ -216,14 +246,17 @@ private struct SystemUsageRingCluster: View {
         ZStack {
             SystemUsageRing(progress: disk,
                             color: Color(hex: 0xA78BFA),
+                            trackColor: trackColor,
                             size: outer,
                             lineWidth: layout.ringLineWidth)
             SystemUsageRing(progress: ram,
                             color: Color(hex: 0x5CD0FF),
+                            trackColor: trackColor,
                             size: middle,
                             lineWidth: layout.ringLineWidth)
             SystemUsageRing(progress: cpu,
                             color: Color(hex: 0xF7B731),
+                            trackColor: trackColor,
                             size: inner,
                             lineWidth: layout.ringLineWidth)
         }
@@ -234,13 +267,14 @@ private struct SystemUsageRingCluster: View {
 private struct SystemUsageRing: View {
     let progress: Double
     let color: Color
+    let trackColor: Color
     let size: CGFloat
     let lineWidth: CGFloat
 
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color.white.opacity(0.18), lineWidth: lineWidth)
+                .stroke(trackColor, lineWidth: lineWidth)
             Circle()
                 .trim(from: 0, to: CGFloat(max(0, min(1, progress))))
                 .stroke(color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))

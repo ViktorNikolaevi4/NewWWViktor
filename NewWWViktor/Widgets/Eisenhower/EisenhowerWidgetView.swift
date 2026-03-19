@@ -4,6 +4,7 @@ import SwiftData
 struct EisenhowerWidgetView: View {
     let widget: WidgetInstance
 
+    @EnvironmentObject private var manager: WidgetManager
     @EnvironmentObject private var localization: LocalizationManager
     @Query(filter: #Predicate<EisenhowerTask> { !$0.isDone },
            sort: \EisenhowerTask.createdAt,
@@ -61,7 +62,7 @@ struct EisenhowerWidgetView: View {
         let count = quadrantTasks.count
         return ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: cellCornerRadius, style: .continuous)
-                .fill(Color.white.opacity(0.08))
+                .fill(cellBackgroundColor)
                 .overlay(
                     RoundedRectangle(cornerRadius: cellCornerRadius, style: .continuous)
                         .stroke(quadrantColor(quadrant).opacity(0.7), lineWidth: 1)
@@ -74,14 +75,14 @@ struct EisenhowerWidgetView: View {
                         .frame(width: 8, height: 8)
                     Text(quadrantLabel(quadrant))
                         .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(secondaryColor.opacity(0.95))
                         .lineLimit(2)
                         .minimumScaleFactor(0.8)
                 }
 
                 Text("\(count)")
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(primaryColor)
 
                 if !quadrantTasks.isEmpty {
                     if showAllTasksInCells {
@@ -90,7 +91,7 @@ struct EisenhowerWidgetView: View {
                                 ForEach(quadrantTasks) { task in
                                     Text(task.title)
                                         .font(.system(size: 9, weight: .medium))
-                                        .foregroundStyle(.white.opacity(0.9))
+                                        .foregroundStyle(secondaryColor.opacity(0.95))
                                         .lineLimit(1)
                                 }
                             }
@@ -100,7 +101,7 @@ struct EisenhowerWidgetView: View {
                             ForEach(Array(quadrantTasks.prefix(1))) { task in
                                 Text(task.title)
                                     .font(.system(size: 9, weight: .medium))
-                                    .foregroundStyle(.white.opacity(0.9))
+                                    .foregroundStyle(secondaryColor.opacity(0.95))
                                     .lineLimit(1)
                             }
                         }
@@ -137,6 +138,22 @@ struct EisenhowerWidgetView: View {
         case .notImportantNotUrgent:
             return Color.gray.opacity(0.7)
         }
+    }
+
+    private var primaryColor: Color {
+        let name = widget.mainColorName ?? manager.globalPrimaryColorName
+        let intensity = widget.mainColorName == nil ? manager.globalPrimaryIntensity : widget.mainColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .primary)
+    }
+
+    private var secondaryColor: Color {
+        let name = widget.secondaryColorName ?? manager.globalSecondaryColorName
+        let intensity = widget.secondaryColorName == nil ? manager.globalSecondaryIntensity : widget.secondaryColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .secondary)
+    }
+
+    private var cellBackgroundColor: Color {
+        secondaryColor.opacity(0.12)
     }
 
     private var accessibilityLabel: String {

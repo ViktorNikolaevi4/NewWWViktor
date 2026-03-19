@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LinksWidgetView: View {
     let widget: WidgetInstance
+    @EnvironmentObject private var manager: WidgetManager
     @EnvironmentObject private var localization: LocalizationManager
     @Environment(\.openURL) private var openURL
     @State private var expandedGroupIDs: Set<UUID> = []
@@ -11,14 +12,14 @@ struct LinksWidgetView: View {
         VStack(alignment: .leading, spacing: layout.headerSpacing) {
             Text(localization.text(.widgetLinksTitle))
                 .font(.system(size: layout.titleFontSize, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(secondaryColor)
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: layout.rowSpacing) {
                     if allLinks.isEmpty {
                         Text(localization.text(.widgetLinksEmpty))
                             .font(.system(size: layout.emptyFontSize, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(secondaryColor)
                             .padding(.top, 4)
                     } else {
                         ForEach(widget.linkGroups) { group in
@@ -53,14 +54,14 @@ struct LinksWidgetView: View {
                     HStack(spacing: 8) {
                         Text(groupTitle(for: group))
                             .font(.system(size: layout.groupTitleFontSize, weight: .semibold))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(primaryColor)
                         Text("\(group.links.count)")
                             .font(.system(size: layout.groupCountFontSize, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(secondaryColor)
                         Spacer(minLength: 0)
                         Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                             .font(.system(size: layout.groupChevronSize, weight: .semibold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(secondaryColor)
                     }
                     .padding(.horizontal, layout.groupHeaderPadding)
                 }
@@ -79,7 +80,7 @@ struct LinksWidgetView: View {
                                             cornerRadius: layout.iconCornerRadius)
                                 Text(displayTitle(for: link))
                                     .font(.system(size: layout.rowFontSize, weight: .semibold))
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(primaryColor)
                                     .lineLimit(1)
                                     .truncationMode(.tail)
                                 Spacer(minLength: 0)
@@ -88,7 +89,7 @@ struct LinksWidgetView: View {
                             .padding(.horizontal, layout.rowHorizontalPadding)
                             .background(
                                 RoundedRectangle(cornerRadius: layout.rowCornerRadius, style: .continuous)
-                                    .fill(Color.white.opacity(0.08))
+                                    .fill(surfaceColor)
                             )
                         }
                         .buttonStyle(.plain)
@@ -168,6 +169,24 @@ struct LinksWidgetView: View {
             URLQueryItem(name: "sz", value: "64")
         ]
         return components.url
+    }
+}
+
+private extension LinksWidgetView {
+    var primaryColor: Color {
+        let name = widget.mainColorName ?? manager.globalPrimaryColorName
+        let intensity = widget.mainColorName == nil ? manager.globalPrimaryIntensity : widget.mainColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .primary)
+    }
+
+    var secondaryColor: Color {
+        let name = widget.secondaryColorName ?? manager.globalSecondaryColorName
+        let intensity = widget.secondaryColorName == nil ? manager.globalSecondaryIntensity : widget.secondaryColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .secondary)
+    }
+
+    var surfaceColor: Color {
+        secondaryColor.opacity(0.12)
     }
 }
 

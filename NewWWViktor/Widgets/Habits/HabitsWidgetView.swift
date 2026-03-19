@@ -4,6 +4,7 @@ import SwiftData
 struct HabitsWidgetView: View {
     let widget: WidgetInstance
 
+    @EnvironmentObject private var manager: WidgetManager
     @EnvironmentObject private var localization: LocalizationManager
     @Environment(\.modelContext) private var modelContext
     @Query private var entries: [HabitEntry]
@@ -25,12 +26,12 @@ struct HabitsWidgetView: View {
         VStack(spacing: 8) {
             Text(habitTitle)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(primaryColor)
 
             ring
 
             Divider()
-                .background(Color.white.opacity(0.1))
+                .background(secondaryColor.opacity(0.2))
                 .padding(.horizontal, 2)
 
             bottomRow
@@ -43,7 +44,7 @@ struct HabitsWidgetView: View {
     private var ring: some View {
         ZStack(alignment: .bottom) {
             Circle()
-                .stroke(Color.white.opacity(0.14), lineWidth: ringLineWidth)
+                .stroke(secondaryColor.opacity(0.22), lineWidth: ringLineWidth)
 
             Circle()
                 .trim(from: 0, to: ringProgress)
@@ -55,11 +56,11 @@ struct HabitsWidgetView: View {
             VStack(spacing: 2) {
                 Text("\(progressDays)")
                     .font(.system(size: 26, weight: .bold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(primaryColor)
 
                 Text(localization.text(.widgetHabitsDaysLabel))
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
             }
             .offset(y: -18)
         }
@@ -76,16 +77,16 @@ struct HabitsWidgetView: View {
             .buttonStyle(.plain)
 
             Rectangle()
-                .fill(Color.white.opacity(0.12))
+                .fill(secondaryColor.opacity(0.2))
                 .frame(width: 1, height: 14)
 
             HStack(spacing: 4) {
                 Text(localization.text(.widgetHabitsStreakLabel))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
                 Text("\(streakDays)")
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(primaryColor)
                 Text(localization.text(.widgetHabitsDaysLabel))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(secondaryColor)
             }
             .font(.system(size: 11, weight: .semibold))
 
@@ -132,8 +133,20 @@ struct HabitsWidgetView: View {
 
     private var ringGradient: LinearGradient {
         LinearGradient(colors: [
-            Color(red: 0.23, green: 0.74, blue: 1.0),
-            Color(red: 0.12, green: 0.42, blue: 0.98)
+            primaryColor,
+            secondaryColor
         ], startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
+
+    private var primaryColor: Color {
+        let name = widget.mainColorName ?? manager.globalPrimaryColorName
+        let intensity = widget.mainColorName == nil ? manager.globalPrimaryIntensity : widget.mainColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .primary)
+    }
+
+    private var secondaryColor: Color {
+        let name = widget.secondaryColorName ?? manager.globalSecondaryColorName
+        let intensity = widget.secondaryColorName == nil ? manager.globalSecondaryIntensity : widget.secondaryColorIntensity
+        return WidgetPaletteColor.color(named: name, intensity: intensity, fallback: .secondary)
     }
 }

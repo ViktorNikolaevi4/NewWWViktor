@@ -6,6 +6,7 @@ final class TopMissionEntry {
     var widgetID: UUID = UUID()
     var task: String = ""
     var isCompleted: Bool = false
+    var deadlineAt: Date?
     var subtasksRaw: String = ""
     var subtasksStateRaw: String = ""
     var updatedAt: Date = Date()
@@ -13,12 +14,14 @@ final class TopMissionEntry {
     init(widgetID: UUID,
          task: String,
          isCompleted: Bool = false,
+         deadlineAt: Date? = nil,
          subtasksRaw: String = "",
          subtasksStateRaw: String = "",
          updatedAt: Date = Date()) {
         self.widgetID = widgetID
         self.task = task
         self.isCompleted = isCompleted
+        self.deadlineAt = deadlineAt
         self.subtasksRaw = subtasksRaw
         self.subtasksStateRaw = subtasksStateRaw
         self.updatedAt = updatedAt
